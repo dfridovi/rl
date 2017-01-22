@@ -47,6 +47,7 @@
 #include <value/action_value_functor.hpp>
 
 #include <unordered_map>
+#include <limits>
 
 namespace rl {
 
@@ -61,7 +62,7 @@ namespace rl {
       if (value_.count(state) == 0)
         return -std::numeric_limits<double>::infinity();
 
-      else if (value_.at(state).count(action) == 0)
+      if (value_.at(state).count(action) == 0)
         return -std::numeric_limits<double>::infinity();
 
       return value_.at(state).at(action);

@@ -47,6 +47,7 @@
 #include <value/state_value_functor.hpp>
 
 #include <unordered_map>
+#include <limits>
 
 namespace rl {
 
