@@ -51,10 +51,13 @@ namespace rl {
   public:
     enum Direction {UP, DOWN, LEFT, RIGHT};
 
-    // Constructor/destructor. Constructor generates a random action.
+    // Constructor/destructor. Default constructor generates a random action.
+    // If a direction is provided, it is set.
     ~GridAction() {}
     GridAction()
       : direction_(static_cast<Direction>(unif_(rng_))) {}
+    GridAction(Direction direction)
+      : direction_(direction) {}
 
     // Define the boolean equality operator.
     bool operator==(const GridAction& rhs) const {

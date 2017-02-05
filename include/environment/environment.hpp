@@ -51,9 +51,9 @@ namespace rl {
     virtual ~Environment() {}
 
     // Pure virtual method to output the next state, given that the actor
-    // takes the specified action from the given state. Returns whether or
-    // not the input (state, action) pair is valid.
-    virtual bool Simulate(StateType& state, const ActionType& action) const = 0;
+    // takes the specified action from the given state. Returns the reward.
+    virtual double Simulate(StateType& state,
+                            const ActionType& action) const = 0;
 
   protected:
     explicit Environment() {}

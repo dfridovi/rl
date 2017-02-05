@@ -36,46 +36,36 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Defines the GridWorld class, which inherits from Environment.
+// Defines the DiscreteEnvironment base class, which derives from Environment.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef RL_ENVIRONMENT_GRID_WORLD_H
-#define RL_ENVIRONMENT_GRID_WORLD_H
-
-#include <environment/discrete_environment.hpp>
-#include <environment/grid_state.hpp>
-#include <environment/grid_action.hpp>
-
-#include <stddef.h>
+#ifndef RL_ENVIRONMENT_DISCRETE_ENVIRONMENT_H
+#define RL_ENVIRONMENT_DISCRETE_ENVIRONMENT_H
 
 namespace rl {
 
-  class GridWorld : public DiscreteEnvironment<GridState, GridAction> {
+  template<typename StateType, typename ActionType>
+  class DiscreteEnvironment : public Environment<StateType, ActionType> {
   public:
-    virtual ~GridWorld();
-    explicit GridWorld(size_t nrows, size_t ncols, const GridState& goal);
+    virtual ~DiscreteEnvironment() {}
 
-    // Implement pure virtual method from Environment, but leave it virtual
-    // so that a derived class can override it (for example, adding some
-    // randomness, or other biases).
-    virtual double Simulate(GridState& state, const GridAction& action) const;
+    // Pure virtual method to output the next state, given that the actor
+    // takes the specified action from the given state. Returns the reward.
+    virtual double Simulate(StateType& state,
+                            const ActionType& action) const = 0;
 
-    // Implement pure virtual methods to enumerate all states, and all actions
-    // from a given state.
-    virtual void States(std::vector<GridState>& states) const;
-    virtual void Actions(const GridState& state,
-                         std::vector<GridAction>& actions) const;
+    // Pure virtual methods to enumerate all states, and all actions from
+    // a given state.
+    virtual void States(std::vector<StateType>& states) const = 0;
+    virtual void Actions(const StateType& state,
+                         std::vector<ActionType>& actions) const = 0;
 
 
   protected:
-    // Dimensions.
-    const size_t nrows_;
-    const size_t ncols_;
-
-    // Goal state.
-    const GridState goal_;
-  }; //\class GridWorld
+    explicit DisplayEnvironment()
+      : Environment() {}
+  }; //\class Environment
 
 }  //\namespace rl
 

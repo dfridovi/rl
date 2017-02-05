@@ -37,6 +37,7 @@
 #include <environment/grid_world.hpp>
 #include <environment/grid_action.hpp>
 #include <environment/grid_state.hpp>
+#include <util/types.h>
 
 #include <glog/logging.h>
 #include <gflags/gflags.h>
@@ -139,7 +140,8 @@ void SingleIteration() {
   if (*current_state != *goal_state &&
       (FLAGS_iterate_forever || step_count < FLAGS_num_iterations)) {
     // Pick a random action.
-    while (!world->Simulate(*current_state, rl::GridAction()));
+    while (world->Simulate(*current_state, rl::GridAction()) ==
+           rl::kInvalidReward);
 
     // Increment step counter.
     step_count++;
@@ -206,12 +208,12 @@ int main(int argc, char** argv) {
   CHECK_GE(FLAGS_num_rows, 1);
   CHECK_GE(FLAGS_num_cols, 1);
 
-  // Set up grid world.
-  world = new rl::GridWorld(FLAGS_num_rows, FLAGS_num_cols);
-
   // Create initial and goal states at opposite corners.
   current_state = new rl::GridState(0, 0);
   goal_state = new rl::GridState(FLAGS_num_rows - 1, FLAGS_num_cols - 1);
+
+  // Set up grid world.
+  world = new rl::GridWorld(FLAGS_num_rows, FLAGS_num_cols, *goal_state);
 
   // Set up OpenGL window.
   glutInit(&argc, argv);

@@ -41,28 +41,30 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <environment/grid_world.hpp>
+#include <util/types.h>
 
 #include <glog/logging.h>
+#include <limits>
 
 namespace rl {
 
   GridWorld::~GridWorld() {}
-  GridWorld::GridWorld(size_t nrows, size_t ncols)
-    : nrows_(nrows), ncols_(ncols) {}
+  GridWorld::GridWorld(size_t nrows, size_t ncols, const GridState& goal)
+    : nrows_(nrows), ncols_(ncols), goal_(goal) {}
 
   // Implement pure virtual method from Environment, but leave it virtual
   // so that a derived class can override it (for example, adding some
   // randomness, or other biases).
-  bool GridWorld::Simulate(GridState& state, const GridAction& action) const {
+  double GridWorld::Simulate(GridState& state, const GridAction& action) const {
     // Handle all edge cases.
     if (state.ii_ == 0 && action == GridAction::Direction::UP)
-      return false;
+      return kInvalidReward;
     else if (state.ii_ == nrows_ - 1 && action == GridAction::Direction::DOWN)
-      return false;
+      return kInvalidReward;
     else if (state.jj_ == 0 && action == GridAction::Direction::LEFT)
-      return false;
+      return kInvalidReward;
     else if (state.jj_ == ncols_ - 1 && action == GridAction::Direction::RIGHT)
-      return false;
+      return kInvalidReward;
 
     // Definitely going to stay on the grid, so just parse action normally.
     switch (action.direction_) {
@@ -82,10 +84,52 @@ namespace rl {
     default :
       // Should never get here.
       LOG(ERROR) << "GridWorld: Error! Parsing unknown action.";
-      return false;
+      return kInvalidReward;
     }
 
-    return true;
+    // Return whether or not we are in the goal state. Penalize not being in
+    // the goal state in order to get short paths.
+    const double reward = (state == goal_) ? 1.0 : -1.0;
+    return reward;
+  }
+
+  // Implement pure virtual methods to enumerate all states, and all actions
+  // from a given state.
+  void GridWorld::States(std::vector<GridState>& states) const {
+    states.clear();
+
+    for (size_t ii = 0; ii < nrows_; ii++)
+      for (size_t jj = 0; jj < ncols_; jj++_)
+        states.push_back(GridState(ii, jj));
+  }
+
+  void GridWorld::Actions(const GridState& state,
+                          std::vector<GridAction>& actions) const {
+    actions.clear();
+
+    // Catch invalid states.
+    CHECK_LT(state.ii_, nrows_);
+    CHECK_LT(state.jj_, ncols_);
+
+    // Create a list of possible next states.
+    const std::vector<GridAction::Direction> possibilities =
+      {GridAction::Direction::UP, GridAction::Direction::DOWN,
+       GridAction::Direction::LEFT, GridAction::Direction::RIGHT};
+
+    for (const auto& direction : possibilities) {
+      // Catch edge cases.
+      if (state.ii_ == 0 && direction == GridAction::Direction::UP)
+        continue;
+      if (state.ii_ == nrows_ - 1 && direction == GridAction::Direction::DOWN)
+        continue;
+      if (state.jj_ == 0 && direction == GridAction::Direction::LEFT)
+        continue;
+      if (state.jj_ == ncols_ - 1 && direction == GridAction::Direction::RIGHT)
+        continue;
+
+      // If we get here, the direction must be valid.
+      actions.push_back(GridAction(direction));
+    }
   }
 
 }  //\namespace rl

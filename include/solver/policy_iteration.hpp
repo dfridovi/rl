@@ -36,46 +36,26 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Defines the GridWorld class, which inherits from Environment.
+// Defines the PolicyIteration class. Current implementation assumes discrete
+// state and action spaces, and deterministic environments.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef RL_ENVIRONMENT_GRID_WORLD_H
-#define RL_ENVIRONMENT_GRID_WORLD_H
-
-#include <environment/discrete_environment.hpp>
-#include <environment/grid_state.hpp>
-#include <environment/grid_action.hpp>
-
-#include <stddef.h>
+#ifndef RL_SOLVER_POLICY_ITERATION_H
+#define RL_SOLVER_POLICY_ITERATION_H
 
 namespace rl {
 
-  class GridWorld : public DiscreteEnvironment<GridState, GridAction> {
+  template<typename StateType, typename ActionType>
+  class PolicyIteration {
   public:
-    virtual ~GridWorld();
-    explicit GridWorld(size_t nrows, size_t ncols, const GridState& goal);
+    ~PolicyIteration() {}
 
-    // Implement pure virtual method from Environment, but leave it virtual
-    // so that a derived class can override it (for example, adding some
-    // randomness, or other biases).
-    virtual double Simulate(GridState& state, const GridAction& action) const;
+    // Initialize to a random policy.
+    explicit PolicyIteration() {}
 
-    // Implement pure virtual methods to enumerate all states, and all actions
-    // from a given state.
-    virtual void States(std::vector<GridState>& states) const;
-    virtual void Actions(const GridState& state,
-                         std::vector<GridAction>& actions) const;
-
-
-  protected:
-    // Dimensions.
-    const size_t nrows_;
-    const size_t ncols_;
-
-    // Goal state.
-    const GridState goal_;
-  }; //\class GridWorld
+    //
+  }; //\class PolicyIteration
 
 }  //\namespace rl
 

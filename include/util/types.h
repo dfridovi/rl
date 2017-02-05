@@ -43,14 +43,14 @@
 #ifndef RL_UTIL_TYPES_H
 #define RL_UTIL_TYPES_H
 
+#include <limits>
 #include <Eigen/Core>
 
 namespace rl {
 
-// ----------------------- Internal typedefs -------------------- //
+// --------------- Internal typedefs and constants --------------- //
 
-
-
+const double kInvalidReward = -std::numeric_limits<double>::infinity();
 
 // -------------------- Third-party typedefs -------------------- //
 
