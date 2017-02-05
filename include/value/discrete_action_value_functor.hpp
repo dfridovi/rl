@@ -55,7 +55,29 @@ namespace rl {
   class DiscreteActionValueFunctor :
     public ActionValueFunctor<StateType, ActionType> {
   public:
-    virtual ~DiscreteActionValueFunctor() {}
+    ~DiscreteActionValueFunctor() {}
+    explicit DiscreteActionValueFunctor() {}
+
+    // Set the value of a given state, action pair. If pair is already in
+    // the table, updates the value to what is given here.
+    void Set(const StateType& state, const ActionType& action, double value) {
+      if (value_.count(state) == 0) {
+        if (value_.at(state).count(action) == 0)
+          // Table contains this pair.
+          value_.at(state).at(action) = value;
+        else
+          // Table contains state but not action.
+          value_.at(state).insert({action, value});
+      } else {
+        // Table does not contain this state.
+        value_.insert({
+            state, std::unordered_map<ActionType, double>({{action, value}})});
+      }
+    }
+
+    // Return an immutable reference to the value map.
+    const std::unordered_map<StateType, std::unordered_map<ActionType, double>>&
+      ImmutableActionValueTable() { return value_; }
 
     // Pure virtual method to output the value at a Action.
     double operator()(const StateType& state, const ActionType& action) const {
@@ -68,9 +90,7 @@ namespace rl {
       return value_.at(state).at(action);
     }
 
-  protected:
-    explicit DiscreteActionValueFunctor() {}
-
+  private:
     // Hash table to store the value function.
     std::unordered_map<StateType,
                        std::unordered_map<ActionType, double> > value_;

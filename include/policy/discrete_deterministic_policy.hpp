@@ -59,9 +59,7 @@ namespace rl {
   public:
     ~DiscreteDeterministicPolicy() {}
 
-    // Construct from either a V (state) or Q (action) value function.
-    explicit DiscreteDeterministicPolicy(
-       const DiscreteStateValueFunctor<StateType>& V);
+    // Construct from a Q (action) value function.
     explicit DiscreteDeterministicPolicy(
        const DiscreteActionValueFunctor<StateType, ActionType>& Q);
 
@@ -72,6 +70,52 @@ namespace rl {
     // Hash table to map states to actions.
     std::unordered_map<StateType, ActionType> map_;
   }; //\class DiscreteDeterministicPolicy
+
+// ------------------------------ IMPLEMENTATION ---------------------------- //
+
+  // Construct from a state-action value function. Simply chooses the action
+  // that maximizes the state-action value function, for each state.
+  template<typename StateType, typename ActionType>
+  DiscreteDeterministicPolicy<StateType, ActionType>::
+  DiscreteDeterministicPolicy(
+    const DiscreteActionValueFunctor<StateType, ActionType>& Q)
+    : Policy<StateType, ActionType>() {
+    // Get a const refeence to the value table.
+    const std::unordered_map<StateType, std::unordered_map<ActionType, double> >
+                             table = Q.ImmutableActionValueTable();
+
+    // Iterate over all states.
+    for (const auto& state_entry : table) {
+      double max_value = -std::numeric_limits<double>::infinity();
+
+      // Only update action if value is greater than previous max.
+      for (const auto& action_entry : state_entry.second) {
+        // Catch first action.
+        if (map_.count(state_entry.first) == 0) {
+          map_.insert({state_entry.first, action_entry.first});
+          max_value = action_entry.second;
+        } else {
+          // Handle other actions.
+          if (action_entry.second > max_value) {
+            map_.at(state_entry.first) = action_entry.first;
+            max_value = action_entry.second;
+          }
+        }
+      }
+    }
+  }
+
+  // Act deterministically at every state.
+  template<typename StateType, typename ActionType>
+  bool DiscreteDeterministicPolicy<StateType, ActionType>::Act(
+    const StateType& state, ActionType& action) const {
+    // Check that 'state' is in the 'map_'.
+    if (map_.count(state) == 0)
+      return false;
+
+    action = map_.at(state);
+    return true;
+  }
 
 }  //\namespace rl
 

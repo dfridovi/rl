@@ -36,43 +36,15 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Defines the DiscreteDeterministicPolicy class, which derives from the
-// Policy base class.
-//
-// Discrete deterministic policies are represented by an (unordered) map from
-// states to actions.
+// Defines the GridAction enum.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <policy/discrete_deterministic_policy.hpp>
+#include <environment/grid_action.hpp>
 
 namespace rl {
-
-  // Construct from a state value function.
-  template<typename StateType, typename ActionType>
-  DiscreteDeterministicPolicy<StateType, ActionType>::
-  DiscreteDeterministicPolicy(const DiscreteStateValueFunctor<StateType>& V) {
-    // TODO!
-  }
-
-  // Construct from a state-action value function.
-  template<typename StateType, typename ActionType>
-  DiscreteDeterministicPolicy<StateType, ActionType>::
-  DiscreteDeterministicPolicy(
-    const DiscreteActionValueFunctor<StateType, ActionType>& Q) {
-    // TODO!
-  }
-
-  // Act deterministically at every state.
-  template<typename StateType, typename ActionType>
-  bool DiscreteDeterministicPolicy<StateType, ActionType>::Act(
-    const StateType& state, ActionType& action) const {
-    // Check that 'state' is in the 'map_'.
-    if (map_.count(state) == 0)
-      return false;
-
-    action = map_.at(state);
-    return true;
-  }
-
-}  //\namespace rl
+  // Define static variables.
+  std::random_device GridAction::rd_;
+  std::default_random_engine GridAction::rng_(rd_());
+  std::uniform_int_distribution<size_t> GridAction::unif_(0, 3);
+}

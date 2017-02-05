@@ -55,27 +55,27 @@ namespace rl {
   // randomness, or other biases).
   bool GridWorld::Simulate(GridState& state, const GridAction& action) const {
     // Handle all edge cases.
-    if (state.ii_ == 0 && action == GridAction::UP)
+    if (state.ii_ == 0 && action == GridAction::Direction::UP)
       return false;
-    else if (state.ii_ == nrows_ - 1 && action == GridAction::DOWN)
+    else if (state.ii_ == nrows_ - 1 && action == GridAction::Direction::DOWN)
       return false;
-    else if (state.jj_ == 0 && action == GridAction::LEFT)
+    else if (state.jj_ == 0 && action == GridAction::Direction::LEFT)
       return false;
-    else if (state.jj_ == ncols_ - 1 && action == GridAction::RIGHT)
+    else if (state.jj_ == ncols_ - 1 && action == GridAction::Direction::RIGHT)
       return false;
 
     // Definitely going to stay on the grid, so just parse action normally.
-    switch (action) {
-    case GridAction::UP :
+    switch (action.direction_) {
+    case GridAction::Direction::UP :
       state.ii_--;
       break;
-    case GridAction::DOWN :
+    case GridAction::Direction::DOWN :
       state.ii_++;
       break;
-    case GridAction::LEFT :
+    case GridAction::Direction::LEFT :
       state.jj_--;
       break;
-    case GridAction::RIGHT :
+    case GridAction::Direction::RIGHT :
       state.jj_++;
       break;
 

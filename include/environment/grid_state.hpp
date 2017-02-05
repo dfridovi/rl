@@ -52,6 +52,15 @@ namespace rl {
     GridState(size_t ii, size_t jj)
       : ii_(ii), jj_(jj) {}
 
+    // (In)equality operators.
+    bool operator==(const GridState& rhs) {
+      return ii_ == rhs.ii_ && jj_ == rhs.jj_;
+    }
+
+    bool operator!=(const GridState& rhs) {
+      return ii_ != rhs.ii_ || jj_ != rhs.jj_;
+    }
+
     size_t ii_;
     size_t jj_;
   }; //\struct GridState
