@@ -14,7 +14,7 @@ CHANGESET=$(git rev-parse --verify HEAD)
 doxygen Doxyfile
 
 # Make sure branches are up to date.
-git fetch origin
+git pull origin master
 
 # Commit documentation in master.
 cd ..
