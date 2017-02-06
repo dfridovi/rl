@@ -65,7 +65,6 @@ namespace rl {
     virtual void Actions(const StateType& state,
                          std::vector<ActionType>& actions) const = 0;
 
-
   protected:
     explicit DiscreteEnvironment()
       : Environment<StateType, ActionType>() {}

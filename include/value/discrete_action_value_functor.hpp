@@ -56,7 +56,8 @@ namespace rl {
     public ActionValueFunctor<StateType, ActionType> {
   public:
     ~DiscreteActionValueFunctor() {}
-    explicit DiscreteActionValueFunctor() {}
+    explicit DiscreteActionValueFunctor()
+      : ActionValueFunctor<StateType, ActionType>() {}
 
     // Set the value of a given state, action pair. If pair is already in
     // the table, updates the value to what is given here.

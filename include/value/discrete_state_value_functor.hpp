@@ -55,6 +55,8 @@ namespace rl {
   class DiscreteStateValueFunctor : public StateValueFunctor<StateType> {
   public:
     virtual ~DiscreteStateValueFunctor() {}
+    explicit DiscreteStateValueFunctor()
+      : StateValueFunctor<StateType>() {}
 
     // Pure virtual method to output the value at a state.
     double operator()(const StateType& state) const {
@@ -65,8 +67,6 @@ namespace rl {
     }
 
   protected:
-    explicit DiscreteStateValueFunctor() {}
-
     // Hash table to store the value function.
     std::unordered_map<StateType, double> value_;
   }; //\class DiscreteStateValueFunctor

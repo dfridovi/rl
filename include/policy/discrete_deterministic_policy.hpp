@@ -49,8 +49,10 @@
 #include <policy/policy.hpp>
 #include <value/discrete_state_value_functor.hpp>
 #include <value/discrete_action_value_functor.hpp>
+#include <environment/discrete_environment.hpp>
 
 #include <unordered_map>
+#include <random>
 
 namespace rl {
 
@@ -58,9 +60,18 @@ namespace rl {
   class DiscreteDeterministicPolicy : public Policy<StateType, ActionType> {
   public:
     ~DiscreteDeterministicPolicy() {}
+    explicit DiscreteDeterministicPolicy() {}
 
-    // Construct from a Q (action) value function.
-    explicit DiscreteDeterministicPolicy(
+    // Set to random valid actions in the given environment.
+    void SetRandomly(
+       const DiscreteEnvironment<StateType, ActionType>& environment);
+
+    // Set to the greedy policy given a state value function V or an
+    // action value function Q.
+    void SetGreedily(
+       const DiscreteStateValueFunctor<StateType>& V,
+       const DiscreteEnvironment<StateType, ActionType>& environment);
+    void SetGreedily(
        const DiscreteActionValueFunctor<StateType, ActionType>& Q);
 
     // Act deterministically at every state.
@@ -68,21 +79,86 @@ namespace rl {
 
   private:
     // Hash table to map states to actions.
-    std::unordered_map<StateType, ActionType> map_;
+    std::unordered_map<StateType, ActionType> policy_;
   }; //\class DiscreteDeterministicPolicy
 
-// ------------------------------ IMPLEMENTATION ---------------------------- //
+// ---------------------------- IMPLEMENTATION ------------------------------ //
 
-  // Construct from a state-action value function. Simply chooses the action
-  // that maximizes the state-action value function, for each state.
+  // Set to random valid actions in the given environment.
   template<typename StateType, typename ActionType>
-  DiscreteDeterministicPolicy<StateType, ActionType>::
-  DiscreteDeterministicPolicy(
-    const DiscreteActionValueFunctor<StateType, ActionType>& Q)
-    : Policy<StateType, ActionType>() {
+  void DiscreteDeterministicPolicy<StateType, ActionType>::SetRandomly(
+     const DiscreteEnvironment<StateType, ActionType>& environment) {
+    // Get a list of all the states in the environment.
+    std::vector<StateType> states;
+    environment.States(states);
+
+    // Create a random number generator.
+    std::random_device rd;
+    std::default_random_engine rng(rd());
+
+    // For each state, get a list of all the possible actions and select
+    // one at random.
+    std::vector<ActionType> actions;
+    for (const auto& state : states) {
+      environment.Actions(state, actions);
+
+      // Choose a random action from the list.
+      std::uniform_int_distribution<size_t> unif(0, actions.size() - 1);
+      const ActionType random_action = actions[unif(rng)];
+
+      // Check if 'policy_' does not yet contain this state.
+      if (policy_.count(state) == 0)
+        policy_.insert({state, random_action});
+      else
+        policy_.at(state) = random_action;
+    }
+  }
+
+  // Set to the greedy policy given a state value function V.
+  template<typename StateType, typename ActionType>
+  void DiscreteDeterministicPolicy<StateType, ActionType>::SetGreedily(
+     const DiscreteStateValueFunctor<StateType>& V,
+     const DiscreteEnvironment<StateType, ActionType>& environment) {
+    // Get a list of all the states in the environment.
+    std::vector<StateType> states;
+    environment.States(states);
+
+    // Iterate over all states. For each one, find the action which
+    // leads to the maximum value on the next step.
+    std::vector<ActionType> actions;
+    for (const auto& state : states) {
+      environment.Actions(state, actions);
+
+      // Simulate taking each action. Note that 'greedy' here means we
+      // simply maximize V(next state), not including the actual
+      // simulated reward.
+      double max_value = -std::numeric_limits<double>::infinity();
+      for (const auto& action : actions) {
+        StateType next_state = state;
+        const double reward = environment.Simulate(next_state, action);
+
+        // Check if 'policy_' does not yet contain this state.
+        if (policy_.count(state) == 0) {
+          max_value = V(next_state);
+          policy_.insert({state, action});
+        } else {
+          // Only update existing action if value has increased.
+          if (V(next_state) > max_value) {
+            max_value = V(next_state);
+            policy_.at(state) = action;
+          }
+        }
+      }
+    }
+  }
+
+  // Set to the greedy policy given a state-action value function Q.
+  template<typename StateType, typename ActionType>
+  void DiscreteDeterministicPolicy<StateType, ActionType>::SetGreedily(
+     const DiscreteActionValueFunctor<StateType, ActionType>& Q) {
     // Get a const refeence to the value table.
     const std::unordered_map<StateType, std::unordered_map<ActionType, double> >
-                             table = Q.ImmutableActionValueTable();
+      table = Q.ImmutableActionValueTable();
 
     // Iterate over all states.
     for (const auto& state_entry : table) {
@@ -90,14 +166,14 @@ namespace rl {
 
       // Only update action if value is greater than previous max.
       for (const auto& action_entry : state_entry.second) {
-        // Catch first action.
-        if (map_.count(state_entry.first) == 0) {
-          map_.insert({state_entry.first, action_entry.first});
+        // Catch first time we see this state.
+        if (policy_.count(state_entry.first) == 0) {
+          policy_.insert({state_entry.first, action_entry.first});
           max_value = action_entry.second;
         } else {
           // Handle other actions.
           if (action_entry.second > max_value) {
-            map_.at(state_entry.first) = action_entry.first;
+            policy_.at(state_entry.first) = action_entry.first;
             max_value = action_entry.second;
           }
         }
@@ -109,11 +185,11 @@ namespace rl {
   template<typename StateType, typename ActionType>
   bool DiscreteDeterministicPolicy<StateType, ActionType>::Act(
     const StateType& state, ActionType& action) const {
-    // Check that 'state' is in the 'map_'.
-    if (map_.count(state) == 0)
+    // Check that 'state' is in the 'policy_'.
+    if (policy_.count(state) == 0)
       return false;
 
-    action = map_.at(state);
+    action = policy_.at(state);
     return true;
   }
 

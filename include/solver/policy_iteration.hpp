@@ -36,26 +36,40 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Defines the PolicyIteration class. Current implementation assumes discrete
-// state and action spaces, and deterministic environments.
+// Defines the ModifiedPolicyIteration class. Current implementation assumes
+// discrete state and action spaces, and deterministic environments.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef RL_SOLVER_POLICY_ITERATION_H
-#define RL_SOLVER_POLICY_ITERATION_H
+#ifndef RL_SOLVER_MODIFIED_POLICY_ITERATION_H
+#define RL_SOLVER_MODIFIED_POLICY_ITERATION_H
 
 namespace rl {
 
   template<typename StateType, typename ActionType>
-  class PolicyIteration {
+  class ModifiedPolicyIteration {
   public:
-    ~PolicyIteration() {}
+    ~ModifiedPolicyIteration() {}
 
-    // Initialize to a random policy.
-    explicit PolicyIteration() {}
+    // Initialize to a random policy. Pass in the number of value function
+    // updates per iteration.
+    explicit ModifiedPolicyIteration(size_t num_value_updates)
+      : num_value_updates_(num_value_updates) {}
 
-    //
-  }; //\class PolicyIteration
+    // Solve the MDP defined by the given environment.
+    void Solve(const DiscreteEnvironment<StateType, ActionType>& environment);
+
+    // Update policy to be greedy with respect to the current state
+    // value function V.
+    void UpdatePolicy();
+
+    // Single round of optimization of the state value function, i.e.
+    // set V(s) <== V(environment(Pi(s)).
+    void UpdateValueFunction();
+
+
+
+  }; //\class ModifiedPolicyIteration
 
 }  //\namespace rl
 
