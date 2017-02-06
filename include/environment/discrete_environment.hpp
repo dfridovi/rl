@@ -43,6 +43,10 @@
 #ifndef RL_ENVIRONMENT_DISCRETE_ENVIRONMENT_H
 #define RL_ENVIRONMENT_DISCRETE_ENVIRONMENT_H
 
+#include <environment/environment.hpp>
+
+#include <vector>
+
 namespace rl {
 
   template<typename StateType, typename ActionType>
@@ -63,8 +67,8 @@ namespace rl {
 
 
   protected:
-    explicit DisplayEnvironment()
-      : Environment() {}
+    explicit DiscreteEnvironment()
+      : Environment<StateType, ActionType>() {}
   }; //\class Environment
 
 }  //\namespace rl

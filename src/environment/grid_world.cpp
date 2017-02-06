@@ -50,7 +50,8 @@ namespace rl {
 
   GridWorld::~GridWorld() {}
   GridWorld::GridWorld(size_t nrows, size_t ncols, const GridState& goal)
-    : nrows_(nrows), ncols_(ncols), goal_(goal) {}
+    : DiscreteEnvironment<GridState, GridAction>(),
+      nrows_(nrows), ncols_(ncols), goal_(goal) {}
 
   // Implement pure virtual method from Environment, but leave it virtual
   // so that a derived class can override it (for example, adding some
@@ -99,7 +100,7 @@ namespace rl {
     states.clear();
 
     for (size_t ii = 0; ii < nrows_; ii++)
-      for (size_t jj = 0; jj < ncols_; jj++_)
+      for (size_t jj = 0; jj < ncols_; jj++)
         states.push_back(GridState(ii, jj));
   }
 
