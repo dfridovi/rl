@@ -52,9 +52,8 @@
 namespace rl {
 
   template<typename StateType, typename ActionType>
-  class DiscreteActionValueFunctor :
+  struct DiscreteActionValueFunctor :
     public ActionValueFunctor<StateType, ActionType> {
-  public:
     ~DiscreteActionValueFunctor() {}
     explicit DiscreteActionValueFunctor()
       : ActionValueFunctor<StateType, ActionType>() {}
@@ -76,10 +75,6 @@ namespace rl {
       }
     }
 
-    // Return an immutable reference to the value map.
-    const std::unordered_map<StateType, std::unordered_map<ActionType, double>>&
-      ImmutableActionValueTable() { return value_; }
-
     // Pure virtual method to output the value at a Action.
     double operator()(const StateType& state, const ActionType& action) const {
       if (value_.count(state) == 0)
@@ -91,7 +86,6 @@ namespace rl {
       return value_.at(state).at(action);
     }
 
-  private:
     // Hash table to store the value function.
     std::unordered_map<StateType,
                        std::unordered_map<ActionType, double> > value_;

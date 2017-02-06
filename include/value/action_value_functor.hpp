@@ -46,8 +46,7 @@
 namespace rl {
 
   template<typename StateType, typename ActionType>
-  class ActionValueFunctor {
-  public:
+  struct ActionValueFunctor {
     virtual ~ActionValueFunctor() {}
 
     // Pure virtual method to output the value at a state after taking a

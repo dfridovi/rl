@@ -48,12 +48,12 @@
 
 #include <unordered_map>
 #include <limits>
+#include <vector>
 
 namespace rl {
 
   template<typename StateType>
-  class DiscreteStateValueFunctor : public StateValueFunctor<StateType> {
-  public:
+  struct DiscreteStateValueFunctor : public StateValueFunctor<StateType> {
     virtual ~DiscreteStateValueFunctor() {}
     explicit DiscreteStateValueFunctor()
       : StateValueFunctor<StateType>() {}
@@ -66,10 +66,17 @@ namespace rl {
       return value_.at(state);
     }
 
-  protected:
+    // Initialize all the given states to zero.
+    void Initialize(const std::vector<StateType>& states) {
+      value_.clear();
+
+      for (const auto& state : states)
+        value_.insert({state, 0.0});
+    }
+
     // Hash table to store the value function.
     std::unordered_map<StateType, double> value_;
-  }; //\class DiscreteStateValueFunctor
+  }; //\struct DiscreteStateValueFunctor
 
 }  //\namespace rl
 

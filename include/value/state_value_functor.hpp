@@ -46,7 +46,7 @@
 namespace rl {
 
   template<typename StateType>
-  class StateValueFunctor {
+  struct StateValueFunctor {
   public:
     virtual ~StateValueFunctor() {}
 
@@ -55,7 +55,7 @@ namespace rl {
 
   protected:
     explicit StateValueFunctor() {}
-  }; //\class StateValueFunctor
+  }; //\struct StateValueFunctor
 
 }  //\namespace rl
 

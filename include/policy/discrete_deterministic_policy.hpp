@@ -67,11 +67,12 @@ namespace rl {
        const DiscreteEnvironment<StateType, ActionType>& environment);
 
     // Set to the greedy policy given a state value function V or an
-    // action value function Q.
-    void SetGreedily(
+    // action value function Q. Returns the total number of changes made.
+    size_t SetGreedily(
        const DiscreteStateValueFunctor<StateType>& V,
-       const DiscreteEnvironment<StateType, ActionType>& environment);
-    void SetGreedily(
+       const DiscreteEnvironment<StateType, ActionType>& environment,
+       double discount_factor);
+    size_t SetGreedily(
        const DiscreteActionValueFunctor<StateType, ActionType>& Q);
 
     // Act deterministically at every state.
@@ -114,71 +115,89 @@ namespace rl {
     }
   }
 
-  // Set to the greedy policy given a state value function V.
+  // Set to the greedy policy given a state value function V. Returns
+  // the total number of changes made.
   template<typename StateType, typename ActionType>
-  void DiscreteDeterministicPolicy<StateType, ActionType>::SetGreedily(
+  size_t DiscreteDeterministicPolicy<StateType, ActionType>::SetGreedily(
      const DiscreteStateValueFunctor<StateType>& V,
-     const DiscreteEnvironment<StateType, ActionType>& environment) {
-    // Get a list of all the states in the environment.
-    std::vector<StateType> states;
-    environment.States(states);
-
+     const DiscreteEnvironment<StateType, ActionType>& environment,
+     double discount_factor) {
     // Iterate over all states. For each one, find the action which
     // leads to the maximum value on the next step.
+    size_t num_changes = 0;
     std::vector<ActionType> actions;
-    for (const auto& state : states) {
+    for (const auto& entry : V.value_) {
+      const StateType state = entry.first;
+      const double value = entry.second;
+
+      // Get all feasible actions.
       environment.Actions(state, actions);
 
-      // Simulate taking each action. Note that 'greedy' here means we
-      // simply maximize V(next state), not including the actual
-      // simulated reward.
+      // Flag for whether or not we have seen this state before.
+      const bool is_new_state = (policy_.count(state) == 0);
+
+      // Find best action from this state.
       double max_value = -std::numeric_limits<double>::infinity();
+      ActionType best_action;
       for (const auto& action : actions) {
         StateType next_state = state;
         const double reward = environment.Simulate(next_state, action);
+        const double value = discount_factor * V(next_state) + reward;
 
-        // Check if 'policy_' does not yet contain this state.
-        if (policy_.count(state) == 0) {
-          max_value = V(next_state);
-          policy_.insert({state, action});
-        } else {
-          // Only update existing action if value has increased.
-          if (V(next_state) > max_value) {
-            max_value = V(next_state);
-            policy_.at(state) = action;
-          }
+        // Only update existing action if value has increased.
+        if (value > max_value) {
+          max_value = value;
+          best_action = action;
         }
       }
+
+      // Handle new state separately.
+      if (is_new_state) {
+        num_changes++;
+        policy_.insert({state, best_action});
+      } else if (policy_.at(state) != best_action) {
+        num_changes++;
+        policy_.at(state) = best_action;
+      }
     }
+
+    return num_changes;
   }
 
   // Set to the greedy policy given a state-action value function Q.
+  // Returns the total number of changes made.
   template<typename StateType, typename ActionType>
-  void DiscreteDeterministicPolicy<StateType, ActionType>::SetGreedily(
+  size_t DiscreteDeterministicPolicy<StateType, ActionType>::SetGreedily(
      const DiscreteActionValueFunctor<StateType, ActionType>& Q) {
-    // Get a const refeence to the value table.
-    const std::unordered_map<StateType, std::unordered_map<ActionType, double> >
-      table = Q.ImmutableActionValueTable();
-
     // Iterate over all states.
-    for (const auto& state_entry : table) {
-      double max_value = -std::numeric_limits<double>::infinity();
+    size_t num_changes = 0;
+    for (const auto& state_entry : Q.value_) {
+      const StateType state = state_entry.first;
 
-      // Only update action if value is greater than previous max.
+      // Check if this is a new state or not.
+      const bool is_new_state = (policy_.count(state_entry.first));
+
+      // Find best action.
+      double max_value = -std::numeric_limits<double>::infinity();
+      ActionType best_action;
       for (const auto& action_entry : state_entry.second) {
-        // Catch first time we see this state.
-        if (policy_.count(state_entry.first) == 0) {
-          policy_.insert({state_entry.first, action_entry.first});
+        if (action_entry.second > max_value) {
           max_value = action_entry.second;
-        } else {
-          // Handle other actions.
-          if (action_entry.second > max_value) {
-            policy_.at(state_entry.first) = action_entry.first;
-            max_value = action_entry.second;
-          }
+          best_action = action_entry.first;
         }
       }
+
+      // Handle new state separately.
+      if (is_new_state) {
+        num_changes++;
+        policy_.insert({state, best_action});
+      } else if (policy_.at(state) != best_action) {
+        num_changes++;
+        policy_.at(state) = best_action;
+      }
     }
+
+    return num_changes;
   }
 
   // Act deterministically at every state.
