@@ -70,6 +70,9 @@ GridWorld* world = NULL;
 GridState* current_state = NULL;
 GridState* goal_state = NULL;
 
+// History of past states.
+std::vector<GridState> history;
+
 // Create a solver.
 ModifiedPolicyIteration<GridState, GridAction>* solver = NULL;
 
@@ -153,6 +156,9 @@ void SingleIteration() {
 
   // Only move if not in the goal state.
   if (*current_state != *goal_state) {
+    const GridState copy_state(current_state->ii_, current_state->jj_);
+    history.push_back(copy_state);
+
     // Get optimal action.
     GridAction action;
     policy.Act(*current_state, action);
@@ -186,6 +192,23 @@ void SingleIteration() {
   }
   glEnd();
 
+  // Draw all previous states in a different color.
+  for (const auto& state : history) {
+    const GLfloat past_x = static_cast<GLfloat>(state.jj_) + 0.5;
+    const GLfloat past_y =
+      static_cast<GLfloat>(FLAGS_num_rows - state.ii_) - 0.5;
+
+    glBegin(GL_POLYGON);
+    glColor4f(0.0, 0.8, 0.2, 0.5);
+    for (size_t ii = 0; ii < kNumVertices; ii++) {
+      const GLfloat angle = 2.0 * M_PI *
+        static_cast<GLfloat>(ii) / static_cast<GLfloat>(kNumVertices);
+      glVertex2f(past_x + kRadius * cos(angle),
+                 past_y + kRadius * sin(angle));
+    }
+    glEnd();
+  }
+
   // Swap buffers.
   glutSwapBuffers();
 }
@@ -201,8 +224,8 @@ int main(int argc, char** argv) {
   CHECK_GE(FLAGS_num_cols, 1);
 
   // Create initial and goal states at opposite corners.
-  current_state = new GridState(0, 0);
   goal_state = new GridState(FLAGS_num_rows - 1, FLAGS_num_cols - 1);
+  current_state = new GridState(0, 0);
 
   // Set up grid world.
   world = new GridWorld(FLAGS_num_rows, FLAGS_num_cols, *goal_state);
