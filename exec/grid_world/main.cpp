@@ -37,6 +37,7 @@
 #include <environment/grid_world.hpp>
 #include <environment/grid_action.hpp>
 #include <environment/grid_state.hpp>
+#include <solver/modified_policy_iteration.hpp>
 #include <util/types.h>
 
 #include <glog/logging.h>
@@ -53,19 +54,27 @@
 #include <GL/glut.h>
 #endif
 
+using namespace rl;
+
 DEFINE_int32(refresh_rate, 1000, "Refresh rate in milliseconds.");
-DEFINE_bool(iterate_forever, false, "Iterate ad inifinitum?");
-DEFINE_int32(num_iterations, 10, "Number of iterations to run exploration.");
+DEFINE_int32(num_value_updates, 1,
+             "Number of value updates per policy iteration.");
+DEFINE_int32(max_iterations, 10,
+             "Maximum umber of iterations to run modified policy iteration.");
+DEFINE_double(discount_factor, 0.9, "Discount factor.");
 DEFINE_int32(num_rows, 5, "Number of rows in the grid.");
 DEFINE_int32(num_cols, 5, "Number of columns in the grid.");
 
 // Create a globally-defined GridWorld, as well as current and goal states.
-rl::GridWorld* world = NULL;
-rl::GridState* current_state = NULL;
-rl::GridState* goal_state = NULL;
+GridWorld* world = NULL;
+GridState* current_state = NULL;
+GridState* goal_state = NULL;
 
-// Create a globally-defined step counter.
-unsigned int step_count = 0;
+// Create a solver.
+ModifiedPolicyIteration<GridState, GridAction>* solver = NULL;
+
+// Step counter.
+size_t step_counter = 0;
 
 // Initialize OpenGL.
 void InitGL() {
@@ -135,16 +144,24 @@ void SingleIteration() {
   CHECK_NOTNULL(world);
   CHECK_NOTNULL(current_state);
   CHECK_NOTNULL(goal_state);
+  CHECK_NOTNULL(solver);
 
-  // Take an action if not in terminal state or have steps left.
-  if (*current_state != *goal_state &&
-      (FLAGS_iterate_forever || step_count < FLAGS_num_iterations)) {
-    // Pick random actions until one is feasible.
-    while (world->Simulate(*current_state, rl::GridAction()) ==
-           rl::kInvalidReward);
+  // Extract optimal policy and value function.
+  const DiscreteDeterministicPolicy<GridState, GridAction> policy =
+    solver->Policy();
+  const DiscreteStateValueFunctor<GridState> value = solver->Value();
 
-    // Increment step counter.
-    step_count++;
+  // Only move if not in the goal state.
+  if (*current_state != *goal_state) {
+    // Get optimal action.
+    GridAction action;
+    policy.Act(*current_state, action);
+
+    // Simulate this action.
+    const double reward = world->Simulate(*current_state, action);
+
+    // Print out step counter and reward.
+    std::printf("Received reward of %f on step %zu.\n", reward, ++step_counter);
   }
 
   // Visualize no matter what.
@@ -209,26 +226,37 @@ int main(int argc, char** argv) {
   CHECK_GE(FLAGS_num_cols, 1);
 
   // Create initial and goal states at opposite corners.
-  current_state = new rl::GridState(0, 0);
-  goal_state = new rl::GridState(FLAGS_num_rows - 1, FLAGS_num_cols - 1);
+  current_state = new GridState(0, 0);
+  goal_state = new GridState(FLAGS_num_rows - 1, FLAGS_num_cols - 1);
 
   // Set up grid world.
-  world = new rl::GridWorld(FLAGS_num_rows, FLAGS_num_cols, *goal_state);
+  world = new GridWorld(FLAGS_num_rows, FLAGS_num_cols, *goal_state);
 
-  // Set up OpenGL window.
-  glutInit(&argc, argv);
-  glutInitDisplayMode(GLUT_DOUBLE);
-  glutInitWindowSize(320, 320);
-  glutInitWindowPosition(50, 50);
-  glutCreateWindow("Grid World");
-  glutDisplayFunc(SingleIteration);
-  glutReshapeFunc(Reshape);
-  glutTimerFunc(0, Timer, 0);
-  InitGL();
-  glutMainLoop();
+  // Set up the solver.
+  solver = new ModifiedPolicyIteration<GridState, GridAction>(
+     FLAGS_num_value_updates, FLAGS_max_iterations, FLAGS_discount_factor);
+
+  if (solver->Solve(*world)) {
+    // Set up OpenGL window.
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_DOUBLE);
+    glutInitWindowSize(320, 320);
+    glutInitWindowPosition(50, 50);
+    glutCreateWindow("Grid World");
+    glutDisplayFunc(SingleIteration);
+    glutReshapeFunc(Reshape);
+    glutTimerFunc(0, Timer, 0);
+    InitGL();
+    glutMainLoop();
+
+    delete world;
+    delete current_state;
+    delete goal_state;
+    return 0;
+  }
 
   delete world;
   delete current_state;
   delete goal_state;
-  return 0;
+  return 1;
 }

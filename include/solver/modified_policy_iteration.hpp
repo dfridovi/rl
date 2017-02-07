@@ -69,6 +69,15 @@ namespace rl {
     // iteration reached convergence.
     bool Solve(const DiscreteEnvironment<StateType, ActionType>& environment);
 
+    // Get a const reference to the policy and value function.
+    const DiscreteDeterministicPolicy<StateType, ActionType>& Policy() const {
+      return policy_;
+    }
+
+    const DiscreteStateValueFunctor<StateType>& Value() const {
+      return value_;
+    }
+
   private:
     // Update policy to be greedy with respect to the current state
     // value function. Returns the total number of changes made; when this
