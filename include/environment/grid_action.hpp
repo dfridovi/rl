@@ -44,12 +44,16 @@
 #define RL_ENVIRONMENT_GRID_ACTION_H
 
 #include <random>
+#include <algorithm>
 
 namespace rl {
 
   struct GridAction {
   public:
     enum Direction {UP, DOWN, LEFT, RIGHT};
+
+    // Public member variable.
+    Direction direction_;
 
     // Constructor/destructor. Default constructor generates a random action.
     // If a direction is provided, it is set.
@@ -59,7 +63,7 @@ namespace rl {
     GridAction(Direction direction)
       : direction_(direction) {}
 
-    // Define the boolean equality operator.
+    // Define the boolean (in)equality operators.
     bool operator==(const GridAction& rhs) const {
       return direction_ == rhs.direction_;
     }
@@ -68,15 +72,26 @@ namespace rl {
       return direction_ == rhs;
     }
 
-    // Public member variable.
-    Direction direction_;
+    bool operator!=(const GridAction& rhs) const {
+      return direction_ != rhs.direction_;
+    }
+
+    bool operator!=(GridAction::Direction rhs) const {
+      return direction_ != rhs;
+    }
+
+    // Hash functor.
+    struct Hash {
+      size_t operator()(const GridAction& action) const {
+        return std::hash<size_t>()(static_cast<size_t>(action.direction_));
+      }
+    }; //\struct Hash
 
   private:
     // Static random number generator.
     static std::random_device rd_;
     static std::default_random_engine rng_;
     static std::uniform_int_distribution<size_t> unif_;
-
   }; //\struct GridAction
 
 }  //\namespace rl

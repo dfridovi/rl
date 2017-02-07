@@ -143,6 +143,7 @@ namespace rl {
   size_t ModifiedPolicyIteration<StateType, ActionType>::UpdateValueFunction(
      const DiscreteEnvironment<StateType, ActionType>& environment) {
     // Iterate over all states.
+    size_t num_changes = 0;
     for (const auto& entry : value_.value_) {
       StateType next_state = entry.first;
       ActionType action;
@@ -150,11 +151,16 @@ namespace rl {
 
       // Simulate this action.
       const double reward = environment.Simulate(next_state, action);
+      const double next_value = value_(next_state) * discount_factor_ + reward;
+
+      if (std::abs(entry.second - next_value) > 1e-8)
+        num_changes++;
 
       // Update the value at this state.
-      value_.value_.at(entry.first) =
-        value_(next_state) * discount_factor_ + reward;
+      value_.value_.at(entry.first) = next_value;
     }
+
+    return num_changes;
   }
 
 }  //\namespace rl

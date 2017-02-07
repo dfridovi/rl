@@ -86,9 +86,12 @@ namespace rl {
       return value_.at(state).at(action);
     }
 
-    // Hash table to store the value function.
-    std::unordered_map<StateType,
-                       std::unordered_map<ActionType, double> > value_;
+    // Hash table to store the value function. Both StateType and ActionType
+    // must implement their own 'Hash' functors.
+    std::unordered_map<
+      StateType,
+      std::unordered_map<ActionType, double, typename ActionType::Hash>,
+      typename StateType::Hash> value_;
   }; //\class DiscreteStateValueFunctor
 
 }  //\namespace rl

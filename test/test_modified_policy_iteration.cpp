@@ -69,5 +69,5 @@ TEST(ModifiedPolicyIteration, TestConvergence) {
   const GridWorld world(kNumRows, kNumCols, goal);
 
   // Solve.
-  EXPECT(solver.Solve(world));
+  EXPECT_TRUE(solver.Solve(world));
 }

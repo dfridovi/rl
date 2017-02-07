@@ -79,8 +79,9 @@ namespace rl {
     bool Act(const StateType& state, ActionType& action) const;
 
   private:
-    // Hash table to map states to actions.
-    std::unordered_map<StateType, ActionType> policy_;
+    // Hash table to map states to actions. All StateTypes must implement
+    // their own 'Hash' functors.
+    std::unordered_map<StateType, ActionType, typename StateType::Hash> policy_;
   }; //\class DiscreteDeterministicPolicy
 
 // ---------------------------- IMPLEMENTATION ------------------------------ //

@@ -43,26 +43,40 @@
 #ifndef RL_ENVIRONMENT_GRID_STATE_H
 #define RL_ENVIRONMENT_GRID_STATE_H
 
+#include <boost/functional/hash.hpp>
 #include <stddef.h>
 
 namespace rl {
 
   struct GridState {
+    // Position.
+    size_t ii_;
+    size_t jj_;
+
+    // Constructor/destructor.
     ~GridState() {}
     GridState(size_t ii, size_t jj)
       : ii_(ii), jj_(jj) {}
 
     // (In)equality operators.
-    bool operator==(const GridState& rhs) {
+    bool operator==(const GridState& rhs) const {
       return ii_ == rhs.ii_ && jj_ == rhs.jj_;
     }
 
-    bool operator!=(const GridState& rhs) {
+    bool operator!=(const GridState& rhs) const {
       return ii_ != rhs.ii_ || jj_ != rhs.jj_;
     }
 
-    size_t ii_;
-    size_t jj_;
+    // Hash functor.
+    struct Hash {
+      size_t operator()(const GridState& state) const {
+        size_t seed = 0;
+        boost::hash_combine(seed, boost::hash_value(state.ii_));
+        boost::hash_combine(seed, boost::hash_value(state.jj_));
+
+        return seed;
+      }
+    }; //\struct Hash
   }; //\struct GridState
 
 }  //\namespace rl

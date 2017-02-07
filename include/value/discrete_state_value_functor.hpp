@@ -75,7 +75,7 @@ namespace rl {
     }
 
     // Hash table to store the value function.
-    std::unordered_map<StateType, double> value_;
+    std::unordered_map<StateType, double, typename StateType::Hash> value_;
   }; //\struct DiscreteStateValueFunctor
 
 }  //\namespace rl
