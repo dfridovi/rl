@@ -3,17 +3,26 @@
 Inheritance diagram for rl\+:\+:Grid\+World\+:\begin{figure}[H]
 \begin{center}
 \leavevmode
-\includegraphics[height=2.000000cm]{classrl_1_1_grid_world}
+\includegraphics[height=3.000000cm]{classrl_1_1_grid_world}
 \end{center}
 \end{figure}
 \subsection*{Public Member Functions}
 \begin{DoxyCompactItemize}
 \item 
-\hypertarget{classrl_1_1_grid_world_aa42ce8a5c29a05da15a0326a35f76c4a}{}\label{classrl_1_1_grid_world_aa42ce8a5c29a05da15a0326a35f76c4a} 
-{\bfseries Grid\+World} (size\+\_\+t nrows, size\+\_\+t ncols)
+\hypertarget{classrl_1_1_grid_world_a5b67dffbc875e7c3bbc0ad777fd3f4bf}{}\label{classrl_1_1_grid_world_a5b67dffbc875e7c3bbc0ad777fd3f4bf} 
+{\bfseries Grid\+World} (size\+\_\+t nrows, size\+\_\+t ncols, const \hyperlink{structrl_1_1_grid_state}{Grid\+State} \&goal)
 \item 
-\hypertarget{classrl_1_1_grid_world_ace712ef8fce35ad553a8e0316e4ec917}{}\label{classrl_1_1_grid_world_ace712ef8fce35ad553a8e0316e4ec917} 
-virtual bool {\bfseries Simulate} (\hyperlink{structrl_1_1_grid_state}{Grid\+State} \&state, const \hyperlink{structrl_1_1_grid_action}{Grid\+Action} \&action) const
+\hypertarget{classrl_1_1_grid_world_a158de44c9973c96999db6984ff32142c}{}\label{classrl_1_1_grid_world_a158de44c9973c96999db6984ff32142c} 
+virtual double {\bfseries Simulate} (\hyperlink{structrl_1_1_grid_state}{Grid\+State} \&state, const \hyperlink{structrl_1_1_grid_action}{Grid\+Action} \&action) const
+\item 
+\hypertarget{classrl_1_1_grid_world_a7ba442cfab266d2521750383e6cea98b}{}\label{classrl_1_1_grid_world_a7ba442cfab266d2521750383e6cea98b} 
+virtual void {\bfseries States} (std\+::vector$<$ \hyperlink{structrl_1_1_grid_state}{Grid\+State} $>$ \&states) const
+\item 
+\hypertarget{classrl_1_1_grid_world_a510ef01ace9b62b77eef272dc62f67ae}{}\label{classrl_1_1_grid_world_a510ef01ace9b62b77eef272dc62f67ae} 
+virtual void {\bfseries Actions} (const \hyperlink{structrl_1_1_grid_state}{Grid\+State} \&state, std\+::vector$<$ \hyperlink{structrl_1_1_grid_action}{Grid\+Action} $>$ \&actions) const
+\item 
+\hypertarget{classrl_1_1_grid_world_a38e94429ceff827a645410210aded137}{}\label{classrl_1_1_grid_world_a38e94429ceff827a645410210aded137} 
+virtual void {\bfseries Visualize} () const
 \end{DoxyCompactItemize}
 \subsection*{Protected Attributes}
 \begin{DoxyCompactItemize}
@@ -23,13 +32,16 @@ const size\+\_\+t {\bfseries nrows\+\_\+}
 \item 
 \hypertarget{classrl_1_1_grid_world_a42a1de550277a88ed5f2ed5ca2440c22}{}\label{classrl_1_1_grid_world_a42a1de550277a88ed5f2ed5ca2440c22} 
 const size\+\_\+t {\bfseries ncols\+\_\+}
+\item 
+\hypertarget{classrl_1_1_grid_world_a0ddd4ee28669bb9c3033001bb23e4380}{}\label{classrl_1_1_grid_world_a0ddd4ee28669bb9c3033001bb23e4380} 
+const \hyperlink{structrl_1_1_grid_state}{Grid\+State} {\bfseries goal\+\_\+}
 \end{DoxyCompactItemize}
 
 
 \subsection{Detailed Description}
 
 
-Definition at line 54 of file grid\+\_\+world.\+hpp.
+Definition at line 62 of file grid\+\_\+world.\+hpp.
 
 
 

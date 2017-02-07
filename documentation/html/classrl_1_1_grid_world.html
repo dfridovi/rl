@@ -77,18 +77,28 @@ Inheritance diagram for rl::GridWorld:</div>
  <div class="center">
   <img src="classrl_1_1_grid_world.png" usemap="#rl::GridWorld_map" alt=""/>
   <map id="rl::GridWorld_map" name="rl::GridWorld_map">
-<area href="classrl_1_1_environment.html" alt="rl::Environment&lt; GridState, GridAction &gt;" shape="rect" coords="0,0,241,24"/>
+<area href="classrl_1_1_discrete_environment.html" alt="rl::DiscreteEnvironment&lt; GridState, GridAction &gt;" shape="rect" coords="0,56,288,80"/>
+<area href="classrl_1_1_environment.html" alt="rl::Environment&lt; GridState, GridAction &gt;" shape="rect" coords="0,0,288,24"/>
 </map>
  </div></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:aa42ce8a5c29a05da15a0326a35f76c4a"><td class="memItemLeft" align="right" valign="top"><a id="aa42ce8a5c29a05da15a0326a35f76c4a"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>GridWorld</b> (size_t nrows, size_t ncols)</td></tr>
-<tr class="separator:aa42ce8a5c29a05da15a0326a35f76c4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ace712ef8fce35ad553a8e0316e4ec917"><td class="memItemLeft" align="right" valign="top"><a id="ace712ef8fce35ad553a8e0316e4ec917"></a>
-virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>Simulate</b> (<a class="el" href="structrl_1_1_grid_state.html">GridState</a> &amp;state, const <a class="el" href="structrl_1_1_grid_action.html">GridAction</a> &amp;action) const</td></tr>
-<tr class="separator:ace712ef8fce35ad553a8e0316e4ec917"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5b67dffbc875e7c3bbc0ad777fd3f4bf"><td class="memItemLeft" align="right" valign="top"><a id="a5b67dffbc875e7c3bbc0ad777fd3f4bf"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>GridWorld</b> (size_t nrows, size_t ncols, const <a class="el" href="structrl_1_1_grid_state.html">GridState</a> &amp;goal)</td></tr>
+<tr class="separator:a5b67dffbc875e7c3bbc0ad777fd3f4bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a158de44c9973c96999db6984ff32142c"><td class="memItemLeft" align="right" valign="top"><a id="a158de44c9973c96999db6984ff32142c"></a>
+virtual double&#160;</td><td class="memItemRight" valign="bottom"><b>Simulate</b> (<a class="el" href="structrl_1_1_grid_state.html">GridState</a> &amp;state, const <a class="el" href="structrl_1_1_grid_action.html">GridAction</a> &amp;action) const</td></tr>
+<tr class="separator:a158de44c9973c96999db6984ff32142c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7ba442cfab266d2521750383e6cea98b"><td class="memItemLeft" align="right" valign="top"><a id="a7ba442cfab266d2521750383e6cea98b"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>States</b> (std::vector&lt; <a class="el" href="structrl_1_1_grid_state.html">GridState</a> &gt; &amp;states) const</td></tr>
+<tr class="separator:a7ba442cfab266d2521750383e6cea98b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a510ef01ace9b62b77eef272dc62f67ae"><td class="memItemLeft" align="right" valign="top"><a id="a510ef01ace9b62b77eef272dc62f67ae"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>Actions</b> (const <a class="el" href="structrl_1_1_grid_state.html">GridState</a> &amp;state, std::vector&lt; <a class="el" href="structrl_1_1_grid_action.html">GridAction</a> &gt; &amp;actions) const</td></tr>
+<tr class="separator:a510ef01ace9b62b77eef272dc62f67ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a38e94429ceff827a645410210aded137"><td class="memItemLeft" align="right" valign="top"><a id="a38e94429ceff827a645410210aded137"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>Visualize</b> () const</td></tr>
+<tr class="separator:a38e94429ceff827a645410210aded137"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
@@ -98,10 +108,13 @@ const size_t&#160;</td><td class="memItemRight" valign="bottom"><b>nrows_</b></t
 <tr class="memitem:a42a1de550277a88ed5f2ed5ca2440c22"><td class="memItemLeft" align="right" valign="top"><a id="a42a1de550277a88ed5f2ed5ca2440c22"></a>
 const size_t&#160;</td><td class="memItemRight" valign="bottom"><b>ncols_</b></td></tr>
 <tr class="separator:a42a1de550277a88ed5f2ed5ca2440c22"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0ddd4ee28669bb9c3033001bb23e4380"><td class="memItemLeft" align="right" valign="top"><a id="a0ddd4ee28669bb9c3033001bb23e4380"></a>
+const <a class="el" href="structrl_1_1_grid_state.html">GridState</a>&#160;</td><td class="memItemRight" valign="bottom"><b>goal_</b></td></tr>
+<tr class="separator:a0ddd4ee28669bb9c3033001bb23e4380"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock">
-<p>Definition at line <a class="el" href="grid__world_8hpp_source.html#l00054">54</a> of file <a class="el" href="grid__world_8hpp_source.html">grid_world.hpp</a>.</p>
+<p>Definition at line <a class="el" href="grid__world_8hpp_source.html#l00062">62</a> of file <a class="el" href="grid__world_8hpp_source.html">grid_world.hpp</a>.</p>
 </div><hr/>The documentation for this class was generated from the following files:<ul>
 <li>/Users/davidfridovichkeil/Documents/Developer/rl/include/environment/<a class="el" href="grid__world_8hpp_source.html">grid_world.hpp</a></li>
 <li>/Users/davidfridovichkeil/Documents/Developer/rl/src/environment/<a class="el" href="grid__world_8cpp_source.html">grid_world.cpp</a></li>
