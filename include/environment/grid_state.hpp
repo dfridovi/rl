@@ -45,6 +45,15 @@
 
 #include <boost/functional/hash.hpp>
 #include <stddef.h>
+#include <math.h>
+
+#ifdef SYSTEM_OSX
+#include <GLUT/glut.h>
+#endif
+
+#ifdef SYSTEM_LINUX
+#include <GL/glut.h>
+#endif
 
 namespace rl {
 
@@ -65,6 +74,27 @@ namespace rl {
 
     bool operator!=(const GridState& rhs) const {
       return ii_ != rhs.ii_ || jj_ != rhs.jj_;
+    }
+
+    // OpenGL visualization.
+    void Visualize(size_t num_rows, double radius,
+                   double r, double g, double b, double a) const {
+      const size_t kNumVertices = 100;
+
+      // Extract current position on xy plane.
+      const GLfloat current_x = static_cast<GLfloat>(jj_) + 0.5;
+      const GLfloat current_y =
+        static_cast<GLfloat>(num_rows - ii_) - 0.5;
+
+      glBegin(GL_POLYGON);
+      glColor4f(r, g, b, a);
+      for (size_t ii = 0; ii < kNumVertices; ii++) {
+        const GLfloat angle = 2.0 * M_PI *
+          static_cast<GLfloat>(ii) / static_cast<GLfloat>(kNumVertices);
+        glVertex2f(current_x + radius * cos(angle),
+                   current_y + radius * sin(angle));
+      }
+      glEnd();
     }
 
     // Hash functor.

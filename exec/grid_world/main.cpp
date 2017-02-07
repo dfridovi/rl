@@ -175,39 +175,13 @@ void SingleIteration() {
 
   // Draw the current state as a circle (polygon with a ton of sides).
   const GLfloat kEpsilon = 0.02;
-  const GLfloat current_x = static_cast<GLfloat>(current_state->jj_) + 0.5;
-  const GLfloat current_y =
-    static_cast<GLfloat>(FLAGS_num_rows - current_state->ii_) - 0.5;
-
-  const size_t kNumVertices = 100;
   const GLfloat kRadius = 0.5 - kEpsilon;
 
-  glBegin(GL_POLYGON);
-  glColor4f(0.0, 0.2, 0.8, 0.5);
-  for (size_t ii = 0; ii < kNumVertices; ii++) {
-    const GLfloat angle = 2.0 * M_PI *
-      static_cast<GLfloat>(ii) / static_cast<GLfloat>(kNumVertices);
-    glVertex2f(current_x + kRadius * cos(angle),
-               current_y + kRadius * sin(angle));
-  }
-  glEnd();
+  current_state->Visualize(FLAGS_num_rows, kRadius, 0.0, 0.2, 0.8, 0.5);
 
   // Draw all previous states in a different color.
-  for (const auto& state : history) {
-    const GLfloat past_x = static_cast<GLfloat>(state.jj_) + 0.5;
-    const GLfloat past_y =
-      static_cast<GLfloat>(FLAGS_num_rows - state.ii_) - 0.5;
-
-    glBegin(GL_POLYGON);
-    glColor4f(0.0, 0.8, 0.2, 0.5);
-    for (size_t ii = 0; ii < kNumVertices; ii++) {
-      const GLfloat angle = 2.0 * M_PI *
-        static_cast<GLfloat>(ii) / static_cast<GLfloat>(kNumVertices);
-      glVertex2f(past_x + kRadius * cos(angle),
-                 past_y + kRadius * sin(angle));
-    }
-    glEnd();
-  }
+  for (const auto& state : history)
+    state.Visualize(FLAGS_num_rows, kRadius, 0.0, 0.8, 0.2, 0.5);
 
   // Swap buffers.
   glutSwapBuffers();
