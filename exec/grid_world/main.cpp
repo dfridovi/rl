@@ -139,7 +139,7 @@ void SingleIteration() {
   // Take an action if not in terminal state or have steps left.
   if (*current_state != *goal_state &&
       (FLAGS_iterate_forever || step_count < FLAGS_num_iterations)) {
-    // Pick a random action.
+    // Pick random actions until one is feasible.
     while (world->Simulate(*current_state, rl::GridAction()) ==
            rl::kInvalidReward);
 

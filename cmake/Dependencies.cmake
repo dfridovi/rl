@@ -27,3 +27,8 @@ list(APPEND rl_LIBRARIES ${OPENGL_LIBRARIES})
 find_package( GLUT REQUIRED )
 include_directories(SYSTEM ${GLUT_INCLUDE_DIRS})
 list(APPEND rl_LIBRARIES ${GLUT_LIBRARIES})
+
+# Find Boost functional module.
+find_package( Boost REQUIRED )
+include_directories(SYSTEM ${BOOST_INCLUDE_DIRS})
+list(APPEND rl_LIBRARIES ${BOOST_LIBRARIES})
