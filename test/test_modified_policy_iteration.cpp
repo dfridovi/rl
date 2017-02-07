@@ -71,3 +71,36 @@ TEST(ModifiedPolicyIteration, TestConvergence) {
   // Solve.
   EXPECT_TRUE(solver.Solve(world));
 }
+
+// Test that the iteration converges to the right answer within a
+// reasonable number of steps for a very small example grid world.
+TEST(ModifiedPolicyIteration, TestConvergenceToOptimum) {
+  const size_t kNumValueUpdates = 1;
+  const size_t kMaxIterations = 20;
+  const double kDiscountFactor = 0.9;
+
+  // Create a solver.
+  ModifiedPolicyIteration<GridState, GridAction> solver(kNumValueUpdates,
+                                                        kMaxIterations,
+                                                        kDiscountFactor);
+
+  // Create an environment.
+  const size_t kNumRows = 1;
+  const size_t kNumCols = 5;
+  const GridState goal(kNumRows - 1, kNumCols - 1);
+
+  const GridWorld world(kNumRows, kNumCols, goal);
+
+  // Solve.
+  EXPECT_TRUE(solver.Solve(world));
+
+  // Check that we converged to the right policy.
+  const DiscreteDeterministicPolicy<GridState, GridAction> policy =
+    solver.Policy();
+
+  for (size_t jj = 0; jj < kNumCols - 1; jj++) {
+    GridAction action;
+    EXPECT_TRUE(policy.Act(GridState(0, jj), action));
+    EXPECT_EQ(action, GridAction(GridAction::Direction::RIGHT));
+  }
+}

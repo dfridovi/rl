@@ -165,35 +165,10 @@ void SingleIteration() {
   }
 
   // Visualize no matter what.
-  glClear(GL_COLOR_BUFFER_BIT);
-  const GLfloat kEpsilon = 0.02;
-
-  // Display each grid cell as a GL_QUAD, centered at the appropriate
-  // location, with a small 'epsilon' fudge factor between cells. Color
-  // the goal state red.
-  glBegin(GL_QUADS);
-  for (size_t ii = 0; ii < FLAGS_num_rows; ii++) {
-    for (size_t jj = 0; jj < FLAGS_num_cols; jj++) {
-      // Check for goal state.
-      if (ii == goal_state->ii_ && jj == goal_state->jj_)
-        glColor4f(0.8, 0.0, 0.2, 0.9);
-      else
-        glColor4f(0.9, 0.9, 0.9, 0.9);
-
-      // Convert to top left x, y coords.
-      const GLfloat x = static_cast<GLfloat>(jj);
-      const GLfloat y = static_cast<GLfloat>(FLAGS_num_rows - ii);
-
-      // Bottom left, bottom right, top right, top left.
-      glVertex2f(x + kEpsilon, y - 1.0 + kEpsilon);
-      glVertex2f(x + 1.0 - kEpsilon, y - 1.0 + kEpsilon);
-      glVertex2f(x + 1.0 - kEpsilon, y - kEpsilon);
-      glVertex2f(x + kEpsilon, y - kEpsilon);
-    }
-  }
-  glEnd();
+  world->Visualize();
 
   // Draw the current state as a circle (polygon with a ton of sides).
+  const GLfloat kEpsilon = 0.02;
   const GLfloat current_x = static_cast<GLfloat>(current_state->jj_) + 0.5;
   const GLfloat current_y =
     static_cast<GLfloat>(FLAGS_num_rows - current_state->ii_) - 0.5;

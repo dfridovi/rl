@@ -49,6 +49,14 @@
 
 #include <stddef.h>
 
+#ifdef SYSTEM_OSX
+#include <GLUT/glut.h>
+#endif
+
+#ifdef SYSTEM_LINUX
+#include <GL/glut.h>
+#endif
+
 namespace rl {
 
   class GridWorld : public DiscreteEnvironment<GridState, GridAction> {
@@ -67,6 +75,8 @@ namespace rl {
     virtual void Actions(const GridState& state,
                          std::vector<GridAction>& actions) const;
 
+    // Visualize using OpenGL.
+    virtual void Visualize() const;
 
   protected:
     // Dimensions.

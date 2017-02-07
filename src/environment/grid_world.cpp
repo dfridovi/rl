@@ -133,4 +133,35 @@ namespace rl {
     }
   }
 
+  // Visualize using OpenGL.
+  void GridWorld::Visualize() const {
+    glClear(GL_COLOR_BUFFER_BIT);
+    const GLfloat kEpsilon = 0.02;
+
+    // Display each grid cell as a GL_QUAD, centered at the appropriate
+    // location, with a small 'epsilon' fudge factor between cells. Color
+    // the goal state red.
+    glBegin(GL_QUADS);
+    for (size_t ii = 0; ii < nrows_; ii++) {
+      for (size_t jj = 0; jj < ncols_; jj++) {
+        // Check for goal state.
+        if (ii == goal_.ii_ && jj == goal_.jj_)
+          glColor4f(0.8, 0.0, 0.2, 0.9);
+        else
+          glColor4f(0.9, 0.9, 0.9, 0.9);
+
+        // Convert to top left x, y coords.
+        const GLfloat x = static_cast<GLfloat>(jj);
+        const GLfloat y = static_cast<GLfloat>(nrows_ - ii);
+
+        // Bottom left, bottom right, top right, top left.
+        glVertex2f(x + kEpsilon, y - 1.0 + kEpsilon);
+        glVertex2f(x + 1.0 - kEpsilon, y - 1.0 + kEpsilon);
+        glVertex2f(x + 1.0 - kEpsilon, y - kEpsilon);
+        glVertex2f(x + kEpsilon, y - kEpsilon);
+      }
+    }
+    glEnd();
+  }
+
 }  //\namespace rl
