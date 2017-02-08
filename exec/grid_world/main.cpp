@@ -59,7 +59,7 @@ using namespace rl;
 DEFINE_int32(refresh_rate, 1000, "Refresh rate in milliseconds.");
 DEFINE_int32(num_value_updates, 1,
              "Number of value updates per policy iteration.");
-DEFINE_int32(max_iterations, 10,
+DEFINE_int32(max_iterations, 100,
              "Maximum umber of iterations to run modified policy iteration.");
 DEFINE_double(discount_factor, 0.9, "Discount factor.");
 DEFINE_int32(num_rows, 5, "Number of rows in the grid.");
@@ -226,6 +226,8 @@ int main(int argc, char** argv) {
     delete goal_state;
     return 0;
   }
+
+  std::printf("Solver did not converge.\n");
 
   delete world;
   delete current_state;
