@@ -113,32 +113,22 @@ void Reshape(GLsizei width, GLsizei height) {
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
 
-  if (width >= height) {
-    // Larger window width than height.
-    if (kGridRatio >= kWindowRatio) {
-      // Grid is wider than window.
-      gluOrtho2D(0.0, static_cast<GLfloat>(FLAGS_num_rows),
-                 0.0, (static_cast<GLfloat>(FLAGS_num_cols) *
-                       kGridRatio / kWindowRatio));
-    } else {
-      // Window is wider than grid.
-      gluOrtho2D(0.0, (static_cast<GLfloat>(FLAGS_num_rows) *
-                       kWindowRatio / kGridRatio),
-                 0.0, static_cast<GLfloat>(FLAGS_num_cols));
-    }
-  } else {
-    // Larger height than width.
-    if (kGridRatio <= kWindowRatio) {
-      // Grid is narrower than window.
-      gluOrtho2D(0.0, (static_cast<GLfloat>(FLAGS_num_rows) *
-                       kWindowRatio / kGridRatio),
-                 0.0, static_cast<GLfloat>(FLAGS_num_cols));
-    } else {
-      // Window is narrower than grid.
-      gluOrtho2D(0.0, static_cast<GLfloat>(FLAGS_num_rows),
-                 0.0, (static_cast<GLfloat>(FLAGS_num_cols) *
-                       kGridRatio / kWindowRatio));
-    }
+  // One of two possibilities:
+  // (1) x_max = FLAGS_num_cols, y_max = height/width * FLAGS_num_cols
+  //     is valid if y_max >= FLAGS_num_rows, otherwise
+  // (2) y_max = FLAGS_num_rows, x_max = width/height * FLAGS_num_rows
+  //     which is valid if x_max >= FLAGS_num_cols.
+
+  // Try (1).
+  const GLfloat y_max = static_cast<GLfloat>(FLAGS_num_cols) / kWindowRatio;
+  if (y_max >= static_cast<GLfloat>(FLAGS_num_rows))
+    gluOrtho2D(0.0, static_cast<GLfloat>(FLAGS_num_cols), 0.0, y_max);
+  else {
+    // Try (2).
+    const GLfloat x_max = kWindowRatio * static_cast<GLfloat>(FLAGS_num_rows);
+    CHECK_GE(x_max, static_cast<GLfloat>(FLAGS_num_cols));
+
+    gluOrtho2D(0.0, x_max, 0.0, static_cast<GLfloat>(FLAGS_num_rows));
   }
 }
 
