@@ -94,6 +94,37 @@ namespace rl {
     return reward;
   }
 
+  // Implement pure virtual method to return whether or not an action is
+  // valid in a given state.
+  bool GridWorld::IsValid(const GridState& state,
+                          const GridAction& action) const {
+    switch (action.direction_) {
+    case GridAction::Direction::UP :
+      if (state.ii_ > 0)
+        return true;
+      break;
+    case GridAction::Direction::DOWN :
+      if (state.ii_ < nrows_ - 1)
+        return true;
+      break;
+    case GridAction::Direction::LEFT :
+      if (state.jj_ > 0)
+        return true;
+      break;
+    case GridAction::Direction::RIGHT :
+      if (state.jj_ < ncols_ - 1)
+        return true;
+      break;
+    default :
+      // Should never get here.
+      LOG(ERROR) << "GridWorld: Error. Invalid action direction.";
+      return false;
+    }
+
+    return false;
+  }
+
+
   // Implement pure virtual methods to enumerate all states, and all actions
   // from a given state.
   void GridWorld::States(std::vector<GridState>& states) const {

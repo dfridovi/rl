@@ -69,6 +69,11 @@ namespace rl {
     // randomness, or other biases).
     virtual double Simulate(GridState& state, const GridAction& action) const;
 
+    // Implement pure virtual method to return whether or not an action is
+    // valid in a given state.
+    virtual bool IsValid(const GridState& state,
+                         const GridAction& action) const;
+
     // Implement pure virtual methods to enumerate all states, and all actions
     // from a given state.
     virtual void States(std::vector<GridState>& states) const;

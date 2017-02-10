@@ -59,6 +59,11 @@ namespace rl {
     virtual double Simulate(StateType& state,
                             const ActionType& action) const = 0;
 
+    // Pure virtual method to return whether or not an action is valid in a
+    // given state.
+    virtual bool IsValid(const StateType& state,
+                         const ActionType& action) const = 0;
+
     // Pure virtual methods to enumerate all states, and all actions from
     // a given state.
     virtual void States(std::vector<StateType>& states) const = 0;
