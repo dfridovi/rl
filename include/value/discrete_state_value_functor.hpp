@@ -66,6 +66,11 @@ namespace rl {
       return value_.at(state);
     }
 
+    // Pure virtual operator to get a reference to the value at a state.
+    double& operator[](const StateType& state) const {
+      return value_.at(state);
+    }
+
     // Initialize all the given states to zero.
     void Initialize(const std::vector<StateType>& states) {
       value_.clear();

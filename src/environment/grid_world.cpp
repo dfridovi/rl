@@ -124,6 +124,10 @@ namespace rl {
     return false;
   }
 
+  // Implement pure virtual method to return whether a state is terminal.
+  bool GridWorld::IsTerminal(const GridState& state) const {
+    return (state == goal_);
+  }
 
   // Implement pure virtual methods to enumerate all states, and all actions
   // from a given state.

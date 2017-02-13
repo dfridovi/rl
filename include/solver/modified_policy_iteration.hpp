@@ -47,6 +47,7 @@
 #include <policy/discrete_deterministic_policy.hpp>
 #include <value/discrete_state_value_functor.hpp>
 
+#include <glog/logging.h>
 #include <vector>
 
 namespace rl {
@@ -153,10 +154,10 @@ namespace rl {
      const DiscreteEnvironment<StateType, ActionType>& environment) {
     // Iterate over all states.
     size_t num_changes = 0;
-    for (const auto& entry : value_.value_) {
+    for (auto& entry : value_.value_) {
       StateType next_state = entry.first;
       ActionType action;
-      policy_.Act(next_state, action);
+      CHECK(policy_.Act(next_state, action));
 
       // Simulate this action.
       const double reward = environment.Simulate(next_state, action);
@@ -166,7 +167,8 @@ namespace rl {
         num_changes++;
 
       // Update the value at this state.
-      value_.value_.at(entry.first) = next_value;
+      //      value_.value_.at(entry.first) = next_value;
+      entry.second = next_value;
     }
 
     return num_changes;

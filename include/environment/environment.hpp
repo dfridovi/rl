@@ -60,6 +60,9 @@ namespace rl {
     virtual bool IsValid(const StateType& state,
                          const ActionType& action) const = 0;
 
+    // Pure virtual method to return whether a state is terminal.
+    virtual bool IsTerminal(const StateType& state) const = 0;
+
   protected:
     explicit Environment() {}
   }; //\class Environment

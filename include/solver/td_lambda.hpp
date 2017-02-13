@@ -47,6 +47,7 @@
 #include <policy/discrete_epsilon_greedy_policy.hpp>
 #include <value/discrete_state_value_functor.hpp>
 
+#include <glog/logging.h>
 #include <vector>
 
 namespace rl {
@@ -56,15 +57,18 @@ namespace rl {
   public:
     ~TdLambda() {}
 
-    // Initialize to a random policy. Pass in the discount factor, lambda, and
-    // the number and length of rollouts (if length = -1, rollouts should be
+    // Initialize to a random policy. Pass in the discount factor, lambda, alpha,
+    // and the number and length of rollouts (if length = -1, rollouts should be
     // complete episodes) used in value function estimation. Also pass in
     // the maximum number of total iterations.
-    explicit TdLambda(double discount_factor, double lambda,
-                      size_t num_rollouts, int rollout_length,
-                      size_t max_iterations, double initial_epsilon)
-      : discount_factor_(discount_factor),
+    explicit TdLambda(const StateType& initial_state, double discount_factor,
+                      double lambda, double alpha, size_t num_rollouts,
+                      int rollout_length, size_t max_iterations,
+                      double initial_epsilon)
+      : initial_state_(initial_state),
+        discount_factor_(discount_factor),
         lambda_(lambda),
+        alpha_(alpha),
         num_rollouts_(num_rollouts),
         rollout_length_(rollout_length),
         max_iterations_(max_iterations),
@@ -91,15 +95,15 @@ namespace rl {
     size_t UpdatePolicy(
        const DiscreteEnvironment<StateType, ActionType>& environment);
 
-    // Single round of optimization of the state value function, i.e.
-    // set V(s) <== V(environment(Pi(s)). Returns the total number of changes
-    // made; when this number is zero, we have reached convergence.
-    size_t UpdateValueFunction(
+    // Estimate the value function for the current policy using TD(lambda).
+    void UpdateValueFunction(
        const DiscreteEnvironment<StateType, ActionType>& environment);
 
     // Member variables: as defined in constructor, plus policy and value fn.
+    const StateType initial_state_;
     const double discount_factor_;
     const double lambda_;
+    const double alpha_;
     const size_t max_iterations_;
     const size_t num_rollouts_;
     const int rollout_length_;
@@ -126,15 +130,8 @@ namespace rl {
     // Run until convergence.
     bool has_converged = false;
     for (size_t ii = 1; ii <= max_iterations_ && !has_converged; ii++) {
-      // Update value functor the specified number of times.
-      for (size_t jj = 0; jj < num_value_updates_; jj++) {
-        const size_t value_changes = UpdateValueFunction(environment);
-
-        // Break if converged. This will basically never happen since
-        // our policy is stochastic.
-        if (value_changes == 0)
-          break;
-      }
+      // Update value functor.
+      UpdateValueFunction(environment);
 
       // Update policy greedily.
       const size_t policy_changes = UpdatePolicy(environment);
@@ -156,33 +153,49 @@ namespace rl {
     return policy_.SetGreedily(value_, environment, discount_factor_);
   }
 
-  // Single round of optimization of the state value function, i.e.
-  // set V(s) <== V(environment(Pi(s)). Returns the total number of changes
-  //  made; when this number is zero, we have reached convergence.
+  // Estimate the value function for the current policy using TD(lambda).
   template<typename StateType, typename ActionType>
-  size_t TdLambda<StateType, ActionType>::UpdateValueFunction(
+  void TdLambda<StateType, ActionType>::UpdateValueFunction(
      const DiscreteEnvironment<StateType, ActionType>& environment) {
-    // Iterate over all states.
-    size_t num_changes = 0;
-    for (const auto& entry : value_.value_) {
-      StateType next_state = entry.first;
-      ActionType action;
-      policy_.Act(next_state, action);
+    // Run the specified number of rollouts.
+    for (size_t ii = 0; ii < num_rollouts_; ii++) {
+      // Initialize the current state to the initial state.
+      StateType current_state = initial_state_;
 
-      // Simulate this action.
-      const double reward = environment.Simulate(next_state, action);
-      const double next_value = value_(next_state) * discount_factor_ + reward;
+      // Start an eligibility trace. All states in the trace will be tracked
+      // as normal. If a state is not in the trace yet, that means it has not
+      // been visited this rollout.
+      std::unordered_map<StateType, double, typename StateType::Hash> trace;
 
-      if (std::abs(entry.second - next_value) > 1e-8)
-        num_changes++;
+      // Simulate the rollout.
+      for (int jj = 0;
+           jj < rollout_length_ || (rollout_length_ < 0 &&
+                                    !environment.IsTerminal(current_state));
+           jj++) {
+        // Increment elegibility trace at this state.
+        if (trace.count(current_state) > 0)
+          trace.at(current_state) += 1.0;
+        else
+          trace.insert({current_state, 1.0});
 
-      // Update the value at this state.
-      value_.value_.at(entry.first) = next_value;
+        // Get the action dictated by 'policy_'.
+        ActionType action;
+        CHECK(policy_.Act(environment, current_state, action));
+
+        // Simulate this action and compute TD delta.
+        const double current_value = value_(current_state);
+        const double reward = environment.Simulate(current_state, action);
+        const double delta =
+           reward + discount_factor_ * value_(current_state) - current_value;
+
+        // Update values and decay eligibility trace.
+        for (auto& entry : trace) {
+          value_[entry.first] += alpha_ * delta * entry.second;
+          entry.second *= discount_factor_ * lambda_;
+        }
+      }
     }
-
-    return num_changes;
   }
-
 }  //\namespace rl
 
 #endif
