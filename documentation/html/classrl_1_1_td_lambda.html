@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.12"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>RL: rl::GridState::Hash Struct Reference</title>
+<title>RL: rl::TdLambda&lt; StateType, ActionType &gt; Class Template Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -59,29 +59,41 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><b>rl</b></li><li class="navelem"><a class="el" href="structrl_1_1_grid_state.html">GridState</a></li><li class="navelem"><a class="el" href="structrl_1_1_grid_state_1_1_hash.html">Hash</a></li>  </ul>
+<li class="navelem"><b>rl</b></li><li class="navelem"><a class="el" href="classrl_1_1_td_lambda.html">TdLambda</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
-<a href="structrl_1_1_grid_state_1_1_hash-members.html">List of all members</a>  </div>
+<a href="classrl_1_1_td_lambda-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">rl::GridState::Hash Struct Reference</div>  </div>
+<div class="title">rl::TdLambda&lt; StateType, ActionType &gt; Class Template Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a45f7e666d08533a618f8ac3188702599"><td class="memItemLeft" align="right" valign="top"><a id="a45f7e666d08533a618f8ac3188702599"></a>
-size_t&#160;</td><td class="memItemRight" valign="bottom"><b>operator()</b> (const <a class="el" href="structrl_1_1_grid_state.html">GridState</a> &amp;state) const</td></tr>
-<tr class="separator:a45f7e666d08533a618f8ac3188702599"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a86d18da90b32c89f19b2e7eadcb4c5e4"><td class="memItemLeft" align="right" valign="top"><a id="a86d18da90b32c89f19b2e7eadcb4c5e4"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>TdLambda</b> (const StateType &amp;initial_state, const <a class="el" href="structrl_1_1_td_lambda_params.html">TdLambdaParams</a> &amp;params)</td></tr>
+<tr class="separator:a86d18da90b32c89f19b2e7eadcb4c5e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab8eec2b22d9995865a22df9652dc35f3"><td class="memItemLeft" align="right" valign="top"><a id="ab8eec2b22d9995865a22df9652dc35f3"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>Solve</b> (const <a class="el" href="classrl_1_1_discrete_environment.html">DiscreteEnvironment</a>&lt; StateType, ActionType &gt; &amp;environment)</td></tr>
+<tr class="separator:ab8eec2b22d9995865a22df9652dc35f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa76044eb47c107864d6ce575cdde7e87"><td class="memItemLeft" align="right" valign="top"><a id="aa76044eb47c107864d6ce575cdde7e87"></a>
+const <a class="el" href="classrl_1_1_discrete_epsilon_greedy_policy.html">DiscreteEpsilonGreedyPolicy</a>&lt; StateType, ActionType &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>Policy</b> () const</td></tr>
+<tr class="separator:aa76044eb47c107864d6ce575cdde7e87"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a411b370a455d6a6c145a2eb11f5b21fd"><td class="memItemLeft" align="right" valign="top"><a id="a411b370a455d6a6c145a2eb11f5b21fd"></a>
+const <a class="el" href="structrl_1_1_discrete_state_value_functor.html">DiscreteStateValueFunctor</a>&lt; StateType &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>Value</b> () const</td></tr>
+<tr class="separator:a411b370a455d6a6c145a2eb11f5b21fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock">
-<p>Definition at line <a class="el" href="grid__state_8hpp_source.html#l00101">101</a> of file <a class="el" href="grid__state_8hpp_source.html">grid_state.hpp</a>.</p>
-</div><hr/>The documentation for this struct was generated from the following file:<ul>
-<li>/Users/davidfridovichkeil/Documents/Developer/rl/include/environment/<a class="el" href="grid__state_8hpp_source.html">grid_state.hpp</a></li>
+<div class="textblock"><h3>template&lt;typename StateType, typename ActionType&gt;<br />
+class rl::TdLambda&lt; StateType, ActionType &gt;</h3>
+
+
+<p>Definition at line <a class="el" href="td__lambda_8hpp_source.html#l00057">57</a> of file <a class="el" href="td__lambda_8hpp_source.html">td_lambda.hpp</a>.</p>
+</div><hr/>The documentation for this class was generated from the following file:<ul>
+<li>/Users/davidfridovichkeil/Documents/Developer/rl/include/solver/<a class="el" href="td__lambda_8hpp_source.html">td_lambda.hpp</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

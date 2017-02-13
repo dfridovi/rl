@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['policy',['Policy',['../classrl_1_1_policy.html',1,'rl']]]
+  ['statevaluefunctor',['StateValueFunctor',['../structrl_1_1_state_value_functor.html',1,'rl']]]
 ];

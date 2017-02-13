@@ -12,6 +12,12 @@ Inheritance diagram for rl\+:\+:Discrete\+Environment$<$ State\+Type, Action\+Ty
 \hypertarget{classrl_1_1_discrete_environment_a98f98b36d1a5148175e4307bba402f5e}{}\label{classrl_1_1_discrete_environment_a98f98b36d1a5148175e4307bba402f5e} 
 virtual double {\bfseries Simulate} (State\+Type \&state, const Action\+Type \&action) const =0
 \item 
+\hypertarget{classrl_1_1_discrete_environment_a4e5f5e0425dc93dea82734b7327b22b8}{}\label{classrl_1_1_discrete_environment_a4e5f5e0425dc93dea82734b7327b22b8} 
+virtual bool {\bfseries Is\+Valid} (const State\+Type \&state, const Action\+Type \&action) const =0
+\item 
+\hypertarget{classrl_1_1_discrete_environment_a7f41635b8c010b8a18a8661d0c2c0932}{}\label{classrl_1_1_discrete_environment_a7f41635b8c010b8a18a8661d0c2c0932} 
+virtual bool {\bfseries Is\+Terminal} (const State\+Type \&state) const =0
+\item 
 \hypertarget{classrl_1_1_discrete_environment_a2cd36d24262dfc595574708f1118760f}{}\label{classrl_1_1_discrete_environment_a2cd36d24262dfc595574708f1118760f} 
 virtual void {\bfseries States} (std\+::vector$<$ State\+Type $>$ \&states) const =0
 \item 

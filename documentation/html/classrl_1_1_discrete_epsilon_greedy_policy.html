@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.12"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>RL: rl::DiscreteDeterministicPolicy&lt; StateType, ActionType &gt; Class Template Reference</title>
+<title>RL: rl::DiscreteEpsilonGreedyPolicy&lt; StateType, ActionType &gt; Class Template Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -59,41 +59,50 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><b>rl</b></li><li class="navelem"><a class="el" href="classrl_1_1_discrete_deterministic_policy.html">DiscreteDeterministicPolicy</a></li>  </ul>
+<li class="navelem"><b>rl</b></li><li class="navelem"><a class="el" href="classrl_1_1_discrete_epsilon_greedy_policy.html">DiscreteEpsilonGreedyPolicy</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
-<a href="classrl_1_1_discrete_deterministic_policy-members.html">List of all members</a>  </div>
+<a href="classrl_1_1_discrete_epsilon_greedy_policy-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">rl::DiscreteDeterministicPolicy&lt; StateType, ActionType &gt; Class Template Reference</div>  </div>
+<div class="title">rl::DiscreteEpsilonGreedyPolicy&lt; StateType, ActionType &gt; Class Template Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:aa0502bdff3bbe4896d52b50e6fb682f3"><td class="memItemLeft" align="right" valign="top"><a id="aa0502bdff3bbe4896d52b50e6fb682f3"></a>
+<tr class="memitem:aa9d67bc59c160b060cb2fd4cc616fc66"><td class="memItemLeft" align="right" valign="top"><a id="aa9d67bc59c160b060cb2fd4cc616fc66"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>DiscreteEpsilonGreedyPolicy</b> (double epsilon)</td></tr>
+<tr class="separator:aa9d67bc59c160b060cb2fd4cc616fc66"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9559b1bfd5a8763e544a0aefd25f983d"><td class="memItemLeft" align="right" valign="top"><a id="a9559b1bfd5a8763e544a0aefd25f983d"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>Epsilon</b> () const</td></tr>
+<tr class="separator:a9559b1bfd5a8763e544a0aefd25f983d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa9cef3d7f4c59af90a6f5edd8bcc8f2d"><td class="memItemLeft" align="right" valign="top"><a id="aa9cef3d7f4c59af90a6f5edd8bcc8f2d"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>SetEpsilon</b> (double epsilon)</td></tr>
+<tr class="separator:aa9cef3d7f4c59af90a6f5edd8bcc8f2d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acc935a6aaee1988a35adcdcd1e5ed77c"><td class="memItemLeft" align="right" valign="top"><a id="acc935a6aaee1988a35adcdcd1e5ed77c"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>SetRandomly</b> (const <a class="el" href="classrl_1_1_discrete_environment.html">DiscreteEnvironment</a>&lt; StateType, ActionType &gt; &amp;environment)</td></tr>
-<tr class="separator:aa0502bdff3bbe4896d52b50e6fb682f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9391924c1b0ad563aff49dedc80af744"><td class="memItemLeft" align="right" valign="top"><a id="a9391924c1b0ad563aff49dedc80af744"></a>
+<tr class="separator:acc935a6aaee1988a35adcdcd1e5ed77c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4fdc628bdc73cb3eda1d3b07caa52349"><td class="memItemLeft" align="right" valign="top"><a id="a4fdc628bdc73cb3eda1d3b07caa52349"></a>
 size_t&#160;</td><td class="memItemRight" valign="bottom"><b>SetGreedily</b> (const <a class="el" href="structrl_1_1_discrete_state_value_functor.html">DiscreteStateValueFunctor</a>&lt; StateType &gt; &amp;V, const <a class="el" href="classrl_1_1_discrete_environment.html">DiscreteEnvironment</a>&lt; StateType, ActionType &gt; &amp;environment, double discount_factor)</td></tr>
-<tr class="separator:a9391924c1b0ad563aff49dedc80af744"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a378029387659936c201d6e7e50d10201"><td class="memItemLeft" align="right" valign="top"><a id="a378029387659936c201d6e7e50d10201"></a>
+<tr class="separator:a4fdc628bdc73cb3eda1d3b07caa52349"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6d44e75dce975b9fa133c5c1325e2b57"><td class="memItemLeft" align="right" valign="top"><a id="a6d44e75dce975b9fa133c5c1325e2b57"></a>
 size_t&#160;</td><td class="memItemRight" valign="bottom"><b>SetGreedily</b> (const <a class="el" href="structrl_1_1_discrete_action_value_functor.html">DiscreteActionValueFunctor</a>&lt; StateType, ActionType &gt; &amp;Q)</td></tr>
-<tr class="separator:a378029387659936c201d6e7e50d10201"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa464571566c0a6f97bb7e415fb78a491"><td class="memItemLeft" align="right" valign="top"><a id="aa464571566c0a6f97bb7e415fb78a491"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>Act</b> (const StateType &amp;state, ActionType &amp;action) const</td></tr>
-<tr class="separator:aa464571566c0a6f97bb7e415fb78a491"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="separator:a6d44e75dce975b9fa133c5c1325e2b57"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a54e5c8fa9e5f473cfc1dd240c779728e"><td class="memItemLeft" align="right" valign="top"><a id="a54e5c8fa9e5f473cfc1dd240c779728e"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>Act</b> (const <a class="el" href="classrl_1_1_discrete_environment.html">DiscreteEnvironment</a>&lt; StateType, ActionType &gt; &amp;environment, const StateType &amp;state, ActionType &amp;action) const</td></tr>
+<tr class="separator:a54e5c8fa9e5f473cfc1dd240c779728e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><h3>template&lt;typename StateType, typename ActionType&gt;<br />
-class rl::DiscreteDeterministicPolicy&lt; StateType, ActionType &gt;</h3>
+class rl::DiscreteEpsilonGreedyPolicy&lt; StateType, ActionType &gt;</h3>
 
 
-<p>Definition at line <a class="el" href="discrete__deterministic__policy_8hpp_source.html#l00059">59</a> of file <a class="el" href="discrete__deterministic__policy_8hpp_source.html">discrete_deterministic_policy.hpp</a>.</p>
+<p>Definition at line <a class="el" href="discrete__epsilon__greedy__policy_8hpp_source.html#l00060">60</a> of file <a class="el" href="discrete__epsilon__greedy__policy_8hpp_source.html">discrete_epsilon_greedy_policy.hpp</a>.</p>
 </div><hr/>The documentation for this class was generated from the following file:<ul>
-<li>/Users/davidfridovichkeil/Documents/Developer/rl/include/policy/<a class="el" href="discrete__deterministic__policy_8hpp_source.html">discrete_deterministic_policy.hpp</a></li>
+<li>/Users/davidfridovichkeil/Documents/Developer/rl/include/policy/<a class="el" href="discrete__epsilon__greedy__policy_8hpp_source.html">discrete_epsilon_greedy_policy.hpp</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
