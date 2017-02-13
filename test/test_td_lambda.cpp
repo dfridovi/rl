@@ -40,6 +40,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <solver/td_lambda.hpp>
+#include <solver/td_lambda_params.hpp>
 #include <environment/grid_world.hpp>
 #include <environment/grid_state.hpp>
 #include <environment/grid_action.hpp>
@@ -68,9 +69,16 @@ TEST(TdLambda, TestConvergence) {
   const GridWorld world(kNumRows, kNumCols, goal);
 
   // Create a solver.
-  TdLambda<GridState, GridAction> solver(start, kDiscountFactor, kLambda, kAlpha,
-                                         kNumRollouts, kRolloutLength,
-                                         kMaxIterations, kInitialEpsilon);
+  TdLambdaParams params;
+  params.discount_factor_ = kDiscountFactor;
+  params.lambda_ = kLambda;
+  params.alpha_ = kAlpha;
+  params.max_iterations_ = kMaxIterations;
+  params.num_rollouts_ = kNumRollouts;
+  params.rollout_length_ = kRolloutLength;
+  params.initial_epsilon_ = kInitialEpsilon;
+
+  TdLambda<GridState, GridAction> solver(start, params);
 
   // Solve.
   EXPECT_TRUE(solver.Solve(world));
@@ -95,9 +103,16 @@ TEST(TdLambda, TestConvergenceToOptimum) {
   const GridWorld world(kNumRows, kNumCols, goal);
 
   // Create a solver.
-  TdLambda<GridState, GridAction> solver(start, kDiscountFactor, kLambda, kAlpha,
-                                         kNumRollouts, kRolloutLength,
-                                         kMaxIterations, kInitialEpsilon);
+  TdLambdaParams params;
+  params.discount_factor_ = kDiscountFactor;
+  params.lambda_ = kLambda;
+  params.alpha_ = kAlpha;
+  params.max_iterations_ = kMaxIterations;
+  params.num_rollouts_ = kNumRollouts;
+  params.rollout_length_ = kRolloutLength;
+  params.initial_epsilon_ = kInitialEpsilon;
+
+  TdLambda<GridState, GridAction> solver(start, params);
 
   // Solve.
   EXPECT_TRUE(solver.Solve(world));

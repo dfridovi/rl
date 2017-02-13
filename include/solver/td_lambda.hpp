@@ -46,6 +46,7 @@
 
 #include <policy/discrete_epsilon_greedy_policy.hpp>
 #include <value/discrete_state_value_functor.hpp>
+#include <solver/td_lambda_params.hpp>
 
 #include <glog/logging.h>
 #include <vector>
@@ -61,19 +62,17 @@ namespace rl {
     // and the number and length of rollouts (if length = -1, rollouts should be
     // complete episodes) used in value function estimation. Also pass in
     // the maximum number of total iterations.
-    explicit TdLambda(const StateType& initial_state, double discount_factor,
-                      double lambda, double alpha, size_t num_rollouts,
-                      int rollout_length, size_t max_iterations,
-                      double initial_epsilon)
+    explicit TdLambda(const StateType& initial_state,
+                      const TdLambdaParams& params)
       : initial_state_(initial_state),
-        discount_factor_(discount_factor),
-        lambda_(lambda),
-        alpha_(alpha),
-        num_rollouts_(num_rollouts),
-        rollout_length_(rollout_length),
-        max_iterations_(max_iterations),
-        initial_epsilon_(initial_epsilon),
-        policy_(initial_epsilon) {}
+        discount_factor_(params.discount_factor_),
+        lambda_(params.lambda_),
+        alpha_(params.alpha_),
+        num_rollouts_(params.num_rollouts_),
+        rollout_length_(params.rollout_length_),
+        max_iterations_(params.max_iterations_),
+        initial_epsilon_(params.initial_epsilon_),
+        policy_(params.initial_epsilon_) {}
 
     // Solve the MDP defined by the given environment. Returns whether or not
     // iteration reached convergence. If convergence is reached, the solver
