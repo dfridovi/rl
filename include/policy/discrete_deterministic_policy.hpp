@@ -46,7 +46,6 @@
 #ifndef RL_POLICY_DISCRETE_DETERMINISTIC_POLICY_H
 #define RL_POLICY_DISCRETE_DETERMINISTIC_POLICY_H
 
-#include <policy/policy.hpp>
 #include <value/discrete_state_value_functor.hpp>
 #include <value/discrete_action_value_functor.hpp>
 #include <environment/discrete_environment.hpp>
@@ -57,7 +56,7 @@
 namespace rl {
 
   template<typename StateType, typename ActionType>
-  class DiscreteDeterministicPolicy : public Policy<StateType, ActionType> {
+  class DiscreteDeterministicPolicy {
   public:
     ~DiscreteDeterministicPolicy() {}
     explicit DiscreteDeterministicPolicy() {}
@@ -106,7 +105,9 @@ namespace rl {
 
       // Choose a random action from the list.
       std::uniform_int_distribution<size_t> unif(0, actions.size() - 1);
-      const ActionType random_action = actions[unif(rng)];
+      ActionType random_action = actions[unif(rng)];
+      while (!environment.IsValid(state, random_action))
+        random_action = actions[unif(rng)];
 
       // Check if 'policy_' does not yet contain this state.
       if (policy_.count(state) == 0)

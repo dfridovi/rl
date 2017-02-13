@@ -67,7 +67,7 @@ namespace rl {
     }
 
     // Pure virtual operator to get a reference to the value at a state.
-    double& operator[](const StateType& state) const {
+    double& operator[](const StateType& state) {
       return value_.at(state);
     }
 

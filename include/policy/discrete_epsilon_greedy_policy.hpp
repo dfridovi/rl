@@ -46,7 +46,6 @@
 #ifndef RL_POLICY_DISCRETE_EPSILON_GREEDY_POLICY_H
 #define RL_POLICY_DISCRETE_EPSILON_GREEDY_POLICY_H
 
-#include <policy/policy.hpp>
 #include <value/discrete_state_value_functor.hpp>
 #include <value/discrete_action_value_functor.hpp>
 #include <environment/discrete_environment.hpp>
@@ -58,12 +57,11 @@
 namespace rl {
 
   template<typename StateType, typename ActionType>
-  class DiscreteEpsilonGreedyPolicy : public Policy<StateType, ActionType> {
+  class DiscreteEpsilonGreedyPolicy {
   public:
     ~DiscreteEpsilonGreedyPolicy() {}
     explicit DiscreteEpsilonGreedyPolicy(double epsilon)
-      : epsilon_(epsilon),
-        rng_(rd_()) {
+      : epsilon_(epsilon) {
       CHECK_GE(epsilon, 0.0);
       CHECK_LE(epsilon, 1.0);
     }
@@ -103,11 +101,18 @@ namespace rl {
     double epsilon_;
 
     // Random number generator.
-    std::random_device rd_;
-    std::default_random_engine rng_;
+    static std::random_device rd_;
+    static std::default_random_engine rng_;
   }; //\class DiscreteEpsilonGreedyPolicy
 
 // ---------------------------- IMPLEMENTATION ------------------------------ //
+
+  template<typename StateType, typename ActionType> std::random_device
+  DiscreteEpsilonGreedyPolicy<StateType, ActionType>::rd_;
+
+  template<typename StateType, typename ActionType> std::default_random_engine
+  DiscreteEpsilonGreedyPolicy<StateType, ActionType>::rng_(rd_());
+
 
   // Set to random valid actions in the given environment.
   template<typename StateType, typename ActionType>
@@ -123,9 +128,11 @@ namespace rl {
     for (const auto& state : states) {
       environment.Actions(state, actions);
 
-      // Choose a random action from the list.
+      // Choose a random valid action from the list.
       std::uniform_int_distribution<size_t> unif(0, actions.size() - 1);
-      const ActionType random_action = actions[unif(rng_)];
+      ActionType random_action = actions[unif(rng_)];
+      while (!environment.IsValid(state, random_action))
+        random_action = actions[unif(rng_)];
 
       // Check if 'policy_' does not yet contain this state.
       if (policy_.count(state) == 0)

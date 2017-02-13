@@ -76,7 +76,8 @@ namespace rl {
         policy_(initial_epsilon) {}
 
     // Solve the MDP defined by the given environment. Returns whether or not
-    // iteration reached convergence.
+    // iteration reached convergence. If convergence is reached, the solver
+    // sets 'epsilon' to zero for the optimal policy.
     bool Solve(const DiscreteEnvironment<StateType, ActionType>& environment);
 
     // Get a const reference to the policy and value function.
@@ -140,6 +141,10 @@ namespace rl {
       // Decay epsilon.
       policy_.SetEpsilon(initial_epsilon_ / static_cast<double>(ii));
     }
+
+    // Set epsilon to zero if converged.
+    if (has_converged)
+      policy_.SetEpsilon(0.0);
 
     return has_converged;
   }
