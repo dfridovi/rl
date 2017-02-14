@@ -36,12 +36,12 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Defines the DiscreteEnvironment base class, which derives from Environment.
+// Defines the ContinuousEnvironment base class, which derives from Environment.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef RL_ENVIRONMENT_DISCRETE_ENVIRONMENT_H
-#define RL_ENVIRONMENT_DISCRETE_ENVIRONMENT_H
+#ifndef RL_ENVIRONMENT_CONTINUOUS_ENVIRONMENT_H
+#define RL_ENVIRONMENT_CONTINUOUS_ENVIRONMENT_H
 
 #include <environment/environment.hpp>
 
@@ -50,9 +50,9 @@
 namespace rl {
 
   template<typename StateType, typename ActionType>
-  class DiscreteEnvironment : public Environment<StateType, ActionType> {
+  class ContinuousEnvironment : public Environment<StateType, ActionType> {
   public:
-    virtual ~DiscreteEnvironment() {}
+    virtual ~ContinuousEnvironment() {}
 
     // Pure virtual method to output the next state, given that the actor
     // takes the specified action from the given state. Returns the reward.
@@ -67,19 +67,13 @@ namespace rl {
     // Pure virtual method to return whether a state is terminal.
     virtual bool IsTerminal(const StateType& state) const = 0;
 
-    // Pure virtual methods to enumerate all states, and all actions from
-    // a given state.
-    virtual void States(std::vector<StateType>& states) const = 0;
-    virtual void Actions(const StateType& state,
-                         std::vector<ActionType>& actions) const = 0;
-
     // Pure virtual method to visualize (e.g. wuth OpenGL).
     virtual void Visualize() const = 0;
 
   protected:
-    explicit DiscreteEnvironment()
+    explicit ContinuousEnvironment()
       : Environment<StateType, ActionType>() {}
-  }; //\class DiscreteEnvironment
+  }; //\class ContinuousEnvironment
 
 }  //\namespace rl
 

@@ -36,51 +36,36 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Defines the DiscreteEnvironment base class, which derives from Environment.
+// Inverted pendulum parameters.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef RL_ENVIRONMENT_DISCRETE_ENVIRONMENT_H
-#define RL_ENVIRONMENT_DISCRETE_ENVIRONMENT_H
-
-#include <environment/environment.hpp>
-
-#include <vector>
+#ifndef RL_ENVIRONMENT_INVERTED_PENDULUM_PARAMS_H
+#define RL_ENVIRONMENT_INVERTED_PENDULUM_PARAMS_H
 
 namespace rl {
 
-  template<typename StateType, typename ActionType>
-  class DiscreteEnvironment : public Environment<StateType, ActionType> {
-  public:
-    virtual ~DiscreteEnvironment() {}
+  struct InvertedPendulumParams {
+    // Length of pendulum arm.
+    double arm_length_ = 1.0;
 
-    // Pure virtual method to output the next state, given that the actor
-    // takes the specified action from the given state. Returns the reward.
-    virtual double Simulate(StateType& state,
-                            const ActionType& action) const = 0;
+    // Ball radius and mass.
+    double ball_radius_ = 0.1;
+    double ball_mass_ = 1.0;
 
-    // Pure virtual method to return whether or not an action is valid in a
-    // given state.
-    virtual bool IsValid(const StateType& state,
-                         const ActionType& action) const = 0;
+    // Friction torque.
+    double friction_ = 0.01;
 
-    // Pure virtual method to return whether a state is terminal.
-    virtual bool IsTerminal(const StateType& state) const = 0;
+    // Upper and lower bounds on applied torque.
+    double torque_lower_ = -0.1;
+    double torque_upper_ = 0.1;
 
-    // Pure virtual methods to enumerate all states, and all actions from
-    // a given state.
-    virtual void States(std::vector<StateType>& states) const = 0;
-    virtual void Actions(const StateType& state,
-                         std::vector<ActionType>& actions) const = 0;
+    // Numerical integration time step.
+    double time_step_ = 0.001;
 
-    // Pure virtual method to visualize (e.g. wuth OpenGL).
-    virtual void Visualize() const = 0;
-
-  protected:
-    explicit DiscreteEnvironment()
-      : Environment<StateType, ActionType>() {}
-  }; //\class DiscreteEnvironment
-
+    // Control period. Control is piecewise constant on this time interval.
+    double control_period_ = 0.01;
+  }; //\ struct InvertedPendulumParams
 }  //\namespace rl
 
 #endif

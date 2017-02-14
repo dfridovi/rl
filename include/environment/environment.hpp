@@ -63,6 +63,9 @@ namespace rl {
     // Pure virtual method to return whether a state is terminal.
     virtual bool IsTerminal(const StateType& state) const = 0;
 
+    // Pure virtual method to visualize (e.g. wuth OpenGL).
+    virtual void Visualize() const = 0;
+
   protected:
     explicit Environment() {}
   }; //\class Environment
