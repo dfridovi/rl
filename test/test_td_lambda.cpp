@@ -39,7 +39,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <solver/td_lambda.hpp>
+#include <solver/discrete_td_lambda.hpp>
 #include <solver/td_lambda_params.hpp>
 #include <environment/grid_world.hpp>
 #include <environment/grid_state.hpp>
@@ -52,7 +52,7 @@ using namespace rl;
 
 // Test that the iteration converges within a reasonable number of steps for
 // a very small example grid world.
-TEST(TdLambda, TestConvergence) {
+TEST(DiscreteTdLambda, TestConvergence) {
   const double kDiscountFactor = 0.9;
   const double kLambda = 0.5;
   const double kAlpha = 0.5;
@@ -78,7 +78,7 @@ TEST(TdLambda, TestConvergence) {
   params.rollout_length_ = kRolloutLength;
   params.initial_epsilon_ = kInitialEpsilon;
 
-  TdLambda<GridState, GridAction> solver(start, params);
+  DiscreteTdLambda<GridState, GridAction> solver(start, params);
 
   // Solve.
   EXPECT_TRUE(solver.Solve(world));
@@ -86,7 +86,7 @@ TEST(TdLambda, TestConvergence) {
 
 // Test that the iteration converges to the right answer within a
 // reasonable number of steps for a very small example grid world.
-TEST(TdLambda, TestConvergenceToOptimum) {
+TEST(DiscreteTdLambda, TestConvergenceToOptimum) {
   const double kDiscountFactor = 0.9;
   const double kLambda = 0.5;
   const double kAlpha = 0.5;
@@ -112,7 +112,7 @@ TEST(TdLambda, TestConvergenceToOptimum) {
   params.rollout_length_ = kRolloutLength;
   params.initial_epsilon_ = kInitialEpsilon;
 
-  TdLambda<GridState, GridAction> solver(start, params);
+  DiscreteTdLambda<GridState, GridAction> solver(start, params);
 
   // Solve.
   EXPECT_TRUE(solver.Solve(world));

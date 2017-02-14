@@ -36,13 +36,13 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Defines the TdLambda solver class. Current implementation assumes
+// Defines the DiscreteTdLambda solver class. Current implementation assumes
 // discrete state and action spaces, and deterministic environments.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef RL_SOLVER_TD_LAMBDA_H
-#define RL_SOLVER_TD_LAMBDA_H
+#ifndef RL_SOLVER_DISCRETE_TD_LAMBDA_H
+#define RL_SOLVER_DISCRETE_TD_LAMBDA_H
 
 #include <policy/discrete_epsilon_greedy_policy.hpp>
 #include <value/discrete_state_value_functor.hpp>
@@ -54,15 +54,15 @@
 namespace rl {
 
   template<typename StateType, typename ActionType>
-  class TdLambda {
+  class DiscreteTdLambda {
   public:
-    ~TdLambda() {}
+    ~DiscreteTdLambda() {}
 
     // Initialize to a random policy. Pass in the discount factor, lambda, alpha,
     // and the number and length of rollouts (if length = -1, rollouts should be
     // complete episodes) used in value function estimation. Also pass in
     // the maximum number of total iterations.
-    explicit TdLambda(const StateType& initial_state,
+    explicit DiscreteTdLambda(const StateType& initial_state,
                       const TdLambdaParams& params)
       : initial_state_(initial_state),
         discount_factor_(params.discount_factor_),
@@ -117,7 +117,7 @@ namespace rl {
   // Solve the MDP defined by the given environment. Returns whether or not
   // iterations reached convergence.
   template<typename StateType, typename ActionType>
-  bool TdLambda<StateType, ActionType>::Solve(
+  bool DiscreteTdLambda<StateType, ActionType>::Solve(
      const DiscreteEnvironment<StateType, ActionType>& environment) {
     // Initialize policy randomly.
     policy_.SetRandomly(environment);
@@ -152,14 +152,14 @@ namespace rl {
   // value function. Returns the total number of changes made; when this
   // number is zero, we have reached convergence.
   template<typename StateType, typename ActionType>
-  size_t TdLambda<StateType, ActionType>::UpdatePolicy(
+  size_t DiscreteTdLambda<StateType, ActionType>::UpdatePolicy(
      const DiscreteEnvironment<StateType, ActionType>& environment) {
     return policy_.SetGreedily(value_, environment, discount_factor_);
   }
 
   // Estimate the value function for the current policy using TD(lambda).
   template<typename StateType, typename ActionType>
-  void TdLambda<StateType, ActionType>::UpdateValueFunction(
+  void DiscreteTdLambda<StateType, ActionType>::UpdateValueFunction(
      const DiscreteEnvironment<StateType, ActionType>& environment) {
     // Run the specified number of rollouts.
     for (size_t ii = 0; ii < num_rollouts_; ii++) {
