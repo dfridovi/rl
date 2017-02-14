@@ -34,11 +34,7 @@
  * Authors: David Fridovich-Keil   ( dfk@eecs.berkeley.edu )
  */
 
-#include <environment/grid_world.hpp>
-#include <environment/grid_action.hpp>
-#include <environment/grid_state.hpp>
-#include <solver/modified_policy_iteration.hpp>
-#include <util/types.h>
+#include <environment/inverted_pendulum.hpp>
 
 #include <glog/logging.h>
 #include <gflags/gflags.h>
@@ -56,28 +52,33 @@
 
 using namespace rl;
 
-DEFINE_int32(refresh_rate, 1000, "Refresh rate in milliseconds.");
+// Animation parameters.
+DEFINE_int32(refresh_rate, 10, "Refresh rate in milliseconds.");
+DEFINE_double(motion_rate, 0.5, "Fraction of real-time.");
+
+// Solver parameters.
 DEFINE_int32(num_value_updates, 1,
              "Number of value updates per policy iteration.");
 DEFINE_int32(max_iterations, 100,
              "Maximum umber of iterations to run modified policy iteration.");
 DEFINE_double(discount_factor, 0.9, "Discount factor.");
-DEFINE_int32(num_rows, 5, "Number of rows in the grid.");
-DEFINE_int32(num_cols, 5, "Number of columns in the grid.");
 
-// Create a globally-defined GridWorld, as well as current and goal states.
-GridWorld* world = NULL;
-GridState* current_state = NULL;
-GridState* goal_state = NULL;
+// Environment parameters.
+DEFINE_double(arm_length, 1.0, "Length of pendulum arm in meters.");
+DEFINE_double(ball_radius, 0.1, "Ball radius in meters.");
+DEFINE_double(ball_mass, 1.0, "Ball mass in kilograms.");
+DEFINE_double(initial_theta, 0.25 * M_PI, "Initial angle from the +x axis.");
+DEFINE_double(initial_omega, 0.0, "Initial angular velocity.");
+DEFINE_double(friction, 0.01, "Torque applied by friction.");
+DEFINE_double(torque_limit, 0.1, "Limit for applied torque.");
+DEFINE_double(time_step, 0.001, "Time step for numerical integration.");
 
-// History of past states.
-std::vector<GridState> history;
+// Create a globally-defined simulator and current state.
+InvertedPendulum* world = NULL;
+InvertedPendulumState* current_state = NULL;
 
 // Create a solver.
-ModifiedPolicyIteration<GridState, GridAction>* solver = NULL;
-
-// Step counter.
-size_t step_counter = 0;
+//ModifiedPolicyIteration<GridState, GridAction>* solver = NULL;
 
 // Initialize OpenGL.
 void InitGL() {
@@ -100,11 +101,16 @@ void Reshape(GLsizei width, GLsizei height) {
   if (height == 0)
     height = 1;
 
-  // Compute aspect ratio of the new window and for the grid.
+  // Compute aspect ratio of the new window and for the pendulum.
   const GLfloat kWindowRatio =
     static_cast<GLfloat>(width) / static_cast<GLfloat>(height);
-  const GLfloat kGridRatio =
-    static_cast<GLfloat>(FLAGS_num_rows) / static_cast<GLfloat>(FLAGS_num_cols);
+
+  const GLfloat kHorizontalExtent = 1.5 * static_cast<GLfloat>(FLAGS_arm_length);
+  const GLfloat kBottomExtent = 0.1 * static_cast<GLfloat>(FLAGS_arm_length);
+  const GLfloat kTopExtent = 1.5 * static_cast<GLfloat>(FLAGS_arm_length);
+
+  const GLfloat kPendulumRatio =
+    2.0 * kHorizontalExtent / (kTopExtent + kBottomExtent);
 
   // Set the viewport to cover the new window.
   glViewport(0, 0, width, height);
@@ -114,21 +120,18 @@ void Reshape(GLsizei width, GLsizei height) {
   glLoadIdentity();
 
   // One of two possibilities:
-  // (1) x_max = FLAGS_num_cols, y_max = height/width * FLAGS_num_cols
-  //     is valid if y_max >= FLAGS_num_rows, otherwise
-  // (2) y_max = FLAGS_num_rows, x_max = width/height * FLAGS_num_rows
-  //     which is valid if x_max >= FLAGS_num_cols.
-
-  // Try (1).
-  const GLfloat y_max = static_cast<GLfloat>(FLAGS_num_cols) / kWindowRatio;
-  if (y_max >= static_cast<GLfloat>(FLAGS_num_rows))
-    gluOrtho2D(0.0, static_cast<GLfloat>(FLAGS_num_cols), 0.0, y_max);
-  else {
-    // Try (2).
-    const GLfloat x_max = kWindowRatio * static_cast<GLfloat>(FLAGS_num_rows);
-    CHECK_GE(x_max, static_cast<GLfloat>(FLAGS_num_cols));
-
-    gluOrtho2D(0.0, x_max, 0.0, static_cast<GLfloat>(FLAGS_num_rows));
+  if (kPendulumRatio >= kWindowRatio) {
+    // (1) kPendulumRatio >= kWindowRatio, in which case horizontal dimensions
+    //     match but vertical dimensions must be scaled up.
+    const GLfloat kVerticalScaling = kPendulumRatio / kWindowRatio;
+    gluOrtho2D(-kHorizontalExtent, kHorizontalExtent,
+               -kBottomExtent * kVerticalScaling, kTopExtent * kVerticalScaling);
+  } else {
+    // (2) kPendulumRatio < kWindowRatio, in which case the reverse is true.
+    const GLfloat kHorizontalScaling = kWindowRatio / kPendulumRatio;
+    gluOrtho2D(-kHorizontalExtent * kHorizontalScaling,
+               kHorizontalExtent * kHorizontalScaling,
+               -kBottomExtent, kTopExtent);
   }
 }
 
@@ -136,42 +139,31 @@ void Reshape(GLsizei width, GLsizei height) {
 void SingleIteration() {
   CHECK_NOTNULL(world);
   CHECK_NOTNULL(current_state);
-  CHECK_NOTNULL(goal_state);
-  CHECK_NOTNULL(solver);
+  //  CHECK_NOTNULL(solver);
 
   // Extract optimal policy and value function.
-  const DiscreteDeterministicPolicy<GridState, GridAction> policy =
-    solver->Policy();
-  const DiscreteStateValueFunctor<GridState> value = solver->Value();
+  //  const DiscreteDeterministicPolicy<GridState, GridAction> policy =
+  //    solver->Policy();
+  //  const DiscreteStateValueFunctor<GridState> value = solver->Value();
 
-  // Only move if not in the goal state.
-  if (*current_state != *goal_state) {
-    const GridState copy_state(current_state->ii_, current_state->jj_);
-    history.push_back(copy_state);
-
+  // Only move if not in a terminal state.
+  if (!world->IsTerminal(*current_state)) {
     // Get optimal action.
-    GridAction action;
-    policy.Act(*current_state, action);
+    //    GridAction action;
+    //    policy.Act(*current_state, action);
 
     // Simulate this action.
-    const double reward = world->Simulate(*current_state, action);
+    const double reward = world->Simulate(*current_state, 0.0);
 
     // Print out step counter and reward.
-    std::printf("Received reward of %f on step %zu.\n", reward, ++step_counter);
+    std::printf("Received reward of %f.\n", reward);
   }
 
   // Visualize no matter what.
   world->Visualize();
 
-  // Draw the current state as a circle (polygon with a ton of sides).
-  const GLfloat kEpsilon = 0.02;
-  const GLfloat kRadius = 0.5 - kEpsilon;
-
-  current_state->Visualize(FLAGS_num_rows, kRadius, 0.0, 0.2, 0.8, 0.5);
-
-  // Draw all previous states in a different color.
-  for (const auto& state : history)
-    state.Visualize(FLAGS_num_rows, kRadius, 0.0, 0.8, 0.2, 0.5);
+  // Draw the current state.
+  current_state->Visualize(FLAGS_arm_length, FLAGS_ball_radius);
 
   // Swap buffers.
   glutSwapBuffers();
@@ -184,27 +176,35 @@ int main(int argc, char** argv) {
 
   // Parse flags.
   google::ParseCommandLineFlags(&argc, &argv, true);
-  CHECK_GE(FLAGS_num_rows, 1);
-  CHECK_GE(FLAGS_num_cols, 1);
 
-  // Create initial and goal states at opposite corners.
-  goal_state = new GridState(FLAGS_num_rows - 1, FLAGS_num_cols - 1);
-  current_state = new GridState(0, 0);
+  // Create initial state.
+  current_state =
+    new InvertedPendulumState(FLAGS_initial_theta, FLAGS_initial_omega);
 
   // Set up grid world.
-  world = new GridWorld(FLAGS_num_rows, FLAGS_num_cols, *goal_state);
+  InvertedPendulumParams params;
+  params.arm_length_ = FLAGS_arm_length;
+  params.ball_radius_ = FLAGS_ball_radius;
+  params.ball_mass_ = FLAGS_ball_mass;
+  params.friction_ = FLAGS_friction;
+  params.torque_lower_ = -FLAGS_torque_limit;
+  params.torque_upper_ = FLAGS_torque_limit;
+  params.time_step_ = FLAGS_time_step;
+  params.control_period_ =
+    0.001 * static_cast<double>(FLAGS_refresh_rate) * FLAGS_motion_rate;
+  world = new InvertedPendulum(params);
 
   // Set up the solver.
-  solver = new ModifiedPolicyIteration<GridState, GridAction>(
-     FLAGS_num_value_updates, FLAGS_max_iterations, FLAGS_discount_factor);
+  //  solver = new ModifiedPolicyIteration<GridState, GridAction>(
+  //     FLAGS_num_value_updates, FLAGS_max_iterations, FLAGS_discount_factor);
 
-  if (solver->Solve(*world)) {
+  //  if (solver->Solve(*world)) {
     // Set up OpenGL window.
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE);
     glutInitWindowSize(320, 320);
     glutInitWindowPosition(50, 50);
-    glutCreateWindow("Grid World");
+    glutCreateWindow("Inverted Pendulum");
     glutDisplayFunc(SingleIteration);
     glutReshapeFunc(Reshape);
     glutTimerFunc(0, Timer, 0);
@@ -213,14 +213,14 @@ int main(int argc, char** argv) {
 
     delete world;
     delete current_state;
-    delete goal_state;
     return 0;
-  }
-
+    //  }
+#if 0
   std::printf("Solver did not converge.\n");
 
   delete world;
   delete current_state;
   delete goal_state;
   return 1;
+#endif
 }

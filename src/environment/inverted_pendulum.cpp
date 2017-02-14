@@ -78,15 +78,15 @@ namespace rl {
 
   // Implement pure virtual method from Environment. Compute net torque at the
   // joint and translate to an angular acceleration. Integrate this numerically
-  // and return accumulated reward, which is the height of the ball at each
-  // time step.
+  // and return accumulated reward, which is negative the absolute angular
+  // distance between the ball and the goal state.
   double InvertedPendulum::Simulate(InvertedPendulumState& state,
                                     const double& action) const {
     // Compute net torque and angular acceleration.
-    const double gravity = 9.81 * std::cos(state.theta_) * arm_length_;
+    const double gravity = -9.81 * std::cos(state.theta_) * arm_length_;
     const double friction = (gravity < 0.0) ?
       std::min(-gravity, friction_) : std::max(-gravity, -friction_);
-    const double torque = gravity - friction;
+    const double torque = gravity + friction;
     const double acceleration = torque * moment_;
 
     // Numerical integration.
@@ -99,7 +99,7 @@ namespace rl {
       // Check if angle is out of bounds.
       bounds_check &=
         (state.theta_ >= theta_lower_ && state.theta_ <= theta_upper_);
-      reward += arm_length_ * std::sin(state.theta_);
+      reward -= std::abs(state.theta_ - goal_.theta_);
     }
 
     // If ever went out of bounds, set to invalid reward.
@@ -130,6 +130,7 @@ namespace rl {
 
   // Visualize using OpenGL.
   void InvertedPendulum::Visualize() const {
+    glClear(GL_COLOR_BUFFER_BIT);
     const size_t kNumVertices = 100;
 
     // Draw the ground first.
@@ -153,7 +154,6 @@ namespace rl {
                  ball_radius_ * std::sin(angle));
     }
     glEnd();
-
   }
 
 }  //\namespace rl
