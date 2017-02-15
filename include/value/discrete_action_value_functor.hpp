@@ -75,7 +75,7 @@ namespace rl {
       }
     }
 
-    // Pure virtual method to output the value at a Action.
+    // Pure virtual method to output the value at a state/action pair.
     double operator()(const StateType& state, const ActionType& action) const {
       if (value_.count(state) == 0)
         return -std::numeric_limits<double>::infinity();

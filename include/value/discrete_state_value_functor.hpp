@@ -58,6 +58,15 @@ namespace rl {
     explicit DiscreteStateValueFunctor()
       : StateValueFunctor<StateType>() {}
 
+    // Set the value at the current state. If the state is already in the table
+    // reset its value to what is given here.
+    void Set(const StateType& state, double value) {
+      if (value_.count(state) > 0)
+        value_.at(state) = value;
+      else
+        value_.insert({state, value});
+    }
+
     // Pure virtual method to output the value at a state.
     double operator()(const StateType& state) const {
       if (value_.count(state) == 0)
@@ -66,7 +75,7 @@ namespace rl {
       return value_.at(state);
     }
 
-    // Pure virtual operator to get a reference to the value at a state.
+    // Operator to get a reference to the value at a state.
     double& operator[](const StateType& state) {
       return value_.at(state);
     }

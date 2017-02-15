@@ -80,6 +80,9 @@ InvertedPendulumState* current_state = NULL;
 // Create a solver.
 //ModifiedPolicyIteration<GridState, GridAction>* solver = NULL;
 
+// Flag for whether we have reached a terminal state.
+bool is_terminal = false;
+
 // Initialize OpenGL.
 void InitGL() {
   // Set the "clearing" or background color as black/opaque.
@@ -90,10 +93,24 @@ void InitGL() {
   glEnable(GL_BLEND);
 }
 
-// Timer callback. Re-render at the specified rate.
+// Visualize.
+void Visualize() {
+  // Visualize environment.
+  world->Visualize();
+
+  // Draw the current state.
+  current_state->Visualize(FLAGS_arm_length, FLAGS_ball_radius);
+
+  // Swap buffers.
+  glutSwapBuffers();
+}
+
+// Timer callback. Re-render at the specified rate if not terninal.
 void Timer(int value) {
-  glutPostRedisplay();
-  glutTimerFunc(FLAGS_refresh_rate, Timer, 0);
+  if (!is_terminal) {
+    glutPostRedisplay();
+    glutTimerFunc(FLAGS_refresh_rate, Timer, 0);
+  }
 }
 
 // Reshape the window to maintain the correct aspect ratio.
@@ -146,8 +163,11 @@ void SingleIteration() {
   //    solver->Policy();
   //  const DiscreteStateValueFunctor<GridState> value = solver->Value();
 
-  // Only move if not in a terminal state.
-  if (!world->IsTerminal(*current_state)) {
+  // Check for terminal state.
+  if (world->IsTerminal(*current_state))
+    is_terminal = true;
+  else {
+    // If not a terminal state, update state.
     // Get optimal action.
     //    GridAction action;
     //    policy.Act(*current_state, action);
@@ -159,14 +179,8 @@ void SingleIteration() {
     std::printf("Received reward of %f.\n", reward);
   }
 
-  // Visualize no matter what.
-  world->Visualize();
-
-  // Draw the current state.
-  current_state->Visualize(FLAGS_arm_length, FLAGS_ball_radius);
-
-  // Swap buffers.
-  glutSwapBuffers();
+  // Visualize.
+  Visualize();
 }
 
 // Set everything up and go!

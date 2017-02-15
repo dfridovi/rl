@@ -79,6 +79,9 @@ ModifiedPolicyIteration<GridState, GridAction>* solver = NULL;
 // Step counter.
 size_t step_counter = 0;
 
+// Flag for terminal state.
+bool is_terminal = false;
+
 // Initialize OpenGL.
 void InitGL() {
   // Set the "clearing" or background color as black/opaque.
@@ -91,8 +94,10 @@ void InitGL() {
 
 // Timer callback. Re-render at the specified rate.
 void Timer(int value) {
-  glutPostRedisplay();
-  glutTimerFunc(FLAGS_refresh_rate, Timer, 0);
+  if (!is_terminal) {
+    glutPostRedisplay();
+    glutTimerFunc(FLAGS_refresh_rate, Timer, 0);
+  }
 }
 
 // Reshape the window to maintain the correct aspect ratio.
@@ -139,13 +144,14 @@ void SingleIteration() {
   CHECK_NOTNULL(goal_state);
   CHECK_NOTNULL(solver);
 
-  // Extract optimal policy and value function.
-  const DiscreteDeterministicPolicy<GridState, GridAction> policy =
-    solver->Policy();
-  const DiscreteStateValueFunctor<GridState> value = solver->Value();
+  if (world->IsTerminal(*current_state))
+    is_terminal = true;
+  else {
+    // Extract optimal policy and value function.
+    const DiscreteDeterministicPolicy<GridState, GridAction> policy =
+      solver->Policy();
+    const DiscreteStateValueFunctor<GridState> value = solver->Value();
 
-  // Only move if not in the goal state.
-  if (*current_state != *goal_state) {
     const GridState copy_state(current_state->ii_, current_state->jj_);
     history.push_back(copy_state);
 

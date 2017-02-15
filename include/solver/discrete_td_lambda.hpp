@@ -58,12 +58,9 @@ namespace rl {
   public:
     ~DiscreteTdLambda() {}
 
-    // Initialize to a random policy. Pass in the discount factor, lambda, alpha,
-    // and the number and length of rollouts (if length = -1, rollouts should be
-    // complete episodes) used in value function estimation. Also pass in
-    // the maximum number of total iterations.
+    // Initialize to a random policy.
     explicit DiscreteTdLambda(const StateType& initial_state,
-                      const TdLambdaParams& params)
+                              const TdLambdaParams& params)
       : initial_state_(initial_state),
         discount_factor_(params.discount_factor_),
         lambda_(params.lambda_),
@@ -110,7 +107,7 @@ namespace rl {
     double initial_epsilon_;
     DiscreteEpsilonGreedyPolicy<StateType, ActionType> policy_;
     DiscreteStateValueFunctor<StateType> value_;
-  }; //\class TdLambda
+  }; //\class DiscreteTdLambda
 
 // ---------------------------- IMPLEMENTATION ------------------------------ //
 
