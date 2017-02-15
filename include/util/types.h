@@ -51,6 +51,7 @@ namespace rl {
 // --------------- Internal typedefs and constants --------------- //
 
 const double kInvalidReward = -std::numeric_limits<double>::infinity();
+const double kInvalidValue = -std::numeric_limits<double>::infinity();
 
 // -------------------- Third-party typedefs -------------------- //
 

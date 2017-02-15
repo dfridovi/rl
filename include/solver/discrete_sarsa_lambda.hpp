@@ -36,7 +36,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Defines the DiscreteTdLambda solver class. Current implementation assumes
+// Defines the DiscreteSarsaLambda solver class. Current implementation assumes
 // discrete state and action spaces, and deterministic environments.
 //
 ///////////////////////////////////////////////////////////////////////////////
@@ -45,7 +45,7 @@
 #define RL_SOLVER_DISCRETE_TD_LAMBDA_H
 
 #include <policy/discrete_epsilon_greedy_policy.hpp>
-#include <value/discrete_state_value_functor.hpp>
+#include <value/discrete_action_value_functor.hpp>
 #include <solver/td_lambda_params.hpp>
 
 #include <glog/logging.h>
@@ -54,13 +54,13 @@
 namespace rl {
 
   template<typename StateType, typename ActionType>
-  class DiscreteTdLambda {
+  class DiscreteSarsaLambda {
   public:
-    ~DiscreteTdLambda() {}
+    ~DiscreteSarsaLambda() {}
 
     // Initialize to a random policy.
-    explicit DiscreteTdLambda(const StateType& initial_state,
-                              const TdLambdaParams& params)
+    explicit DiscreteSarsaLambda(const StateType& initial_state,
+                                 const TdLambdaParams& params)
       : initial_state_(initial_state),
         discount_factor_(params.discount_factor_),
         lambda_(params.lambda_),
@@ -81,7 +81,7 @@ namespace rl {
       return policy_;
     }
 
-    const DiscreteStateValueFunctor<StateType>& Value() const {
+    const DiscreteActionValueFunctor<StateType, ActionType>& Value() const {
       return value_;
     }
 
@@ -106,23 +106,21 @@ namespace rl {
     const int rollout_length_;
     double initial_epsilon_;
     DiscreteEpsilonGreedyPolicy<StateType, ActionType> policy_;
-    DiscreteStateValueFunctor<StateType> value_;
-  }; //\class DiscreteTdLambda
+    DiscreteActionValueFunctor<StateType, ActionType> value_;
+  }; //\class DiscreteSarsaLambda
 
 // ---------------------------- IMPLEMENTATION ------------------------------ //
 
   // Solve the MDP defined by the given environment. Returns whether or not
   // iterations reached convergence.
   template<typename StateType, typename ActionType>
-  bool DiscreteTdLambda<StateType, ActionType>::Solve(
+  bool DiscreteSarsaLambda<StateType, ActionType>::Solve(
      const DiscreteEnvironment<StateType, ActionType>& environment) {
     // Initialize policy randomly.
     policy_.SetRandomly(environment);
 
     // Initialize value function to zero.
-    std::vector<StateType> states;
-    environment.States(states);
-    value_.Initialize(states);
+    value_.Initialize(environment);
 
     // Run until convergence.
     bool has_converged = false;
@@ -152,50 +150,63 @@ namespace rl {
   // value function. Returns the total number of changes made; when this
   // number is zero, we have reached convergence.
   template<typename StateType, typename ActionType>
-  size_t DiscreteTdLambda<StateType, ActionType>::UpdatePolicy(
+  size_t DiscreteSarsaLambda<StateType, ActionType>::UpdatePolicy(
      const DiscreteEnvironment<StateType, ActionType>& environment) {
-    return policy_.SetGreedily(value_, environment, discount_factor_);
+    return policy_.SetGreedily(value_);
   }
 
-  // Estimate the value function for the current policy using TD(lambda).
+  // Estimate the value function for the current policy using SARSA(lambda).
   template<typename StateType, typename ActionType>
-  void DiscreteTdLambda<StateType, ActionType>::UpdateValueFunction(
+  void DiscreteSarsaLambda<StateType, ActionType>::UpdateValueFunction(
      const DiscreteEnvironment<StateType, ActionType>& environment) {
     // Run the specified number of rollouts.
     for (size_t ii = 0; ii < num_rollouts_; ii++) {
       // Initialize the current state to the initial state.
       StateType current_state = initial_state_;
+      ActionType current_action;
+      CHECK(policy_.Act(environment, current_state, current_action));
 
-      // Start an eligibility trace. All states in the trace will be tracked
-      // as normal. If a state is not in the trace yet, that means it has not
+      // Start an eligibility trace, which we represent as a value function.
+      // All states/actions in the trace will be tracked as normal. If a
+      // state/action pair is not in the trace yet, that means it has not
       // been visited this rollout.
-      std::unordered_map<StateType, double, typename StateType::Hash> trace;
+      DiscreteActionValueFunctor<StateType, ActionType> trace;
 
       // Simulate the rollout.
       for (int jj = 0;
            jj < rollout_length_ || (rollout_length_ < 0 &&
                                     !environment.IsTerminal(current_state));
            jj++) {
-        // Increment elegibility trace at this state.
-        if (trace.count(current_state) > 0)
-          trace.at(current_state) += 1.0;
+
+        // Increment elegibility trace at this state/action pair.
+        const double current_trace = trace(current_state, current_action);
+        if (current_trace == kInvalidValue)
+          trace.Set(current_state, current_action, 1.0);
         else
-          trace.insert({current_state, 1.0});
+          trace.Set(current_state, current_action, current_trace + 1.0);
 
-        // Get the action dictated by 'policy_'.
-        ActionType action;
-        CHECK(policy_.Act(environment, current_state, action));
+        // Get the current value at this state/action pair.
+        const double current_value = value_(current_state, current_action);
 
-        // Simulate this action and compute TD delta.
-        const double current_value = value_(current_state);
-        const double reward = environment.Simulate(current_state, action);
+        // Simulate this action.
+        const double reward =
+          environment.Simulate(current_state, current_action);
+
+        // Sample another action from the policy, but at the new state.
+        CHECK(policy_.Act(environment, current_state, current_action));
+
+        // Compute SARSA delta.
+        const double next_value = value_(current_state, current_action);
         const double delta =
-           reward + discount_factor_ * value_(current_state) - current_value;
+           reward + discount_factor_ * next_value - current_value;
 
         // Update values and decay eligibility trace.
-        for (auto& entry : trace) {
-          value_[entry.first] += alpha_ * delta * entry.second;
-          entry.second *= discount_factor_ * lambda_;
+        for (auto& state_entry : trace.value_) {
+          for (auto& action_entry : state_entry.second) {
+            value_.Reference(state_entry.first, action_entry.first) +=
+              alpha_ * delta * action_entry.second;
+            action_entry.second *= discount_factor_ * lambda_;
+          }
         }
       }
     }

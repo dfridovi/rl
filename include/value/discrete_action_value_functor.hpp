@@ -45,24 +45,46 @@
 #define RL_VALUE_DISCRETE_ACTION_VALUE_FUNCTOR_H
 
 #include <value/action_value_functor.hpp>
+#include <environment/discrete_environment.hpp>
+#include <util/types.h>
 
 #include <unordered_map>
 #include <limits>
+#include <iostream>
 
 namespace rl {
 
   template<typename StateType, typename ActionType>
   struct DiscreteActionValueFunctor :
     public ActionValueFunctor<StateType, ActionType> {
+    // Hash table to store the value function. Both StateType and ActionType
+    // must implement their own 'Hash' functors.
+    std::unordered_map<
+      StateType,
+      std::unordered_map<ActionType, double, typename ActionType::Hash>,
+      typename StateType::Hash> value_;
+
+    // Constructor/destructor.
     ~DiscreteActionValueFunctor() {}
     explicit DiscreteActionValueFunctor()
       : ActionValueFunctor<StateType, ActionType>() {}
 
+    // Pure virtual method to output the value at a state/action pair.
+    double operator()(const StateType& state, const ActionType& action) const {
+      if (value_.count(state) == 0)
+        return kInvalidValue;
+
+      if (value_.at(state).count(action) == 0)
+        return kInvalidValue;
+
+      return value_.at(state).at(action);
+    }
+
     // Set the value of a given state, action pair. If pair is already in
     // the table, updates the value to what is given here.
     void Set(const StateType& state, const ActionType& action, double value) {
-      if (value_.count(state) == 0) {
-        if (value_.at(state).count(action) == 0)
+      if (value_.count(state) > 0) {
+        if (value_.at(state).count(action) > 0)
           // Table contains this pair.
           value_.at(state).at(action) = value;
         else
@@ -70,28 +92,34 @@ namespace rl {
           value_.at(state).insert({action, value});
       } else {
         // Table does not contain this state.
-        value_.insert({
-            state, std::unordered_map<ActionType, double>({{action, value}})});
+        value_.insert({state, std::unordered_map<
+          ActionType, double, typename ActionType::Hash>({{action, value}})});
       }
     }
 
-    // Pure virtual method to output the value at a state/action pair.
-    double operator()(const StateType& state, const ActionType& action) const {
-      if (value_.count(state) == 0)
-        return -std::numeric_limits<double>::infinity();
-
-      if (value_.at(state).count(action) == 0)
-        return -std::numeric_limits<double>::infinity();
-
+    // Operator to get a reference to the value at a state.
+    double& Reference(const StateType& state, const ActionType& action) {
       return value_.at(state).at(action);
     }
 
-    // Hash table to store the value function. Both StateType and ActionType
-    // must implement their own 'Hash' functors.
-    std::unordered_map<
-      StateType,
-      std::unordered_map<ActionType, double, typename ActionType::Hash>,
-      typename StateType::Hash> value_;
+    // Initialize all feasible actions at each state to zero.
+    void Initialize(
+       const DiscreteEnvironment<StateType, ActionType>& environment) {
+      value_.clear();
+
+      // Get a list of all states.
+      std::vector<StateType> states;
+      environment.States(states);
+
+      for (const auto& state : states) {
+        // Get a list of all feasible actions in this state.
+        std::vector<ActionType> actions;
+        environment.Actions(state, actions);
+
+        for (const auto& action : actions)
+          Set(state, action, 0.0);
+      }
+    }
   }; //\class DiscreteStateValueFunctor
 
 }  //\namespace rl

@@ -202,7 +202,7 @@ namespace rl {
       const StateType state = state_entry.first;
 
       // Check if this is a new state or not.
-      const bool is_new_state = (policy_.count(state_entry.first));
+      const bool is_new_state = (policy_.count(state) == 0);
 
       // Find best action.
       double max_value = -std::numeric_limits<double>::infinity();
