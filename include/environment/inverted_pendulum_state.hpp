@@ -43,6 +43,9 @@
 #ifndef RL_ENVIRONMENT_INVERTED_PENDULUM_STATE_H
 #define RL_ENVIRONMENT_INVERTED_PENDULUM_STATE_H
 
+#include <util/types.hpp>
+
+#include <glog/logging.h>
 #include <boost/functional/hash.hpp>
 #include <stddef.h>
 #include <math.h>
@@ -66,6 +69,17 @@ namespace rl {
     ~InvertedPendulumState() {}
     InvertedPendulumState(double theta, double omega)
       : theta_(theta), omega_(omega) {}
+
+    // Static number of dimensions.
+    static size_t FeatureDimension() { return 2; }
+
+    // Get a feature vector for this state.
+    void Features(VectorXd& features) const {
+      CHECK_EQ(features.size(), FeatureDimension());
+
+      features(0) = theta_;
+      features(1) = omega_;
+    }
 
     // (In)equality operators. Note that these are not exactly transitive,
     // but rather are intended to simplify routine comparisons.
@@ -127,7 +141,6 @@ namespace rl {
       }
     }; //\struct Hash
   }; //\struct InvertedPendulumState
-
 }  //\namespace rl
 
 #endif

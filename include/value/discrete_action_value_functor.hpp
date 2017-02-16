@@ -46,7 +46,7 @@
 
 #include <value/action_value_functor.hpp>
 #include <environment/discrete_environment.hpp>
-#include <util/types.h>
+#include <util/types.hpp>
 
 #include <unordered_map>
 #include <limits>

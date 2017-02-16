@@ -41,7 +41,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <environment/grid_world.hpp>
-#include <util/types.h>
+#include <util/types.hpp>
 
 #include <glog/logging.h>
 #include <limits>

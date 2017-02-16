@@ -41,7 +41,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <environment/inverted_pendulum.hpp>
-#include <util/types.h>
+#include <util/types.hpp>
 
 #include <math.h>
 

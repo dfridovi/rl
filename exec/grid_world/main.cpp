@@ -38,7 +38,7 @@
 #include <environment/grid_action.hpp>
 #include <environment/grid_state.hpp>
 #include <solver/modified_policy_iteration.hpp>
-#include <util/types.h>
+#include <util/types.hpp>
 
 #include <glog/logging.h>
 #include <gflags/gflags.h>
