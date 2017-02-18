@@ -120,7 +120,7 @@ namespace rl {
           Set(state, action, 0.0);
       }
     }
-  }; //\class DiscreteStateValueFunctor
+  }; //\class DiscreteActionValueFunctor
 
 }  //\namespace rl
 

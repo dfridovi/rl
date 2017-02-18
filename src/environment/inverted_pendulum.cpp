@@ -81,12 +81,12 @@ namespace rl {
   // and return accumulated reward, which is negative the absolute angular
   // distance between the ball and the goal state.
   double InvertedPendulum::Simulate(InvertedPendulumState& state,
-                                    const double& action) const {
+                                    const InvertedPendulumAction& action) const {
     // Compute net torque and angular acceleration.
     const double gravity = -9.81 * std::cos(state.theta_) * arm_length_;
     const double friction = (gravity < 0.0) ?
       std::min(-gravity, friction_) : std::max(-gravity, -friction_);
-    const double torque = gravity + friction;
+    const double torque = gravity + friction + action.torque_;
     const double acceleration = torque * moment_;
 
     // Numerical integration.
@@ -111,8 +111,8 @@ namespace rl {
   // Implement pure virtual method to return whether or not an action is
   // valid in a given state. Simple bounds checking on action (torque).
   bool InvertedPendulum::IsValid(const InvertedPendulumState& state,
-                                 const double& action) const {
-    return (action >= torque_lower_ && action <= torque_upper_);
+                                 const InvertedPendulumAction& action) const {
+    return (action.torque_ >= torque_lower_ && action.torque_ <= torque_upper_);
   }
 
   // Implement pure virtual method to return whether a state is terminal.

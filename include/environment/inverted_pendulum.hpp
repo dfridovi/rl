@@ -46,6 +46,7 @@
 #include <environment/continuous_environment.hpp>
 #include <environment/inverted_pendulum_params.hpp>
 #include <environment/inverted_pendulum_state.hpp>
+#include <environment/inverted_pendulum_action.hpp>
 
 #include <stddef.h>
 
@@ -60,7 +61,7 @@
 namespace rl {
 
   class InvertedPendulum :
-    public ContinuousEnvironment<InvertedPendulumState, double> {
+    public ContinuousEnvironment<InvertedPendulumState, InvertedPendulumAction> {
   public:
     ~InvertedPendulum() {}
 
@@ -72,12 +73,12 @@ namespace rl {
 
     // Implement pure virtual method from Environment.
     double Simulate(InvertedPendulumState& state,
-                    const double& action) const;
+                    const InvertedPendulumAction& action) const;
 
     // Implement pure virtual method to return whether or not an action is
     // valid in a given state.
     bool IsValid(const InvertedPendulumState& state,
-                 const double& action) const;
+                 const InvertedPendulumAction& action) const;
 
     // Implement pure virtual method to return whether a state is terminal.
     bool IsTerminal(const InvertedPendulumState& state) const;

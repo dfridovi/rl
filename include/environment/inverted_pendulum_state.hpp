@@ -71,7 +71,7 @@ namespace rl {
       : theta_(theta), omega_(omega) {}
 
     // Static number of dimensions.
-    static size_t FeatureDimension() { return 2; }
+    static constexpr size_t FeatureDimension() { return 2; }
 
     // Get a feature vector for this state.
     void Features(VectorXd& features) const {
