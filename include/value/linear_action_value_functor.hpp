@@ -63,10 +63,10 @@ namespace rl {
     // Constructor/destructor.
     ~LinearActionValueFunctor() {}
     explicit LinearActionValueFunctor(double eligibility_decay = 0.0)
-      : weights_(VectorXd::Zero(StateType::FeatureDimension() +
-                                ActionType::FeatureDimension())),
-        eligibility_(VectorXd::Zero(StateType::FeatureDimension() +
-                                    ActionType::FeatureDimension())),
+      : state_weights_(VectorXd::Zero(StateType::FeatureDimension())),
+        state_eligibility_(VectorXd::Zero(StateType::FeatureDimension())),
+        action_weights_(VectorXd::Zero(ActionType::FeatureDimension())),
+        action_eligibility_(VectorXd::Zero(ActionType::FeatureDimension())),
         eligibility_decay_(eligibility_decay),
         ContinuousActionValueFunctor<StateType, ActionType>() {
       // Create a random number generator for a normal distribution of mean
@@ -76,48 +76,61 @@ namespace rl {
       std::normal_distribution<double> gaussian(0.0, 0.1);
 
       // Populate weights from this distribution.
-      for (size_t ii = 0; ii < weights_.size(); ii++)
-        weights_(ii) = gaussian(rng);
+      for (size_t ii = 0; ii < state_weights_.size(); ii++)
+        state_weights_(ii) = gaussian(rng);
+
+      for (size_t ii = 0; ii < action_weights_.size(); ii++)
+        action_weights_(ii) = gaussian(rng);
     }
 
     // Pure virtual method to output the value at a state/action pair.
     double operator()(const StateType& state, const ActionType& action) const {
       // Extract feature from state and action.
-      VectorXd state_features(StateType::FeatureDimension());
+      VectorXd state_features(state_weights_.size());
       state.Features(state_features);
 
-      VectorXd action_features(ActionType::FeatureDimension());
+      VectorXd action_features(action_weights_.size());
       action.Features(action_features);
 
       // Compute inner product.
       const double inner_product =
-        state_features.transpose() *
-           weights_.head(StateType::FeatureDimension()) +
-        action_features.transpose() *
-           weights_.tail(ActionType::FeatureDimension());
+        state_features.dot(state_weights_) +
+        action_features.dot(action_weights_);
       return inner_product;
     }
 
     // Pure virtual method to do a gradient update to underlying weights.
-    void Update(const StateType& state, double target, double step_size) {
-      // Extract feature from state.
-      VectorXd features(weights_.size());
-      state.Features(features);
+    void Update(const StateType& state, const ActionType& action,
+                double target, double step_size) {
+      // Extract feature from state and action.
+      VectorXd state_features(state_weights_.size());
+      state.Features(state_features);
+
+      VectorXd action_features(action_weights_.size());
+      action.Features(action_features);
 
       // Update eligibility trace.
-      eligibility_ *= eligibility_decay_;
-      eligibility_ += features;
+      state_eligibility_ *= eligibility_decay_;
+      state_eligibility_ += state_features;
 
-      const double output = features.transpose() * weights_;
-      weights_ += (target - output) * step_size * eligibility_;
+      action_eligibility_ *= eligibility_decay_;
+      action_eligibility_ += action_features;
+
+      const double output =
+        state_features.dot(state_weights_) +
+        action_features.dot(action_weights_);
+      state_weights_ += (target - output) * step_size * state_eligibility_;
+      action_weights_ += (target - output) * step_size * action_eligibility_;
     }
 
   private:
-    // Vector of weights.
-    VectorXd weights_;
+    // Vectors of weights.
+    VectorXd state_weights_;
+    VectorXd action_weights_;
 
-    // Eligibility trace with decay rate.
-    VectorXd eligibility_;
+    // Eligibility traces with decay rate.
+    VectorXd state_eligibility_;
+    VectorXd action_eligibility_;
     const double eligibility_decay_;
   }; //\struct LinearStateValueFunctor
 

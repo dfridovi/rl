@@ -91,7 +91,7 @@ TEST(DiscreteSarsaLambda, TestConvergenceToOptimum) {
   const double kLambda = 0.5;
   const double kAlpha = 0.5;
   const size_t kMaxIterations = 100;
-  const size_t kNumRollouts = 1;
+  const size_t kNumRollouts = 10;
   const int kRolloutLength = -1;
   const double kInitialEpsilon = 0.5;
 
