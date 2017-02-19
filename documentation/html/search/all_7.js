@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['tdlambda',['TdLambda',['../classrl_1_1_td_lambda.html',1,'rl']]],
-  ['tdlambdaparams',['TdLambdaParams',['../structrl_1_1_td_lambda_params.html',1,'rl']]]
+  ['linearactionvaluefunctor',['LinearActionValueFunctor',['../classrl_1_1_linear_action_value_functor.html',1,'rl']]],
+  ['linearstatevaluefunctor',['LinearStateValueFunctor',['../classrl_1_1_linear_state_value_functor.html',1,'rl']]]
 ];

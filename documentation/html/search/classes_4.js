@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['hash',['Hash',['../structrl_1_1_grid_action_1_1_hash.html',1,'rl::GridAction']]],
-  ['hash',['Hash',['../structrl_1_1_grid_state_1_1_hash.html',1,'rl::GridState']]]
+  ['gridaction',['GridAction',['../structrl_1_1_grid_action.html',1,'rl']]],
+  ['gridstate',['GridState',['../structrl_1_1_grid_state.html',1,'rl']]],
+  ['gridworld',['GridWorld',['../classrl_1_1_grid_world.html',1,'rl']]]
 ];
