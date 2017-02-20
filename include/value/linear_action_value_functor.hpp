@@ -67,6 +67,7 @@ namespace rl {
         state_eligibility_(VectorXd::Zero(StateType::FeatureDimension())),
         action_weights_(VectorXd::Zero(ActionType::FeatureDimension())),
         action_eligibility_(VectorXd::Zero(ActionType::FeatureDimension())),
+        bias_(0.0),
         eligibility_decay_(eligibility_decay),
         ContinuousActionValueFunctor<StateType, ActionType>() {
       // Create a random number generator for a normal distribution of mean
@@ -81,6 +82,8 @@ namespace rl {
 
       for (size_t ii = 0; ii < action_weights_.size(); ii++)
         action_weights_(ii) = gaussian(rng);
+
+      bias_ = gaussian(rng);
     }
 
     // Pure virtual method to output the value at a state/action pair.
@@ -93,7 +96,7 @@ namespace rl {
       action.Features(action_features);
 
       // Compute inner product.
-      const double inner_product =
+      const double inner_product = bias_ +
         state_features.dot(state_weights_) +
         action_features.dot(action_weights_);
       return inner_product;
@@ -116,11 +119,12 @@ namespace rl {
       action_eligibility_ *= eligibility_decay_;
       action_eligibility_ += action_features;
 
-      const double output =
+      const double output = bias_ +
         state_features.dot(state_weights_) +
         action_features.dot(action_weights_);
       state_weights_ += (target - output) * step_size * state_eligibility_;
       action_weights_ += (target - output) * step_size * action_eligibility_;
+      bias_ += (target - output) * step_size;
     }
 
     // Choose an optimal action in the given state. Returns whether or not
@@ -146,6 +150,7 @@ namespace rl {
     // Vectors of weights.
     VectorXd state_weights_;
     VectorXd action_weights_;
+    double bias_;
 
     // Eligibility traces with decay rate.
     VectorXd state_eligibility_;

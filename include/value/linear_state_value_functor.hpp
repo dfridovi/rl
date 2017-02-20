@@ -65,6 +65,7 @@ namespace rl {
     explicit LinearStateValueFunctor(double eligibility_decay = 0.0)
       : weights_(VectorXd::Zero(StateType::FeatureDimension())),
         eligibility_(VectorXd::Zero(StateType::FeatureDimension())),
+        bias_(0.0),
         eligibility_decay_(eligibility_decay),
         ContinuousStateValueFunctor<StateType>() {
       // Create a random number generator for a normal distribution of mean
@@ -76,6 +77,8 @@ namespace rl {
       // Populate weights from this distribution.
       for (size_t ii = 0; ii < weights_.size(); ii++)
         weights_(ii) = gaussian(rng);
+
+      bias_ = gaussian(rng);
     }
 
     // Pure virtual method to output the value at a state.
@@ -84,7 +87,7 @@ namespace rl {
       VectorXd features(weights_.size());
       state.Features(features);
 
-      return features.transpose() * weights_;
+      return features.dot(weights_) + bias_;
     }
 
     // Pure virtual method to do a gradient update to underlying weights.
@@ -97,13 +100,15 @@ namespace rl {
       eligibility_ *= eligibility_decay_;
       eligibility_ += features;
 
-      const double output = features.transpose() * weights_;
+      const double output = features.dot(weights_) + bias_;
       weights_ += (target - output) * step_size * eligibility_;
+      bias_ += (target - output) * step_size;
     }
 
   private:
     // Vector of weights.
     VectorXd weights_;
+    double bias_;
 
     // Eligibility trace with decay rate.
     VectorXd eligibility_;
