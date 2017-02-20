@@ -59,8 +59,6 @@ namespace rl {
     public ActionValueFunctor<StateType, ActionType> {
     // Constructor/destructor.
     virtual ~ContinuousActionValueFunctor() {}
-    explicit ContinuousActionValueFunctor()
-      : ActionValueFunctor<StateType, ActionType>() {}
 
     // Pure virtual method to output the value at a state/action pair.
     virtual double operator()(const StateType& state,
@@ -69,6 +67,14 @@ namespace rl {
     // Pure virtual method to do a gradient update to underlying weights.
     virtual void Update(const StateType& state, const ActionType& action,
                         double target, double step_size) = 0;
+
+    // Choose an optimal action in the given state. Returns whether or not
+    // optimization was successful.
+    virtual bool OptimalAction(const StateType& state,
+                               ActionType& action) const = 0;
+  protected:
+    explicit ContinuousActionValueFunctor()
+      : ActionValueFunctor<StateType, ActionType>() {}
   }; //\class ContinuousActionValueFunctor
 
 }  //\namespace rl

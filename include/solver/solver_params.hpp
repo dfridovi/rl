@@ -36,64 +36,49 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Defines the ActionExperienceReplay class, which is used to store tuples of
-// (state, action, value), which may be used to train a function approximator
-// derived from the ContinuousActionValueFunctor base class.
+// General struct for storing solver parameters. Not all of these parameters
+// will be used by any given solver, but for simplicity we place them all in
+// one place since so many are common to all/most solvers.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef RL_VALUE_ACTION_EXPERIENCE_REPLAY_H
-#define RL_VALUE_ACTION_EXPERIENCE_REPLAY_H
-
-#include <vector>
-#include <random>
+#ifndef RL_SOLVER_SOLVER_PARAMS_H
+#define RL_SOLVER_SOLVER_PARAMS_H
 
 namespace rl {
 
-  template<typename StateType, typename ActionType>
-  class ActionExperienceReplay {
-  public:
-    ~ActionExperienceReplay() {}
-    explicit ActionExperienceReplay()
-      : rd_(), rng_(rd_()) {}
+  struct SolverParams {
+    // Discount factor.
+    double discount_factor_ = 0.9;
 
-    // Add experience to the dataset.
-    void Add(const StateType& state, const ActionType& action, double value) {
-      states_.push_back(state);
-      actions_.push_back(action);
-      values_.push_back(value);
-    }
+    // Lambda value (for weighting contributions from old states).
+    // This parameter is not used in Q Learning.
+    double lambda_ = 0.5;
 
-    // Sample a random element from the data. Returns true if successful.
-    bool Sample(StateType& state, ActionType& action, double& value) {
-      if (states_.size() == 0) {
-        LOG(WARNING) << "ActionExperienceReplay: tried to sample "
-                     << "from an empty dataset.";
-        return false;
-      }
+    // Alpha value for interpolating between TD return and current value.
+    double alpha_ = 0.5;
 
-      // Create a random int distribution.
-      std::uniform_int_distribution<size_t> unif(0, states_.size() - 1);
+    // Maximum number of iterations of value function and policy updates.
+    // This parameter is not used in Q Learning.
+    size_t max_iterations_ = 100;
 
-      // Sample and return.
-      const size_t ii = unif(rng_);
-      state = states_[ii];
-      action = actions_[ii];
-      value = values_[ii];
-      return true;
-    }
+    // Number of rollouts used to estimate the value function.
+    size_t num_rollouts_ = 1;
 
-  private:
-    // Parallel lists of states, actions, and values.
-    std::vector<StateType> states_;
-    std::vector<ActionType> actions_;
-    std::vector<double> values_;
+    // Maximum rollout length. If -1, rollout until state is terminal.
+    int rollout_length_ = -1;
 
-    // Random number generation.
-    std::random_device rd_;
-    std::default_random_engine rng_;
-  }; //\struct ActionValueFunctor
+    // Initial epsilon-value for epsilon-greedy policy.
+    // This parameter is not used in Q Learning.
+    double initial_epsilon_ = 0.5;
 
+    // Number of experience replays -- i.e. number of SGD updates from
+    // experience replays.
+    size_t num_exp_replays_ = 20;
+
+    // Learning rate for SGD update.
+    double learning_rate_ = 0.01;
+  }; //\ struct TdLambdaParams
 }  //\namespace rl
 
 #endif

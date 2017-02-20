@@ -56,7 +56,6 @@ struct DummyState {
   static constexpr size_t FeatureDimension() { return 1; }
   void Features(VectorXd& features) const {
     CHECK_EQ(features.size(), FeatureDimension());
-
     features(0) = state_;
   }
 }; //\ struct DummyState
@@ -67,9 +66,23 @@ struct DummyAction {
   static constexpr size_t FeatureDimension() { return 1; }
   void Features(VectorXd& features) const {
     CHECK_EQ(features.size(), FeatureDimension());
-
     features(0) = action_;
   }
+  void FromFeatures(const VectorXd& features) {
+    CHECK_EQ(features.size(), FeatureDimension());
+    action_ = features(0);
+  }
+
+  static double MaxAlongDimension(size_t ii) {
+    CHECK_LE(ii, FeatureDimension() - 1);
+    return 1.0;
+  }
+
+  static double MinAlongDimension(size_t ii) {
+    CHECK_LE(ii, FeatureDimension() - 1);
+    return -1.0;
+  }
+
 }; //\ struct DummyAction
 
 // Test that a linear state value function converges to a true linear

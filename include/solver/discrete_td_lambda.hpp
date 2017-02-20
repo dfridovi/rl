@@ -46,7 +46,7 @@
 
 #include <policy/discrete_epsilon_greedy_policy.hpp>
 #include <value/discrete_state_value_functor.hpp>
-#include <solver/td_lambda_params.hpp>
+#include <solver/solver_params.hpp>
 
 #include <glog/logging.h>
 #include <vector>
@@ -60,7 +60,7 @@ namespace rl {
 
     // Initialize to a random policy.
     explicit DiscreteTdLambda(const StateType& initial_state,
-                              const TdLambdaParams& params)
+                              const SolverParams& params)
       : initial_state_(initial_state),
         discount_factor_(params.discount_factor_),
         lambda_(params.lambda_),
@@ -134,8 +134,10 @@ namespace rl {
       const size_t policy_changes = UpdatePolicy(environment);
       has_converged = (policy_changes == 0);
 
+#if 0
       std::cout << "Iteration " << ii << ": made "
                 << policy_changes << " changes." << std::endl;
+#endif
 
       // Decay epsilon.
       policy_.SetEpsilon(initial_epsilon_ / static_cast<double>(ii));

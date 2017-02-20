@@ -123,6 +123,25 @@ namespace rl {
       action_weights_ += (target - output) * step_size * action_eligibility_;
     }
 
+    // Choose an optimal action in the given state. Returns whether or not
+    // optimization was successful.
+    bool OptimalAction(const StateType& state, ActionType& action) const {
+      VectorXd optimal_features(action_weights_.size());
+
+      // In this case, the optimal action lies at a vertex of the feasible set
+      // (assume that the feasible set of actions is a box, i.e. each dimension
+      // has an interval constraint).
+      for (size_t ii = 0; ii < action_weights_.size(); ii++) {
+        if (action_weights_(ii) > 0)
+          optimal_features(ii) = ActionType::MaxAlongDimension(ii);
+        else
+          optimal_features(ii) = ActionType::MinAlongDimension(ii);
+      }
+
+      action.FromFeatures(optimal_features);
+      return true;
+    }
+
   private:
     // Vectors of weights.
     VectorXd state_weights_;

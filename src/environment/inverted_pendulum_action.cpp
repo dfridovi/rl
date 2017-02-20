@@ -36,61 +36,15 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Defines the StateExperienceReplay class, which is used to store duples of
-// (state, value), which may be used to train a function approximator derived
-// from the ContinuousStateValueFunctor base class.
+// Defines the InvertedPendulumAction static variables.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef RL_VALUE_STATE_EXPERIENCE_REPLAY_H
-#define RL_VALUE_STATE_EXPERIENCE_REPLAY_H
-
-#include <vector>
-#include <random>
+#include <environment/inverted_pendulum_action.hpp>
 
 namespace rl {
-
-  template<typename StateType>
-  class StateExperienceReplay {
-  public:
-    ~StateExperienceReplay() {}
-    explicit StateExperienceReplay()
-      : rd_(), rng_(rd_()) {}
-
-    // Add experience to the dataset.
-    void Add(const StateType& state, double value) {
-      states_.push_back(state);
-      values_.push_back(value);
-    }
-
-    // Sample a random element from the data. Returns true if successful.
-    bool Sample(StateType& state, double& value) {
-      if (states_.size() == 0) {
-        LOG(WARNING) << "StateExperienceReplay: tried to sample "
-                     << "from an empty dataset.";
-        return false;
-      }
-
-      // Create a random int distribution.
-      std::uniform_int_distribution<size_t> unif(0, states_.size() - 1);
-
-      // Sample and return.
-      const size_t ii = unif(rng_);
-      state = states_[ii];
-      value = values_[ii];
-      return true;
-    }
-
-  private:
-    // Parallel lists of states and values.
-    std::vector<StateType> states_;
-    std::vector<double> values_;
-
-    // Random number generation.
-    std::random_device rd_;
-    std::default_random_engine rng_;
-  }; //\struct StateValueFunctor
-
-}  //\namespace rl
-
-#endif
+  // Static min and max torques. These are completely arbitrary values and
+  // should be reset for each particular application.
+  double InvertedPendulumAction::min_torque_ = -1.0;
+  double InvertedPendulumAction::max_torque_ = 1.0;
+}

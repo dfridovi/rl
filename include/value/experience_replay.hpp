@@ -36,37 +36,68 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// TD Lambda parameters.
+// Defines the ExperienceReplay class, which is used to store tuples of
+// (state, action, reward, state).
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef RL_SOLVER_TD_LAMBDA_PARAMS_H
-#define RL_SOLVER_TD_LAMBDA_PARAMS_H
+#ifndef RL_VALUE_EXPERIENCE_REPLAY_H
+#define RL_VALUE_EXPERIENCE_REPLAY_H
+
+#include <vector>
+#include <random>
 
 namespace rl {
 
-  struct TdLambdaParams {
-    // Discount factor.
-    double discount_factor_ = 0.9;
+  template<typename StateType, typename ActionType>
+  class ExperienceReplay {
+  public:
+    ~ExperienceReplay() {}
+    explicit ExperienceReplay()
+      : rd_(), rng_(rd_()) {}
 
-    // Lambda value (for weighting contributions from old states).
-    double lambda_ = 0.5;
+    // Add experience to the dataset.
+    void Add(const StateType& state, const ActionType& action, double reward,
+             const StateType& next_state) {
+      states_.push_back(state);
+      actions_.push_back(action);
+      rewards_.push_back(value);
+      next_states_.push_back(next_state);
+    }
 
-    // Alpha value (learning rate).
-    double alpha_ = 0.5;
+    // Sample a random element from the data. Returns true if successful.
+    bool Sample(StateType& state, ActionType& action, double& reward,
+                StateType& next_state) {
+      if (states_.size() == 0) {
+        LOG(WARNING) << "ExperienceReplay: tried to sample "
+                     << "from an empty dataset.";
+        return false;
+      }
 
-    // Maximum number of iterations of value function and policy updates.
-    size_t max_iterations_ = 100;
+      // Create a random int distribution.
+      std::uniform_int_distribution<size_t> unif(0, states_.size() - 1);
 
-    // Number of rollouts used to estimate the value function.
-    size_t num_rollouts_ = 1;
+      // Sample and return.
+      const size_t ii = unif(rng_);
+      state = states_[ii];
+      action = actions_[ii];
+      reward = rewards_[ii];
+      next_state = next_states_[ii];
+      return true;
+    }
 
-    // Maximum rollout length. If -1, rollout until state is terminal.
-    int rollout_length_ = -1;
+  private:
+    // Parallel lists of states, actions, rewards, next states.
+    std::vector<StateType> states_;
+    std::vector<ActionType> actions_;
+    std::vector<double> rewards_;
+    std::vector<StateType> next_states_;
 
-    // Initial epsilon-value for epsilon-greedy policy.
-    double initial_epsilon_ = 0.5;
-  }; //\ struct TdLambdaParams
+    // Random number generation.
+    std::random_device rd_;
+    std::default_random_engine rng_;
+  }; //\struct ExperienceReplay
+
 }  //\namespace rl
 
 #endif

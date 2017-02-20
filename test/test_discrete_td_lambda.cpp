@@ -40,7 +40,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <solver/discrete_td_lambda.hpp>
-#include <solver/td_lambda_params.hpp>
+#include <solver/solver_params.hpp>
 #include <environment/grid_world.hpp>
 #include <environment/grid_state.hpp>
 #include <environment/grid_action.hpp>
@@ -69,7 +69,7 @@ TEST(DiscreteTdLambda, TestConvergence) {
   const GridWorld world(kNumRows, kNumCols, goal);
 
   // Create a solver.
-  TdLambdaParams params;
+  SolverParams params;
   params.discount_factor_ = kDiscountFactor;
   params.lambda_ = kLambda;
   params.alpha_ = kAlpha;
@@ -103,7 +103,7 @@ TEST(DiscreteTdLambda, TestConvergenceToOptimum) {
   const GridWorld world(kNumRows, kNumCols, goal);
 
   // Create a solver.
-  TdLambdaParams params;
+  SolverParams params;
   params.discount_factor_ = kDiscountFactor;
   params.lambda_ = kLambda;
   params.alpha_ = kAlpha;

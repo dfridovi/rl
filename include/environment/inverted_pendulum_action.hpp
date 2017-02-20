@@ -56,19 +56,46 @@ namespace rl {
     // Just a single torque input.
     double torque_;
 
+    // Static min and max torques.
+    static double min_torque_;
+    static double max_torque_;
+
     // Constructor/destructor.
     ~InvertedPendulumAction() {}
     InvertedPendulumAction(double torque)
       : torque_(torque) {}
 
-    // Static number of dimensions.
+    // Static setter.
+    static void SetLimits(double min_torque, double max_torque) {
+      min_torque_ = min_torque;
+      max_torque_ = max_torque;
+    }
+
+    // Static number of dimensions and min/max values.
     static constexpr size_t FeatureDimension() { return 1; }
+
+    static double MaxAlongDimension(size_t ii) {
+      CHECK_LE(ii, FeatureDimension() - 1);
+      return max_torque_;
+    }
+
+    static double MinAlongDimension(size_t ii) {
+      CHECK_LE(ii, FeatureDimension() - 1);
+      return min_torque_;
+    }
 
     // Get a feature vector for this action.
     void Features(VectorXd& features) const {
       CHECK_EQ(features.size(), FeatureDimension());
 
       features(0) = torque_;
+    }
+
+    // Set from features.
+    void FromFeatures(const VectorXd& features) {
+      CHECK_EQ(features.size(), FeatureDimension());
+
+      torque_ = features(0);
     }
 
     // (In)equality operators. Note that these are not exactly transitive,
