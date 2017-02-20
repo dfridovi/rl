@@ -75,7 +75,8 @@ namespace rl {
     // Runs Q Learning algorithm for the specified number of iterations.
     // Solution is stored in the provided continuous value functor.
     void Solve(const ContinuousEnvironment<StateType, ActionType>& environment,
-               ContinuousActionValueFunctor<StateType, ActionType>& value);
+               ContinuousActionValueFunctor<StateType, ActionType>& value,
+               bool verbose = false);
 
   private:
     // Estimate the value function for the current policy using Q Learning,
@@ -104,13 +105,16 @@ namespace rl {
   template<typename StateType, typename ActionType>
   void ContinuousQLearning<StateType, ActionType>::Solve(
      const ContinuousEnvironment<StateType, ActionType>& environment,
-     ContinuousActionValueFunctor<StateType, ActionType>& value) {
+     ContinuousActionValueFunctor<StateType, ActionType>& value,
+     bool verbose) {
     // Run for the specified number of iterations. Assume value functor
     // has already been initialized.
     for (size_t ii = 1; ii <= num_rollouts_; ii++) {
-      std::cout << "Training rollout #" << ii << "..." << std::flush;
+      if (verbose)
+        std::cout << "Training rollout #" << ii << "..." << std::flush;
       UpdateValueFunction(environment, value);
-      std::cout << "done." << std::endl;
+      if (verbose)
+        std::cout << "done." << std::endl;
 
       // Update epsilon.
       policy_.SetEpsilon(initial_epsilon_ / static_cast<double>(ii + 1));

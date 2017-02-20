@@ -82,8 +82,9 @@ namespace rl {
 
   // Implement pure virtual method from Environment. Compute net torque at the
   // joint and translate to an angular acceleration. Integrate this numerically
-  // and return accumulated reward, which is negative the absolute angular
-  // distance between the ball and the goal state.
+  // and return accumulated reward, which is a combination of the absolute
+  // angular distance from the goal and the angular velocity (sign depending
+  // on whether it is pointing the right direction or not).
   double InvertedPendulum::Simulate(InvertedPendulumState& state,
                                     const InvertedPendulumAction& action) const {
     // Compute net torque and angular acceleration.
@@ -103,6 +104,13 @@ namespace rl {
       // Check if angle is out of bounds.
       bounds_check &=
         (state.theta_ >= theta_lower_ && state.theta_ <= theta_upper_);
+
+      // Accumulate reward.
+      if (state.theta_ > goal_.theta_)
+        reward -= state.omega_;
+      else
+        reward += state.omega_;
+
       reward -= std::abs(state.theta_ - goal_.theta_);
     }
 

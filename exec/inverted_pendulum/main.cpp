@@ -57,25 +57,26 @@ using namespace rl;
 // Animation parameters.
 DEFINE_int32(refresh_rate, 10, "Refresh rate in milliseconds.");
 DEFINE_double(motion_rate, 0.5, "Fraction of real-time.");
+DEFINE_int32(replan_rate, 50, "Replanning rate in milliseconds.");
 
 // Solver parameters.
 DEFINE_double(discount_factor, 0.9, "Discount factor.");
 DEFINE_double(alpha, 0.5, "TD return interpolation parameter.");
-DEFINE_double(learning_rate, 0.1, "Learning rate for SGD.");
-DEFINE_int32(num_rollouts, 100, "Number of rollouts to learn from.");
-DEFINE_int32(rollout_length, -1,
+DEFINE_double(learning_rate, 0.004, "Learning rate for SGD.");
+DEFINE_int32(num_rollouts, 200, "Number of rollouts to learn from.");
+DEFINE_int32(rollout_length, 20,
              "Rollout length. If negative, rollout until a terminal state.");
-DEFINE_int32(num_exp_replays, 20,
+DEFINE_int32(num_exp_replays, 50,
              "Number of SGD updates from experience replay per iteration.");
 
 // Environment parameters.
 DEFINE_double(arm_length, 1.0, "Length of pendulum arm in meters.");
 DEFINE_double(ball_radius, 0.1, "Ball radius in meters.");
 DEFINE_double(ball_mass, 1.0, "Ball mass in kilograms.");
-DEFINE_double(initial_theta, 0.25 * M_PI, "Initial angle from the +x axis.");
-DEFINE_double(initial_omega, 0.0, "Initial angular velocity.");
-DEFINE_double(friction, 0.01, "Torque applied by friction.");
-DEFINE_double(torque_limit, 10.0, "Limit for applied torque.");
+DEFINE_double(initial_theta, 1.25, "Initial angle from the +x axis.");
+DEFINE_double(initial_omega, 0.1, "Initial angular velocity.");
+DEFINE_double(friction, 1.0, "Torque applied by friction.");
+DEFINE_double(torque_limit, 20.0, "Limit for applied torque.");
 DEFINE_double(time_step, 0.001, "Time step for numerical integration.");
 
 // Create a globally-defined simulator and current state.
@@ -111,11 +112,41 @@ void Visualize() {
   glutSwapBuffers();
 }
 
-// Timer callback. Re-render at the specified rate if not terninal.
-void Timer(int value) {
+// Replan.
+void Replan() {
+  CHECK_NOTNULL(current_state);
+  CHECK_NOTNULL(world);
+  CHECK_NOTNULL(value);
+
+  // Set up the solver.
+  SolverParams solver_params;
+  solver_params.discount_factor_ = FLAGS_discount_factor;
+  solver_params.alpha_ = FLAGS_alpha;
+  solver_params.num_rollouts_ = FLAGS_num_rollouts;
+  solver_params.rollout_length_ = FLAGS_rollout_length;
+  solver_params.num_exp_replays_ = FLAGS_num_exp_replays;
+  solver_params.learning_rate_ = FLAGS_learning_rate;
+  ContinuousQLearning<InvertedPendulumState,
+                      InvertedPendulumAction> solver(*current_state, solver_params);
+
+  std::cout << "Running solver..." << std::flush;
+  solver.Solve(*world, *value);
+  std::cout << "done." << std::endl;
+}
+
+// Animation timer callback. Re-render at the specified rate.
+void AnimationTimer(int value) {
   if (!is_terminal) {
     glutPostRedisplay();
-    glutTimerFunc(FLAGS_refresh_rate, Timer, 0);
+    glutTimerFunc(FLAGS_refresh_rate, AnimationTimer, 0);
+  }
+}
+
+// Replanning timer callback. Replan every time this fires.
+void ReplanningTimer(int value) {
+  if (!is_terminal) {
+    Replan();
+    glutTimerFunc(FLAGS_replan_rate, ReplanningTimer, 0);
   }
 }
 
@@ -177,7 +208,8 @@ void SingleIteration() {
     const double reward = world->Simulate(*current_state, action);
 
     // Print out step counter and reward.
-    std::printf("Received reward of %f.\n", reward);
+    std::printf("Received reward of %f for torque of %f.\n",
+                reward, action.torque_);
   }
 
   // Visualize.
@@ -214,18 +246,7 @@ int main(int argc, char** argv) {
                                        InvertedPendulumAction>(0.0);
 
   // Set up the solver.
-  SolverParams solver_params;
-  solver_params.discount_factor_ = FLAGS_discount_factor;
-  solver_params.alpha_ = FLAGS_alpha;
-  solver_params.num_rollouts_ = FLAGS_num_rollouts;
-  solver_params.rollout_length_ = FLAGS_rollout_length;
-  solver_params.num_exp_replays_ = FLAGS_num_exp_replays;
-  solver_params.learning_rate_ = FLAGS_learning_rate;
-  ContinuousQLearning<InvertedPendulumState,
-    InvertedPendulumAction> solver(*current_state, solver_params);
-
-  std::printf("Running Q Learning solver...\n");
-  solver.Solve(*world, *value);
+  Replan();
 
   // Set up OpenGL window.
   glutInit(&argc, argv);
@@ -235,11 +256,13 @@ int main(int argc, char** argv) {
   glutCreateWindow("Inverted Pendulum");
   glutDisplayFunc(SingleIteration);
   glutReshapeFunc(Reshape);
-  glutTimerFunc(0, Timer, 0);
+  glutTimerFunc(0, AnimationTimer, 0);
+  glutTimerFunc(0, ReplanningTimer, 0);
   InitGL();
   glutMainLoop();
 
   delete world;
   delete current_state;
+  delete value;
   return 0;
 }
