@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.12"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>RL: rl::DiscreteTdLambda&lt; StateType, ActionType &gt; Class Template Reference</title>
+<title>RL: rl::ContinuousQLearning&lt; StateType, ActionType &gt; Class Template Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -59,41 +59,35 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><b>rl</b></li><li class="navelem"><a class="el" href="classrl_1_1_discrete_td_lambda.html">DiscreteTdLambda</a></li>  </ul>
+<li class="navelem"><b>rl</b></li><li class="navelem"><a class="el" href="classrl_1_1_continuous_q_learning.html">ContinuousQLearning</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
-<a href="classrl_1_1_discrete_td_lambda-members.html">List of all members</a>  </div>
+<a href="classrl_1_1_continuous_q_learning-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">rl::DiscreteTdLambda&lt; StateType, ActionType &gt; Class Template Reference</div>  </div>
+<div class="title">rl::ContinuousQLearning&lt; StateType, ActionType &gt; Class Template Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a899c3819e15973a6d78c0606c5f3dfb8"><td class="memItemLeft" align="right" valign="top"><a id="a899c3819e15973a6d78c0606c5f3dfb8"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>DiscreteTdLambda</b> (const StateType &amp;initial_state, const <a class="el" href="structrl_1_1_solver_params.html">SolverParams</a> &amp;params)</td></tr>
-<tr class="separator:a899c3819e15973a6d78c0606c5f3dfb8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9458f4514c9cabe6083d54f7d9d195d4"><td class="memItemLeft" align="right" valign="top"><a id="a9458f4514c9cabe6083d54f7d9d195d4"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>Solve</b> (const <a class="el" href="classrl_1_1_discrete_environment.html">DiscreteEnvironment</a>&lt; StateType, ActionType &gt; &amp;environment)</td></tr>
-<tr class="separator:a9458f4514c9cabe6083d54f7d9d195d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2415e7f327ed838cac5d792d95dc1cb7"><td class="memItemLeft" align="right" valign="top"><a id="a2415e7f327ed838cac5d792d95dc1cb7"></a>
-const <a class="el" href="classrl_1_1_discrete_epsilon_greedy_policy.html">DiscreteEpsilonGreedyPolicy</a>&lt; StateType, ActionType &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>Policy</b> () const</td></tr>
-<tr class="separator:a2415e7f327ed838cac5d792d95dc1cb7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7feeec5e60b3ab723e957e767af95211"><td class="memItemLeft" align="right" valign="top"><a id="a7feeec5e60b3ab723e957e767af95211"></a>
-const <a class="el" href="structrl_1_1_discrete_state_value_functor.html">DiscreteStateValueFunctor</a>&lt; StateType &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>Value</b> () const</td></tr>
-<tr class="separator:a7feeec5e60b3ab723e957e767af95211"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acad11cd674054dda55ccb9a325cc5c63"><td class="memItemLeft" align="right" valign="top"><a id="acad11cd674054dda55ccb9a325cc5c63"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>ContinuousQLearning</b> (const StateType &amp;initial_state, const <a class="el" href="structrl_1_1_solver_params.html">SolverParams</a> &amp;params)</td></tr>
+<tr class="separator:acad11cd674054dda55ccb9a325cc5c63"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a861b4ad3f8d73e9140b6f52579668390"><td class="memItemLeft" align="right" valign="top"><a id="a861b4ad3f8d73e9140b6f52579668390"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>Solve</b> (const <a class="el" href="classrl_1_1_continuous_environment.html">ContinuousEnvironment</a>&lt; StateType, ActionType &gt; &amp;environment, <a class="el" href="structrl_1_1_continuous_action_value_functor.html">ContinuousActionValueFunctor</a> &amp;value)</td></tr>
+<tr class="separator:a861b4ad3f8d73e9140b6f52579668390"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><h3>template&lt;typename StateType, typename ActionType&gt;<br />
-class rl::DiscreteTdLambda&lt; StateType, ActionType &gt;</h3>
+class rl::ContinuousQLearning&lt; StateType, ActionType &gt;</h3>
 
 
-<p>Definition at line <a class="el" href="discrete__td__lambda_8hpp_source.html#l00057">57</a> of file <a class="el" href="discrete__td__lambda_8hpp_source.html">discrete_td_lambda.hpp</a>.</p>
+<p>Definition at line <a class="el" href="continuous__q__learning_8hpp_source.html#l00057">57</a> of file <a class="el" href="continuous__q__learning_8hpp_source.html">continuous_q_learning.hpp</a>.</p>
 </div><hr/>The documentation for this class was generated from the following file:<ul>
-<li>/Users/davidfridovichkeil/Documents/Developer/rl/include/solver/<a class="el" href="discrete__td__lambda_8hpp_source.html">discrete_td_lambda.hpp</a></li>
+<li>/Users/davidfridovichkeil/Documents/Developer/rl/include/solver/<a class="el" href="continuous__q__learning_8hpp_source.html">continuous_q_learning.hpp</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

@@ -14,6 +14,9 @@ struct \hyperlink{structrl_1_1_inverted_pendulum_action_1_1_hash}{Hash}
 \hypertarget{structrl_1_1_inverted_pendulum_action_a88975dbb6741e411335a3b864147555e}{}\label{structrl_1_1_inverted_pendulum_action_a88975dbb6741e411335a3b864147555e} 
 void {\bfseries Features} (Vector\+Xd \&features) const
 \item 
+\hypertarget{structrl_1_1_inverted_pendulum_action_a5c5e2c4944c1445539a3a8befb685570}{}\label{structrl_1_1_inverted_pendulum_action_a5c5e2c4944c1445539a3a8befb685570} 
+void {\bfseries From\+Features} (const Vector\+Xd \&features)
+\item 
 \hypertarget{structrl_1_1_inverted_pendulum_action_aec8902ca65267c3cf3112c19e45c7ce6}{}\label{structrl_1_1_inverted_pendulum_action_aec8902ca65267c3cf3112c19e45c7ce6} 
 bool {\bfseries operator==} (const \hyperlink{structrl_1_1_inverted_pendulum_action}{Inverted\+Pendulum\+Action} \&rhs) const
 \item 
@@ -23,14 +26,32 @@ bool {\bfseries operator!=} (const \hyperlink{structrl_1_1_inverted_pendulum_act
 \subsection*{Static Public Member Functions}
 \begin{DoxyCompactItemize}
 \item 
+\hypertarget{structrl_1_1_inverted_pendulum_action_afab6800d178b15040d0ebbc31baf4c14}{}\label{structrl_1_1_inverted_pendulum_action_afab6800d178b15040d0ebbc31baf4c14} 
+static void {\bfseries Set\+Limits} (double min\+\_\+torque, double max\+\_\+torque)
+\item 
 \hypertarget{structrl_1_1_inverted_pendulum_action_aa180acad4dc081aed0a5639141f4cda6}{}\label{structrl_1_1_inverted_pendulum_action_aa180acad4dc081aed0a5639141f4cda6} 
 static constexpr size\+\_\+t {\bfseries Feature\+Dimension} ()
+\item 
+\hypertarget{structrl_1_1_inverted_pendulum_action_ad83c2b6dbdcf0fe0e7e46df1b6a7668c}{}\label{structrl_1_1_inverted_pendulum_action_ad83c2b6dbdcf0fe0e7e46df1b6a7668c} 
+static double {\bfseries Max\+Along\+Dimension} (size\+\_\+t ii)
+\item 
+\hypertarget{structrl_1_1_inverted_pendulum_action_aea38cad833905876cc5c56d653ca8dce}{}\label{structrl_1_1_inverted_pendulum_action_aea38cad833905876cc5c56d653ca8dce} 
+static double {\bfseries Min\+Along\+Dimension} (size\+\_\+t ii)
 \end{DoxyCompactItemize}
 \subsection*{Public Attributes}
 \begin{DoxyCompactItemize}
 \item 
 \hypertarget{structrl_1_1_inverted_pendulum_action_a06cb28fd3554985bfd6686e43749ba73}{}\label{structrl_1_1_inverted_pendulum_action_a06cb28fd3554985bfd6686e43749ba73} 
 double {\bfseries torque\+\_\+}
+\end{DoxyCompactItemize}
+\subsection*{Static Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{structrl_1_1_inverted_pendulum_action_a8528d08456532e7ed1f5a6db231b1f7c}{}\label{structrl_1_1_inverted_pendulum_action_a8528d08456532e7ed1f5a6db231b1f7c} 
+static double {\bfseries min\+\_\+torque\+\_\+} = -\/1.\+0
+\item 
+\hypertarget{structrl_1_1_inverted_pendulum_action_a6e16eacb6385fa7cbed55574aa289d25}{}\label{structrl_1_1_inverted_pendulum_action_a6e16eacb6385fa7cbed55574aa289d25} 
+static double {\bfseries max\+\_\+torque\+\_\+} = 1.\+0
 \end{DoxyCompactItemize}
 
 
@@ -41,6 +62,7 @@ Definition at line 55 of file inverted\+\_\+pendulum\+\_\+action.\+hpp.
 
 
 
-The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+The documentation for this struct was generated from the following files\+:\begin{DoxyCompactItemize}
 \item 
-/\+Users/davidfridovichkeil/\+Documents/\+Developer/rl/include/environment/inverted\+\_\+pendulum\+\_\+action.\+hpp\end{DoxyCompactItemize}
+/\+Users/davidfridovichkeil/\+Documents/\+Developer/rl/include/environment/inverted\+\_\+pendulum\+\_\+action.\+hpp\item 
+/\+Users/davidfridovichkeil/\+Documents/\+Developer/rl/src/environment/inverted\+\_\+pendulum\+\_\+action.\+cpp\end{DoxyCompactItemize}

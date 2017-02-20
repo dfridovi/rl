@@ -68,6 +68,7 @@ $(function() {
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="#pub-attribs">Public Attributes</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
 <a href="structrl_1_1_inverted_pendulum_action-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">rl::InvertedPendulumAction Struct Reference</div>  </div>
@@ -87,6 +88,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a88975dbb6741e411335a3b864147555e"><td class="memItemLeft" align="right" valign="top"><a id="a88975dbb6741e411335a3b864147555e"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>Features</b> (VectorXd &amp;features) const</td></tr>
 <tr class="separator:a88975dbb6741e411335a3b864147555e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5c5e2c4944c1445539a3a8befb685570"><td class="memItemLeft" align="right" valign="top"><a id="a5c5e2c4944c1445539a3a8befb685570"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>FromFeatures</b> (const VectorXd &amp;features)</td></tr>
+<tr class="separator:a5c5e2c4944c1445539a3a8befb685570"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aec8902ca65267c3cf3112c19e45c7ce6"><td class="memItemLeft" align="right" valign="top"><a id="aec8902ca65267c3cf3112c19e45c7ce6"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="structrl_1_1_inverted_pendulum_action.html">InvertedPendulumAction</a> &amp;rhs) const</td></tr>
 <tr class="separator:aec8902ca65267c3cf3112c19e45c7ce6"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -96,21 +100,40 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator!=</b> (const
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
+<tr class="memitem:afab6800d178b15040d0ebbc31baf4c14"><td class="memItemLeft" align="right" valign="top"><a id="afab6800d178b15040d0ebbc31baf4c14"></a>
+static void&#160;</td><td class="memItemRight" valign="bottom"><b>SetLimits</b> (double min_torque, double max_torque)</td></tr>
+<tr class="separator:afab6800d178b15040d0ebbc31baf4c14"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa180acad4dc081aed0a5639141f4cda6"><td class="memItemLeft" align="right" valign="top"><a id="aa180acad4dc081aed0a5639141f4cda6"></a>
 static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>FeatureDimension</b> ()</td></tr>
 <tr class="separator:aa180acad4dc081aed0a5639141f4cda6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad83c2b6dbdcf0fe0e7e46df1b6a7668c"><td class="memItemLeft" align="right" valign="top"><a id="ad83c2b6dbdcf0fe0e7e46df1b6a7668c"></a>
+static double&#160;</td><td class="memItemRight" valign="bottom"><b>MaxAlongDimension</b> (size_t ii)</td></tr>
+<tr class="separator:ad83c2b6dbdcf0fe0e7e46df1b6a7668c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aea38cad833905876cc5c56d653ca8dce"><td class="memItemLeft" align="right" valign="top"><a id="aea38cad833905876cc5c56d653ca8dce"></a>
+static double&#160;</td><td class="memItemRight" valign="bottom"><b>MinAlongDimension</b> (size_t ii)</td></tr>
+<tr class="separator:aea38cad833905876cc5c56d653ca8dce"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:a06cb28fd3554985bfd6686e43749ba73"><td class="memItemLeft" align="right" valign="top"><a id="a06cb28fd3554985bfd6686e43749ba73"></a>
 double&#160;</td><td class="memItemRight" valign="bottom"><b>torque_</b></td></tr>
 <tr class="separator:a06cb28fd3554985bfd6686e43749ba73"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a8528d08456532e7ed1f5a6db231b1f7c"><td class="memItemLeft" align="right" valign="top"><a id="a8528d08456532e7ed1f5a6db231b1f7c"></a>
+static double&#160;</td><td class="memItemRight" valign="bottom"><b>min_torque_</b> = -1.0</td></tr>
+<tr class="separator:a8528d08456532e7ed1f5a6db231b1f7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6e16eacb6385fa7cbed55574aa289d25"><td class="memItemLeft" align="right" valign="top"><a id="a6e16eacb6385fa7cbed55574aa289d25"></a>
+static double&#160;</td><td class="memItemRight" valign="bottom"><b>max_torque_</b> = 1.0</td></tr>
+<tr class="separator:a6e16eacb6385fa7cbed55574aa289d25"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock">
 <p>Definition at line <a class="el" href="inverted__pendulum__action_8hpp_source.html#l00055">55</a> of file <a class="el" href="inverted__pendulum__action_8hpp_source.html">inverted_pendulum_action.hpp</a>.</p>
-</div><hr/>The documentation for this struct was generated from the following file:<ul>
+</div><hr/>The documentation for this struct was generated from the following files:<ul>
 <li>/Users/davidfridovichkeil/Documents/Developer/rl/include/environment/<a class="el" href="inverted__pendulum__action_8hpp_source.html">inverted_pendulum_action.hpp</a></li>
+<li>/Users/davidfridovichkeil/Documents/Developer/rl/src/environment/<a class="el" href="inverted__pendulum__action_8cpp_source.html">inverted_pendulum_action.cpp</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
