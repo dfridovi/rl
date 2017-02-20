@@ -38,7 +38,7 @@
 //
 // Defines useful types.
 //
-// ////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 
 #ifndef RL_UTIL_TYPES_H
 #define RL_UTIL_TYPES_H
@@ -59,6 +59,6 @@ const double kInvalidValue = -std::numeric_limits<double>::infinity();
 typedef ::Eigen::MatrixXd MatrixXd;
 typedef ::Eigen::VectorXd VectorXd;
 
-}  //\namespace mininet
+}  //\namespace rl
 
 #endif

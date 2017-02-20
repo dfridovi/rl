@@ -41,6 +41,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <environment/inverted_pendulum.hpp>
+#include <util/math.hpp>
 #include <util/types.hpp>
 
 #include <math.h>
@@ -106,12 +107,7 @@ namespace rl {
         (state.theta_ >= theta_lower_ && state.theta_ <= theta_upper_);
 
       // Accumulate reward.
-      if (state.theta_ > goal_.theta_)
-        reward -= state.omega_;
-      else
-        reward += state.omega_;
-
-      reward -= std::abs(state.theta_ - goal_.theta_);
+      reward -= (state.theta_ - goal_.theta_) * math::sgn(state.omega_);
     }
 
     // If ever went out of bounds, set to invalid reward.
