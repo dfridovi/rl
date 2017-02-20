@@ -69,7 +69,6 @@ namespace rl {
     int rollout_length_ = -1;
 
     // Initial epsilon-value for epsilon-greedy policy.
-    // This parameter is not used in Q Learning.
     double initial_epsilon_ = 0.5;
 
     // Number of experience replays -- i.e. number of SGD updates from

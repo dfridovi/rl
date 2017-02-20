@@ -61,7 +61,7 @@ namespace rl {
              const StateType& next_state) {
       states_.push_back(state);
       actions_.push_back(action);
-      rewards_.push_back(value);
+      rewards_.push_back(reward);
       next_states_.push_back(next_state);
     }
 

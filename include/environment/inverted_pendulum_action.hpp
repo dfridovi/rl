@@ -47,6 +47,7 @@
 
 #include <glog/logging.h>
 #include <functional>
+#include <random>
 #include <stddef.h>
 #include <math.h>
 
@@ -60,10 +61,18 @@ namespace rl {
     static double min_torque_;
     static double max_torque_;
 
+    // Random number generation.
+    static std::random_device rd_;
+    static std::default_random_engine rng_;
+
     // Constructor/destructor.
     ~InvertedPendulumAction() {}
     InvertedPendulumAction(double torque)
       : torque_(torque) {}
+    InvertedPendulumAction() {
+      std::uniform_real_distribution<double> unif(min_torque_, max_torque_);
+      torque_ = unif(rng_);
+    }
 
     // Static setter.
     static void SetLimits(double min_torque, double max_torque) {

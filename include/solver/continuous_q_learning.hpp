@@ -45,8 +45,9 @@
 #define RL_SOLVER_CONTINUOUS_Q_LEARNING_H
 
 #include <value/continuous_action_value_functor.hpp>
-#include <value/action_experience_replay.hpp>
-#include <solver/td_lambda_params.hpp>
+#include <policy/continuous_epsilon_greedy_policy.hpp>
+#include <value/experience_replay.hpp>
+#include <solver/solver_params.hpp>
 
 #include <glog/logging.h>
 #include <vector>
@@ -62,32 +63,38 @@ namespace rl {
     explicit ContinuousQLearning(const StateType& initial_state,
                                  const SolverParams& params)
       : initial_state_(initial_state),
+        initial_epsilon_(params.initial_epsilon_),
         discount_factor_(params.discount_factor_),
         alpha_(params.alpha_),
         learning_rate_(params.learning_rate_),
         num_rollouts_(params.num_rollouts_),
         rollout_length_(params.rollout_length_),
-        num_exp_replays_(params.num_exp_replays_) {}
+        num_exp_replays_(params.num_exp_replays_),
+        policy_(params.initial_epsilon_) {}
 
     // Runs Q Learning algorithm for the specified number of iterations.
     // Solution is stored in the provided continuous value functor.
     void Solve(const ContinuousEnvironment<StateType, ActionType>& environment,
-               ContinuousActionValueFunctor& value);
+               ContinuousActionValueFunctor<StateType, ActionType>& value);
 
   private:
     // Estimate the value function for the current policy using Q Learning,
     // from a single rollout.
     void UpdateValueFunction(
-       const DiscreteEnvironment<StateType, ActionType>& environment);
+       const ContinuousEnvironment<StateType, ActionType>& environment,
+       ContinuousActionValueFunctor<StateType, ActionType>& value);
 
     // Member variables.
     const StateType initial_state_;
     const double discount_factor_;
+    const double initial_epsilon_;
     const double alpha_;
     const double learning_rate_;
     const size_t num_exp_replays_;
     const size_t num_rollouts_;
     const int rollout_length_;
+
+    ContinuousEpsilonGreedyPolicy<StateType, ActionType> policy_;
   }; //\class ContinuousQLearning
 
 // ---------------------------- IMPLEMENTATION ------------------------------ //
@@ -97,19 +104,25 @@ namespace rl {
   template<typename StateType, typename ActionType>
   void ContinuousQLearning<StateType, ActionType>::Solve(
      const ContinuousEnvironment<StateType, ActionType>& environment,
-     ContinuousActionValueFunctor& value) {
+     ContinuousActionValueFunctor<StateType, ActionType>& value) {
     // Run for the specified number of iterations. Assume value functor
     // has already been initialized.
-    for (size_t ii = 1; ii <= num_rollouts_; ii++)
-      UpdateValueFunction(environment);
+    for (size_t ii = 1; ii <= num_rollouts_; ii++) {
+      std::cout << "Training rollout #" << ii << "..." << std::flush;
+      UpdateValueFunction(environment, value);
+      std::cout << "done." << std::endl;
+
+      // Update epsilon.
+      policy_.SetEpsilon(initial_epsilon_ / static_cast<double>(ii + 1));
+    }
   }
 
   // Estimate the value function for the current policy using Q Learning,
   // from a single rollout.
   template<typename StateType, typename ActionType>
   void ContinuousQLearning<StateType, ActionType>::UpdateValueFunction(
-     const ContinousEnvironment<StateType, ActionType>& environment,
-     ContinuousActionValueFunctor& value) {
+     const ContinuousEnvironment<StateType, ActionType>& environment,
+     ContinuousActionValueFunctor<StateType, ActionType>& value) {
     // Initialize the current state to the initial state.
     StateType current_state = initial_state_;
 
@@ -129,10 +142,10 @@ namespace rl {
       StateType next_state = current_state;
       const double reward = environment.Simulate(next_state, current_action);
 
-      // Get optimal next action.
+      // Get epsilon-optimal next action.
       ActionType next_action;
-      if (!value.OptimalAction(next_state, next_action))
-        LOG(WARNING) << "ContinuousQLearning: Could not find optimal action.";
+      if (!policy_.Act(value, environment, next_state, next_action))
+        LOG(WARNING) << "ContinuousQLearning: Policy error.";
 
       // Store this experience in the replay unit.
       replay.Add(current_state, current_action, reward, next_state);
@@ -144,16 +157,17 @@ namespace rl {
         double sample_reward;
 
         CHECK(replay.Sample(sample_state, sample_action,
-                            sample_next_state, sample_reward));
+                            sample_reward, sample_next_state));
 
         // Compute the Q-Learning target at the sample.
         ActionType optimal_next_action;
-        if (!value.OptimalAction(sample_next_state, optimal_next_action))
-          LOG(WARNING) << "ContinuousQLearning: Could not find optimal action.";
+        if (!policy_.Act(value, environment,
+                         sample_next_state, optimal_next_action))
+          LOG(WARNING) << "ContinuousQLearning: Policy error.";
 
         const double sample_value = value(sample_state, sample_action);
         const double target =
-          sample_value + alpha_ * (sample_reward +
+          sample_value + alpha_ * (sample_reward + discount_factor_ *
             value(sample_next_state, optimal_next_action) - sample_value);
 
         // Update.

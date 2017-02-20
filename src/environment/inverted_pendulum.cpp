@@ -60,7 +60,9 @@ namespace rl {
       theta_upper_(M_PI - theta_lower_),
       time_step_(params.time_step_),
       control_period_(params.control_period_),
-      goal_(InvertedPendulumState(M_PI_2, 0.0)) {}
+      goal_(InvertedPendulumState(M_PI_2, 0.0)) {
+    InvertedPendulumAction::SetLimits(torque_lower_, torque_upper_);
+  }
 
   InvertedPendulum::InvertedPendulum(const InvertedPendulumState& goal,
                                      const InvertedPendulumParams& params)
@@ -74,7 +76,9 @@ namespace rl {
       theta_upper_(M_PI - theta_lower_),
       time_step_(params.time_step_),
       control_period_(params.control_period_),
-      goal_(goal) {}
+      goal_(goal) {
+    InvertedPendulumAction::SetLimits(torque_lower_, torque_upper_);
+  }
 
   // Implement pure virtual method from Environment. Compute net torque at the
   // joint and translate to an angular acceleration. Integrate this numerically

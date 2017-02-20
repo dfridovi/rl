@@ -69,6 +69,8 @@ namespace rl {
     ~InvertedPendulumState() {}
     InvertedPendulumState(double theta, double omega)
       : theta_(theta), omega_(omega) {}
+    InvertedPendulumState()
+      : theta_(M_PI_2), omega_(0.0) {}
 
     // Static number of dimensions.
     static constexpr size_t FeatureDimension() { return 2; }

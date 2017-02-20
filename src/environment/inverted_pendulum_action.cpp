@@ -47,4 +47,8 @@ namespace rl {
   // should be reset for each particular application.
   double InvertedPendulumAction::min_torque_ = -1.0;
   double InvertedPendulumAction::max_torque_ = 1.0;
+
+  // Random number generation.
+  std::random_device InvertedPendulumAction::rd_;
+  std::default_random_engine InvertedPendulumAction::rng_(rd_());
 }
