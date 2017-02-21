@@ -45,7 +45,6 @@
 #define RL_VALUE_CONTINUOUS_ACTION_VALUE_FUNCTOR_H
 
 #include <value/action_value_functor.hpp>
-#include <environment/continuous_environment.hpp>
 #include <util/types.hpp>
 
 #include <unordered_map>
