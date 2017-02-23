@@ -48,7 +48,15 @@ before_script:
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo make install; fi
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then cd ../../..; fi
 
-  # Configure and make Exploration.
+  # Get Mininet.
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then git clone https://github.com/dfridovi/mininet; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then cd mininet && mkdir build && mkdir bin && cd build; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then cmake ..; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then make -j4; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo make install; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then cd ../..; fi
+
+  # Configure and make RL.
   - mkdir bin
   - mkdir build
   - cd build
