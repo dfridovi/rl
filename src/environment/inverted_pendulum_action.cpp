@@ -48,6 +48,10 @@ namespace rl {
   double InvertedPendulumAction::min_torque_ = -1.0;
   double InvertedPendulumAction::max_torque_ = 1.0;
 
+  // Static number of discrete values this action can take.
+  // This will only be used to compute approximately-optimal actions.
+  size_t InvertedPendulumAction::num_values_ = 10;
+
   // Random number generation.
   std::random_device InvertedPendulumAction::rd_;
   std::default_random_engine InvertedPendulumAction::rng_(rd_());

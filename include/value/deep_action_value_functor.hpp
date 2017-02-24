@@ -145,7 +145,22 @@ namespace rl {
   template<typename StateType, typename ActionType>
   bool DeepActionValueFunctor<StateType, ActionType>::
   OptimalAction(const StateType& state, ActionType& action) const {
+    // Get a list of possible actions.
+    std::vector<ActionType> candidates;
+    ActionType::DiscreteValues(candidates);
 
+    // Find the best option in this list.
+    double max_value = kInvalidValue;
+    for (const auto& candidate : candidates) {
+      const double value = this->(state, candidate);
+
+      if (value > max_value) {
+        max_value = value;
+        action = candidate;
+      }
+    }
+
+    return (max_value != kInvalidValue);
   }
 }  //\namespace rl
 
