@@ -19,10 +19,7 @@ endif()
 set(_mininet_SEARCH_DIRS
   ${MININET_ROOT_DIR}
   /usr/local
-  /sw # Fink
-  /opt/local # DarwinPorts
-  /opt/csw # Blastwave
-  /opt/lib/mininet
+  /usr/local/include
 )
 
 find_path(MININET_INCLUDE_DIR
@@ -47,7 +44,7 @@ find_library(MININET_LIBRARY
 # all listed variables are TRUE
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(mininet DEFAULT_MSG
-    MININET_LIBRARY MININET_INCLUDE_DIR)
+  MININET_INCLUDE_DIR MININET_LIBRARY)
 
 if(MININET_FOUND)
   set(MININET_LIBRARIES ${MININET_LIBRARY})

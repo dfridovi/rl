@@ -34,6 +34,7 @@ include_directories(SYSTEM ${BOOST_INCLUDE_DIRS})
 list(APPEND rl_LIBRARIES ${BOOST_LIBRARIES})
 
 # Find Mininet.
-find_package( Mininet REQUIRED )
+#find_package( Mininet REQUIRED )
+include("cmake/Modules/FindMininet.cmake")
 include_directories(SYSTEM ${MININET_INCLUDE_DIRS})
 list(APPEND rl_LIBRARIES ${MININET_LIBRARIES})

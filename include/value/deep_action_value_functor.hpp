@@ -48,9 +48,9 @@
 #include <value/continuous_action_value_functor.hpp>
 #include <util/types.hpp>
 
-#include <mininet/net/network.h>
 #include <mininet/layer/layer_params.h>
-#include <miniet/loss/l2.h>
+#include <mininet/net/network.h>
+#include <mininet/loss/l2.h>
 
 #include <random>
 #include <vector>
@@ -82,11 +82,14 @@ namespace rl {
 
   private:
     // A deep network.
-    Network net;
+    Network net_;
 
     // Training params.
     const double momentum_;
     const double weight_decay_;
+
+    // Helper function to evaluate the neural network.
+    double Evaluate(const StateType& state, const ActionType& action) const;
   }; //\class DeepStateValueFunctor
 
 // ----------------------------- IMPLEMENTATION ----------------------------- //
@@ -96,7 +99,7 @@ namespace rl {
   DeepActionValueFunctor(const std::vector<LayerParams>& layers,
                          const LossFunctor::ConstPtr& loss,
                          double momentum, double weight_decay)
-    : net(layer_params, loss),
+    : net_(layers, loss),
       momentum_(momentum),
       weight_decay_(weight_decay) {}
 
@@ -104,17 +107,7 @@ namespace rl {
   template<typename StateType, typename ActionType>
   double DeepActionValueFunctor<StateType, ActionType>::
   operator()(const StateType& state, const ActionType& action) const {
-    // Unpack state and action into a single feature vector.
-    VectorXd features(StateType::FeatureDimension() +
-                      ActionType::FeatureDimension());
-    state.Features(features.head(StateType::FeatureDimension()));
-    action.Features(features.tail(ActionType::FeatureDimension()));
-
-    // Run through the net.
-    VectorXd output(1);
-    net(features, output);
-
-    return output(0);
+    return Evaluate(state, action);
   }
 
   // Pure virtual method to do a gradient update to underlying weights.
@@ -123,21 +116,27 @@ namespace rl {
   Update(const StateType& state, const ActionType& action,
          double target, double step_size) {
     // Convert state/action + target into input/output vectors.
-    VectorXd input(StateType::FeatureDimension() +
-                   ActionType::FeatureDimension());
-    state.Features(input.head(StateType::FeatureDimension()));
-    action.Features(input.tail(ActionType::FeatureDimension()));
+    VectorXd state_features(StateType::FeatureDimension());
+    state.Features(state_features);
+
+    VectorXd action_features(ActionType::FeatureDimension());
+    action.Features(action_features);
+
+    VectorXd input(state_features.size() + action_features.size());
+    input.head(state_features.size()) = state_features;
+    input.tail(action_features.size()) = action_features;
 
     VectorXd output(1);
     output(0) = target;
 
     // Compute average layer inputs and deltas.
     std::vector<MatrixXd> derivatives;
-    loss = network_.RunBatch(std::vector<VectorXd>({input}),
-                             std::vector<VectorXd>({output}), derivatives);
+    const double loss = net_.RunBatch(std::vector<VectorXd>({input}),
+                                          std::vector<VectorXd>({output}),
+                                          derivatives);
 
     // Update weights.
-    network_.UpdateWeights(derivatives, step_size, momentum_, weight_decay_);
+    net_.UpdateWeights(derivatives, step_size, momentum_, weight_decay_);
   }
 
   // Choose an optimal action in the given state. Returns whether or not
@@ -152,7 +151,7 @@ namespace rl {
     // Find the best option in this list.
     double max_value = kInvalidValue;
     for (const auto& candidate : candidates) {
-      const double value = this->(state, candidate);
+      const double value = Evaluate(state, candidate);
 
       if (value > max_value) {
         max_value = value;
@@ -162,6 +161,29 @@ namespace rl {
 
     return (max_value != kInvalidValue);
   }
+
+  // Helper function to evaluate the neural network.
+  template<typename StateType, typename ActionType>
+  double DeepActionValueFunctor<StateType, ActionType>::
+  Evaluate(const StateType& state, const ActionType& action) const {
+    // Unpack state and action into a single feature vector.
+    VectorXd state_features(StateType::FeatureDimension());
+    state.Features(state_features);
+
+    VectorXd action_features(ActionType::FeatureDimension());
+    action.Features(action_features);
+
+    VectorXd input(state_features.size() + action_features.size());
+    input.head(state_features.size()) = state_features;
+    input.tail(action_features.size()) = action_features;
+
+    // Run through the net.
+    VectorXd output(1);
+    net_(input, output);
+
+    return output(0);
+  }
+
 }  //\namespace rl
 
 #endif
