@@ -32,3 +32,8 @@ list(APPEND rl_LIBRARIES ${GLUT_LIBRARIES})
 find_package( Boost REQUIRED )
 include_directories(SYSTEM ${BOOST_INCLUDE_DIRS})
 list(APPEND rl_LIBRARIES ${BOOST_LIBRARIES})
+
+# Find Mininet.
+find_package( mininet REQUIRED )
+include_directories(SYSTEM ${MININET_INCLUDE_DIRS})
+list(APPEND rl_LIBRARIES ${MININET_LIBRARIES})
