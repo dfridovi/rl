@@ -46,6 +46,8 @@
 
 #include <vector>
 #include <random>
+#include <algorithm>
+#include <unordered_set>
 
 namespace rl {
 
@@ -58,33 +60,12 @@ namespace rl {
 
     // Add experience to the dataset.
     void Add(const StateType& state, const ActionType& action, double reward,
-             const StateType& next_state) {
-      states_.push_back(state);
-      actions_.push_back(action);
-      rewards_.push_back(reward);
-      next_states_.push_back(next_state);
-    }
+             const StateType& next_state);
 
-    // Sample a random element from the data. Returns true if successful.
-    bool Sample(StateType& state, ActionType& action, double& reward,
-                StateType& next_state) {
-      if (states_.size() == 0) {
-        LOG(WARNING) << "ExperienceReplay: tried to sample "
-                     << "from an empty dataset.";
-        return false;
-      }
-
-      // Create a random int distribution.
-      std::uniform_int_distribution<size_t> unif(0, states_.size() - 1);
-
-      // Sample and return.
-      const size_t ii = unif(rng_);
-      state = states_[ii];
-      action = actions_[ii];
-      reward = rewards_[ii];
-      next_state = next_states_[ii];
-      return true;
-    }
+    // Sample random elements from the data. Returns true if successful.
+    bool Sample(size_t batch_size, std::vector<StateType>& states,
+                std::vector<ActionType>& actions, std::vector<double>& rewards,
+                std::vector<StateType>& next_states);
 
   private:
     // Parallel lists of states, actions, rewards, next states.
@@ -97,6 +78,77 @@ namespace rl {
     std::random_device rd_;
     std::default_random_engine rng_;
   }; //\struct ExperienceReplay
+
+// ----------------------------- IMPLEMENTATION ----------------------------- //
+
+  // Add experience to the dataset.
+  template<typename StateType, typename ActionType>
+  void ExperienceReplay<StateType, ActionType>::
+  Add(const StateType& state, const ActionType& action, double reward,
+      const StateType& next_state) {
+    states_.push_back(state);
+    actions_.push_back(action);
+    rewards_.push_back(reward);
+    next_states_.push_back(next_state);
+  }
+
+  // Sample random elements from the data. Returns true if successful.
+  template<typename StateType, typename ActionType>
+  bool ExperienceReplay<StateType, ActionType>::
+  Sample(size_t batch_size, std::vector<StateType>& states,
+         std::vector<ActionType>& actions, std::vector<double>& rewards,
+         std::vector<StateType>& next_states) {
+      states.clear();
+      actions.clear();
+      rewards.clear();
+      next_states.clear();
+
+      // Threshold batch size.
+      size_t thresholded_batch_size = batch_size;
+      if (batch_size > states_.size()) {
+        LOG(WARNING) << "ExperienceReplay: Batch size is too large.";
+        thresholded_batch_size = states_.size();
+      }
+
+      // Generate a random subset of the training data one of two ways:
+      // (1) if batch size / total size >= 1 - 1/e, randomly shuffle,
+      // (2) otherwise, draw random indices and check if they've been drawn.
+      if (static_cast<double>(thresholded_batch_size) / states_.size() >=
+          1.0 - 1.0 / M_E) {
+        // (1) If batch size is large, do a random shuffle.
+        std::vector<size_t> indices(states_.size());
+        std::iota(indices.begin(), indices.end(), 0);
+        std::shuffle(indices.begin(), indices.end(), rng_);
+
+        for (size_t ii = 0; ii < thresholded_batch_size; ii++) {
+          states.push_back(states_[ indices[ii] ]);
+          actions.push_back(actions_[ indices[ii] ]);
+          rewards.push_back(rewards_[ indices[ii] ]);
+          next_states.push_back(next_states_[ indices[ii] ]);
+        }
+      } else {
+        // (2) Batch size is small, so choose random indices.
+        std::uniform_int_distribution<size_t> unif(0, states_.size() - 1);
+        std::unordered_set<size_t> sampled_indices;
+
+        while (states.size() < thresholded_batch_size) {
+          // Pick a random index in the training set that we have not seen yet.
+          const size_t ii = unif(rng_);
+          if (sampled_indices.count(ii) > 0)
+            continue;
+
+          sampled_indices.insert(ii);
+
+          // Insert the corresponding samples.
+          states.push_back(states_[ii]);
+          actions.push_back(actions_[ii]);
+          rewards.push_back(rewards_[ii]);
+          next_states.push_back(next_states_[ii]);
+        }
+      }
+
+      return states_.size() < batch_size;
+    }
 
 }  //\namespace rl
 

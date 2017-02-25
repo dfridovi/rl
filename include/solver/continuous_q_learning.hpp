@@ -70,6 +70,7 @@ namespace rl {
         num_rollouts_(params.num_rollouts_),
         rollout_length_(params.rollout_length_),
         num_exp_replays_(params.num_exp_replays_),
+        batch_size_(params.batch_size_),
         policy_(params.initial_epsilon_) {}
 
     // Runs Q Learning algorithm for the specified number of iterations.
@@ -92,6 +93,7 @@ namespace rl {
     const double alpha_;
     const double learning_rate_;
     const size_t num_exp_replays_;
+    const size_t batch_size_;
     const size_t num_rollouts_;
     const int rollout_length_;
 
@@ -153,30 +155,35 @@ namespace rl {
 
       // Store this experience in the replay unit.
       replay.Add(current_state, current_action, reward, next_state);
+    }
 
-      // Replay experience and each time update the value function.
-      for (size_t jj = 0; jj < num_exp_replays_; jj++) {
-        StateType sample_state, sample_next_state;
-        ActionType sample_action;
-        double sample_reward;
+    // Replay experience and each time update the value function.
+    for (size_t ii = 0; ii < num_exp_replays_; ii++) {
+      std::vector<StateType> sample_states, sample_next_states;
+      std::vector<ActionType> sample_actions;
+      std::vector<double> sample_rewards;
 
-        CHECK(replay.Sample(sample_state, sample_action,
-                            sample_reward, sample_next_state));
+      CHECK(replay.Sample(batch_size_, sample_states, sample_actions,
+                          sample_rewards, sample_next_states));
 
-        // Compute the Q-Learning target at the sample.
+      // Compute the Q-Learning target at each sample.
+      std::vector<double> targets;
+      for (size_t jj = 0; jj < sample_states.size(); jj++) {
+        // Get optimal next action.
         ActionType optimal_next_action;
         if (!policy_.Act(value, environment,
-                         sample_next_state, optimal_next_action))
+                         sample_next_states[jj], optimal_next_action))
           LOG(WARNING) << "ContinuousQLearning: Policy error.";
 
-        const double sample_value = value(sample_state, sample_action);
+        const double sample_value = value(sample_states[jj], sample_actions[jj]);
         const double target =
-          sample_value + alpha_ * (sample_reward + discount_factor_ *
-            value(sample_next_state, optimal_next_action) - sample_value);
-
-        // Update.
-        value.Update(sample_state, sample_action, target, learning_rate_);
+          sample_value + alpha_ * (sample_rewards[jj] + discount_factor_ *
+            value(sample_next_states[jj], optimal_next_action) - sample_value);
+        targets.push_back(target);
       }
+
+      // Update.
+      value.Update(sample_states, sample_actions, targets, learning_rate_);
     }
   }
 }  //\namespace rl

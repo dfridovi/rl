@@ -73,8 +73,9 @@ namespace rl {
     double operator()(const StateType& state, const ActionType& action) const;
 
     // Pure virtual method to do a gradient update to underlying weights.
-    void Update(const StateType& state, const ActionType& action,
-                double target, double step_size);
+    void Update(const std::vector<StateType>& state,
+                const std::vector<ActionType>& action,
+                const std::vector<double>& target, double step_size);
 
     // Choose an optimal action in the given state. Returns whether or not
     // optimization was successful.
@@ -113,27 +114,36 @@ namespace rl {
   // Pure virtual method to do a gradient update to underlying weights.
   template<typename StateType, typename ActionType>
   void DeepActionValueFunctor<StateType, ActionType>::
-  Update(const StateType& state, const ActionType& action,
-         double target, double step_size) {
-    // Convert state/action + target into input/output vectors.
-    VectorXd state_features(StateType::FeatureDimension());
-    state.Features(state_features);
+  Update(const std::vector<StateType>& states,
+         const std::vector<ActionType>& actions,
+         const std::vector<double>& targets, double step_size) {
+    CHECK_EQ(states.size(), actions.size());
+    CHECK_EQ(states.size(), targets.size());
 
-    VectorXd action_features(ActionType::FeatureDimension());
-    action.Features(action_features);
+    std::vector<VectorXd> inputs, outputs;
+    for (size_t ii = 0; ii <  states.size(); ii++) {
+      // Convert state/action into a single vector. Same for targets.
+      VectorXd state_features(StateType::FeatureDimension());
+      states[ii].Features(state_features);
 
-    VectorXd input(state_features.size() + action_features.size());
-    input.head(state_features.size()) = state_features;
-    input.tail(action_features.size()) = action_features;
+      VectorXd action_features(ActionType::FeatureDimension());
+      actions[ii].Features(action_features);
 
-    VectorXd output(1);
-    output(0) = target;
+      VectorXd input(state_features.size() + action_features.size());
+      input.head(state_features.size()) = state_features;
+      input.tail(action_features.size()) = action_features;
+
+      inputs.push_back(input);
+
+      // Handle target.
+      VectorXd output(1);
+      output(0) = targets[ii];
+      outputs.push_back(output);
+    }
 
     // Compute average layer inputs and deltas.
     std::vector<MatrixXd> derivatives;
-    const double loss = net_.RunBatch(std::vector<VectorXd>({input}),
-                                          std::vector<VectorXd>({output}),
-                                          derivatives);
+    const double loss = net_.RunBatch(inputs, outputs, derivatives);
 
     // Update weights.
     net_.UpdateWeights(derivatives, step_size, momentum_, weight_decay_);

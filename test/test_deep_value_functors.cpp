@@ -142,7 +142,9 @@ TEST(DeepActionValueFunctor, TestConvergence) {
     const double result =
       state_coeff * random_state.state_ + action_coeff * random_action.action_;
 
-    value.Update(random_state, random_action, result, kStepSize);
+    value.Update(std::vector<DummyState>({random_state}),
+                 std::vector<DummyAction>({random_action}),
+                 std::vector<double>({result}), kStepSize);
   }
 
   // Test the specified number of times.

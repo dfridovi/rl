@@ -125,13 +125,12 @@ TEST(LinearStateValueFunctor, TestConvergence) {
 // Test that a linear action value function converges to a true linear
 // ground truth.
 TEST(LinearActionValueFunctor, TestConvergence) {
-  const double kEligibilityDecay = 0.0;
   const size_t kNumTrainingPoints = 10000;
   const size_t kNumTestingPoints = 100;
   const double kStepSize = 1e-2;
   const double kEpsilon = 1e-3;
 
-  LinearActionValueFunctor<DummyState, DummyAction> value(kEligibilityDecay);
+  LinearActionValueFunctor<DummyState, DummyAction> value;
 
   // Start a random number generator.
   std::random_device rd;
@@ -153,7 +152,9 @@ TEST(LinearActionValueFunctor, TestConvergence) {
     const double result =
       state_coeff * random_state.state_ + action_coeff * random_action.action_;
 
-    value.Update(random_state, random_action, result, kStepSize);
+    value.Update(std::vector<DummyState>({random_state}),
+                 std::vector<DummyAction>({random_action}),
+                 std::vector<double>({result}), kStepSize);
   }
 
   // Test the specified number of times.

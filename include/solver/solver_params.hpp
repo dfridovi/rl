@@ -75,6 +75,9 @@ namespace rl {
     // experience replays.
     size_t num_exp_replays_ = 20;
 
+    // Batch size. This is the number of experiences replays per SGD update.
+    size_t batch_size_ = 32;
+
     // Learning rate for SGD update.
     double learning_rate_ = 0.01;
   }; //\ struct TdLambdaParams

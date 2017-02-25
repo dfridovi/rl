@@ -67,7 +67,9 @@ DEFINE_int32(num_rollouts, 50, "Number of rollouts to learn from.");
 DEFINE_int32(rollout_length, 75,
              "Rollout length. If negative, rollout until a terminal state.");
 DEFINE_int32(num_exp_replays, 40,
-             "Number of SGD updates from experience replay per iteration.");
+             "Number of SGD updates per Q Learning iteration.");
+DEFINE_int32(batch_size, 10,
+             "Number of experience replays per SGD iteration.");
 
 // Environment parameters.
 DEFINE_double(arm_length, 1.0, "Length of pendulum arm in meters.");
@@ -125,6 +127,7 @@ void Replan() {
   solver_params.num_rollouts_ = FLAGS_num_rollouts;
   solver_params.rollout_length_ = FLAGS_rollout_length;
   solver_params.num_exp_replays_ = FLAGS_num_exp_replays;
+  solver_params.batch_size_ = FLAGS_batch_size;
   solver_params.learning_rate_ = FLAGS_learning_rate;
   ContinuousQLearning<InvertedPendulumState,
                       InvertedPendulumAction> solver(*current_state, solver_params);
@@ -243,7 +246,7 @@ int main(int argc, char** argv) {
 
   // Initialize the value function.
   value = new LinearActionValueFunctor<InvertedPendulumState,
-                                       InvertedPendulumAction>(0.0);
+                                       InvertedPendulumAction>();
 
   // Set up the solver.
   Replan();

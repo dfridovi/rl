@@ -50,6 +50,7 @@
 #include <unordered_map>
 #include <limits>
 #include <iostream>
+#include <vector>
 
 namespace rl {
 
@@ -64,8 +65,10 @@ namespace rl {
                               const ActionType& action) const = 0;
 
     // Pure virtual method to do a gradient update to underlying weights.
-    virtual void Update(const StateType& state, const ActionType& action,
-                        double target, double step_size) = 0;
+    virtual void Update(const std::vector<StateType>& states,
+                        const std::vector<ActionType>& actions,
+                        const std::vector<double>& targets,
+                        double step_size) = 0;
 
     // Choose an optimal action in the given state. Returns whether or not
     // optimization was successful.
