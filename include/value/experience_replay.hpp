@@ -147,7 +147,7 @@ namespace rl {
         }
       }
 
-      return states_.size() < batch_size;
+      return states_.size() >= batch_size;
     }
 
 }  //\namespace rl

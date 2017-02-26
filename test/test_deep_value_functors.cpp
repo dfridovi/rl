@@ -40,6 +40,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <value/deep_action_value_functor.hpp>
+#include <value/experience_replay.hpp>
 #include <util/types.hpp>
 
 #include <glog/logging.h>
@@ -101,19 +102,23 @@ struct DummyAction {
 TEST(DeepActionValueFunctor, TestConvergence) {
   const size_t kNumTrainingPoints = 10000;
   const size_t kNumTestingPoints = 10;
-  const double kStepSize = 2e-2;
+  const double kStepSize = 1e-3;
   const double kEpsilon = 1e-3;
-  const size_t kHiddenLayerSize = 1;
   const double kMomentum = 0.0;
   const double kWeightDecay = 0.0;
+  const size_t kHiddenLayerSize = 10;
+  const size_t kBatchSize = 100;
+  const size_t kNumUpdates = 1000;
 
   // Construct layers.
   std::vector<LayerParams> layers;
-  layers.push_back(LayerParams(SIGMOID,
+  layers.push_back(LayerParams(RELU,
                                DummyState::FeatureDimension() +
                                DummyAction::FeatureDimension(),
                                kHiddenLayerSize));
-  layers.push_back(LayerParams(SIGMOID, kHiddenLayerSize, 1));
+  layers.push_back(LayerParams(RELU, kHiddenLayerSize, kHiddenLayerSize));
+  layers.push_back(LayerParams(RELU, kHiddenLayerSize, kHiddenLayerSize));
+  layers.push_back(LayerParams(RELU, kHiddenLayerSize, 1));
 
   // Construct loss.
   LossFunctor::ConstPtr loss = L2::Create();
@@ -125,13 +130,14 @@ TEST(DeepActionValueFunctor, TestConvergence) {
   // Start a random number generator.
   std::random_device rd;
   std::default_random_engine rng(rd());
-  std::uniform_real_distribution<double> unif(-1.0, 1.0);
+  std::uniform_real_distribution<double> unif(0.0, 1.0);
 
   // Pick random coefficients.
   const double state_coeff = unif(rng);
   const double action_coeff = unif(rng);
 
-  // Iterate the specified number of times to train.
+  // Generate training data.
+  ExperienceReplay<DummyState, DummyAction> replay;
   for (size_t ii = 0; ii < kNumTrainingPoints; ii++) {
     DummyState random_state;
     random_state.state_ = unif(rng);
@@ -142,9 +148,20 @@ TEST(DeepActionValueFunctor, TestConvergence) {
     const double result =
       state_coeff * random_state.state_ + action_coeff * random_action.action_;
 
-    value.Update(std::vector<DummyState>({random_state}),
-                 std::vector<DummyAction>({random_action}),
-                 std::vector<double>({result}), kStepSize);
+    replay.Add(random_state, random_action, result, random_state);
+  }
+
+  // Iterate the specified number of times to train.
+  std::vector<DummyState> states, next_states;
+  std::vector<DummyAction> actions;
+  std::vector<double> targets;
+  for (size_t ii = 0; ii < kNumUpdates; ii++) {
+    // Get a batch.
+    ASSERT_TRUE(replay.Sample(kBatchSize, states, actions,
+                              targets, next_states));
+
+    // Update.
+    value.Update(states, actions, targets, kStepSize);
   }
 
   // Test the specified number of times.
