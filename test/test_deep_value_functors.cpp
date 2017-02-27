@@ -100,25 +100,21 @@ struct DummyAction {
 // Test that a deep action value function converges to a true linear
 // ground truth.
 TEST(DeepActionValueFunctor, TestConvergence) {
-  const size_t kNumTrainingPoints = 10000;
+  const size_t kNumTrainingPoints = 100;
   const size_t kNumTestingPoints = 10;
-  const double kStepSize = 1e-3;
+  const double kStepSize = 1e-2;
   const double kEpsilon = 1e-3;
   const double kMomentum = 0.0;
   const double kWeightDecay = 0.0;
-  const size_t kHiddenLayerSize = 10;
-  const size_t kBatchSize = 100;
-  const size_t kNumUpdates = 1000;
+  const size_t kBatchSize = 5;
+  const size_t kNumUpdates = 10000;
 
   // Construct layers.
   std::vector<LayerParams> layers;
-  layers.push_back(LayerParams(RELU,
+  layers.push_back(LayerParams(LINEAR,
                                DummyState::FeatureDimension() +
                                DummyAction::FeatureDimension(),
-                               kHiddenLayerSize));
-  layers.push_back(LayerParams(RELU, kHiddenLayerSize, kHiddenLayerSize));
-  layers.push_back(LayerParams(RELU, kHiddenLayerSize, kHiddenLayerSize));
-  layers.push_back(LayerParams(RELU, kHiddenLayerSize, 1));
+                               1));
 
   // Construct loss.
   LossFunctor::ConstPtr loss = L2::Create();
@@ -130,7 +126,7 @@ TEST(DeepActionValueFunctor, TestConvergence) {
   // Start a random number generator.
   std::random_device rd;
   std::default_random_engine rng(rd());
-  std::uniform_real_distribution<double> unif(0.0, 1.0);
+  std::uniform_real_distribution<double> unif(-1.0, 1.0);
 
   // Pick random coefficients.
   const double state_coeff = unif(rng);
