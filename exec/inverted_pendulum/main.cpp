@@ -57,7 +57,7 @@ using namespace rl;
 // Animation parameters.
 DEFINE_int32(refresh_rate, 10, "Refresh rate in milliseconds.");
 DEFINE_double(motion_rate, 0.25, "Fraction of real-time.");
-DEFINE_int32(replan_rate, 10, "Replanning rate in milliseconds.");
+DEFINE_int32(replan_rate, 100, "Replanning rate in milliseconds.");
 
 // Solver parameters.
 DEFINE_double(discount_factor, 0.1, "Discount factor.");
@@ -66,7 +66,7 @@ DEFINE_double(learning_rate, 0.001, "Learning rate for SGD.");
 DEFINE_int32(num_rollouts, 50, "Number of rollouts to learn from.");
 DEFINE_int32(rollout_length, 75,
              "Rollout length. If negative, rollout until a terminal state.");
-DEFINE_int32(num_exp_replays, 40,
+DEFINE_int32(num_exp_replays, 1000,
              "Number of SGD updates per Q Learning iteration.");
 DEFINE_int32(batch_size, 10,
              "Number of experience replays per SGD iteration.");
