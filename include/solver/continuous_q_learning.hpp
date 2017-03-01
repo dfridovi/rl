@@ -97,6 +97,7 @@ namespace rl {
     const size_t num_rollouts_;
     const int rollout_length_;
 
+    ExperienceReplay<StateType, ActionType> replay_;
     ContinuousEpsilonGreedyPolicy<StateType, ActionType> policy_;
   }; //\class ContinuousQLearning
 
@@ -137,9 +138,6 @@ namespace rl {
     if (!value.OptimalAction(current_state, current_action))
       LOG(WARNING) << "ContinuousQLearning: Could not find optimal action.";
 
-    // Start a new ExperienceReplay dataset.
-    ExperienceReplay<StateType, ActionType> replay;
-
     // Simulate the rollout.
     for (int ii = 0; (ii < rollout_length_) ||
            (rollout_length_ < 0 && !environment.IsTerminal(current_state));
@@ -154,7 +152,7 @@ namespace rl {
         LOG(WARNING) << "ContinuousQLearning: Policy error.";
 
       // Store this experience in the replay unit.
-      replay.Add(current_state, current_action, reward, next_state);
+      replay_.Add(current_state, current_action, reward, next_state);
     }
 
     // Replay experience and each time update the value function.
@@ -163,8 +161,8 @@ namespace rl {
       std::vector<ActionType> sample_actions;
       std::vector<double> sample_rewards;
 
-      CHECK(replay.Sample(batch_size_, sample_states, sample_actions,
-                          sample_rewards, sample_next_states));
+      CHECK(replay_.Sample(batch_size_, sample_states, sample_actions,
+                           sample_rewards, sample_next_states));
 
       // Compute the Q-Learning target at each sample.
       std::vector<double> targets;
