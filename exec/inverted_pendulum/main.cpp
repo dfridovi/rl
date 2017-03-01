@@ -35,8 +35,11 @@
  */
 
 #include <environment/inverted_pendulum.hpp>
+#include <value/deep_action_value_functor.hpp>
 #include <value/linear_action_value_functor.hpp>
 #include <solver/continuous_q_learning.hpp>
+
+#include <mininet/loss/L2.h>
 
 #include <glog/logging.h>
 #include <gflags/gflags.h>
@@ -53,11 +56,22 @@
 #endif
 
 using namespace rl;
+using namespace mininet;
 
 // Animation parameters.
 DEFINE_int32(refresh_rate, 10, "Refresh rate in milliseconds.");
 DEFINE_double(motion_rate, 0.25, "Fraction of real-time.");
-DEFINE_int32(replan_rate, 100, "Replanning rate in milliseconds.");
+DEFINE_int32(replan_rate, 1000, "Replanning rate in milliseconds.");
+
+// Value function approximator.
+DEFINE_string(value_approx, "deep",
+              "Type of value function approximator to use of {linear, deep}.");
+DEFINE_int32(num_layers, 3, "Number of layers in deep value approximator.");
+DEFINE_int32(layer_size, 10, "Size of hidden layers.");
+DEFINE_double(momentum, 0.0, "Momentum coefficient in SGD.");
+DEFINE_double(weight_decay, 0.0, "L2 loss coefficient for weights.");
+DEFINE_string(nonlinearity, "relu",
+              "Type of nonlinearity on all but the last layer {relu, sigmoid}.");
 
 // Solver parameters.
 DEFINE_double(discount_factor, 0.1, "Discount factor.");
@@ -80,14 +94,15 @@ DEFINE_double(initial_omega, 0.0, "Initial angular velocity.");
 DEFINE_double(friction, 5.0, "Torque applied by friction.");
 DEFINE_double(torque_limit, 20.0, "Limit for applied torque.");
 DEFINE_double(time_step, 0.01, "Time step for numerical integration.");
+DEFINE_int32(num_action_values, 5, "Number of discrete action values.");
 
 // Create a globally-defined simulator and current state.
 InvertedPendulum* world = NULL;
 InvertedPendulumState* current_state = NULL;
 
-// Create a linear value function.
-LinearActionValueFunctor<InvertedPendulumState,
-                         InvertedPendulumAction>* value = NULL;
+// Create a continuous value function.
+ContinuousActionValueFunctor<InvertedPendulumState,
+                             InvertedPendulumAction>* value = NULL;
 
 // Flag for whether we have reached a terminal state.
 bool is_terminal = false;
@@ -242,11 +257,54 @@ int main(int argc, char** argv) {
   world_params.time_step_ = FLAGS_time_step;
   world_params.control_period_ =
     0.001 * static_cast<double>(FLAGS_refresh_rate) * FLAGS_motion_rate;
+  world_params.num_action_values_ = FLAGS_num_action_values;
   world = new InvertedPendulum(world_params);
 
   // Initialize the value function.
-  value = new LinearActionValueFunctor<InvertedPendulumState,
-                                       InvertedPendulumAction>();
+  if (FLAGS_value_approx == "linear")
+    value = new LinearActionValueFunctor<InvertedPendulumState,
+                                         InvertedPendulumAction>();
+  else if (FLAGS_value_approx == "deep") {
+    CHECK_GE(FLAGS_num_layers, 1);
+
+    // Parse layer type.
+    LayerType nonlinearity = SIGMOID;
+    if (FLAGS_nonlinearity == "relu")
+      nonlinearity = RELU;
+    else if (FLAGS_nonlinearity == "linear")
+      nonlinearity = LINEAR;
+
+    // Create layers.
+    std::vector<LayerParams> layers;
+
+    if (FLAGS_num_layers == 1)
+      // Handle single layer.
+      layers.push_back(LayerParams(LINEAR,
+                                   InvertedPendulumState::FeatureDimension() +
+                                   InvertedPendulumAction::FeatureDimension(),
+                                   InvertedPendulumAction::FeatureDimension()));
+    else {
+      // Handle multiple layers.
+      layers.push_back(LayerParams(nonlinearity,
+                                   InvertedPendulumState::FeatureDimension() +
+                                   InvertedPendulumAction::FeatureDimension(),
+                                   FLAGS_layer_size));
+
+      for (size_t ii = 1; ii < FLAGS_num_layers - 1; ii++)
+        layers.push_back(LayerParams(nonlinearity,
+                                     FLAGS_layer_size, FLAGS_layer_size));
+
+      layers.push_back(LayerParams(LINEAR, FLAGS_layer_size,
+                                   InvertedPendulumAction::FeatureDimension()));
+    }
+
+    // Create L2 loss functor.
+    LossFunctor::ConstPtr loss = L2::Create();
+
+    value = new DeepActionValueFunctor<InvertedPendulumState,
+                                       InvertedPendulumAction>(
+                   layers, loss, FLAGS_momentum, FLAGS_weight_decay);
+  }
 
   // Set up the solver.
   Replan();

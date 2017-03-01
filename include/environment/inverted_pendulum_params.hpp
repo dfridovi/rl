@@ -65,6 +65,9 @@ namespace rl {
 
     // Control period. Control is piecewise constant on this time interval.
     double control_period_ = 0.01;
+
+    // Number of discrete values the torque can take in the specified interval.
+    size_t num_action_values_ = 5;
   }; //\ struct InvertedPendulumParams
 }  //\namespace rl
 

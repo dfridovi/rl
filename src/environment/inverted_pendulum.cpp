@@ -63,6 +63,7 @@ namespace rl {
       control_period_(params.control_period_),
       goal_(InvertedPendulumState(M_PI_2, 0.0)) {
     InvertedPendulumAction::SetLimits(torque_lower_, torque_upper_);
+    InvertedPendulumAction::SetNumValues(params.num_action_values_);
   }
 
   InvertedPendulum::InvertedPendulum(const InvertedPendulumState& goal,
@@ -79,6 +80,7 @@ namespace rl {
       control_period_(params.control_period_),
       goal_(goal) {
     InvertedPendulumAction::SetLimits(torque_lower_, torque_upper_);
+    InvertedPendulumAction::SetNumValues(params.num_action_values_);
   }
 
   // Implement pure virtual method from Environment. Compute net torque at the

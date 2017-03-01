@@ -42,8 +42,8 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef RL_VALUE_LINEAR_ACTION_VALUE_FUNCTOR_H
-#define RL_VALUE_LINEAR_ACTION_VALUE_FUNCTOR_H
+#ifndef RL_VALUE_DEEP_ACTION_VALUE_FUNCTOR_H
+#define RL_VALUE_DEEP_ACTION_VALUE_FUNCTOR_H
 
 #include <value/continuous_action_value_functor.hpp>
 #include <util/types.hpp>
