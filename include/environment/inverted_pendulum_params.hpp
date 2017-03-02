@@ -43,6 +43,8 @@
 #ifndef RL_ENVIRONMENT_INVERTED_PENDULUM_PARAMS_H
 #define RL_ENVIRONMENT_INVERTED_PENDULUM_PARAMS_H
 
+#include <stddef.h>
+
 namespace rl {
 
   struct InvertedPendulumParams {
