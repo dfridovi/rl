@@ -43,8 +43,8 @@
 #ifndef RL_POLICY_CONTINUOUS_EPSILON_GREEDY_POLICY_H
 #define RL_POLICY_CONTINUOUS_EPSILON_GREEDY_POLICY_H
 
-#include <value/continuous_action_value_functor.hpp>
-#include <environment/continuous_environment.hpp>
+#include "../value/continuous_action_value_functor.hpp"
+#include "../environment/continuous_environment.hpp"
 
 #include <glog/logging.h>
 #include <random>

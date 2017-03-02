@@ -43,7 +43,7 @@
 #ifndef RL_ENVIRONMENT_DISCRETE_ENVIRONMENT_H
 #define RL_ENVIRONMENT_DISCRETE_ENVIRONMENT_H
 
-#include <environment/environment.hpp>
+#include "../environment/environment.hpp"
 
 #include <vector>
 

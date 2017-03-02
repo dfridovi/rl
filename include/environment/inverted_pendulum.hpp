@@ -43,10 +43,10 @@
 #ifndef RL_ENVIRONMENT_INVERTED_PENDULUM_H
 #define RL_ENVIRONMENT_INVERTED_PENDULUM_H
 
-#include <environment/continuous_environment.hpp>
-#include <environment/inverted_pendulum_params.hpp>
-#include <environment/inverted_pendulum_state.hpp>
-#include <environment/inverted_pendulum_action.hpp>
+#include "../environment/continuous_environment.hpp"
+#include "../environment/inverted_pendulum_params.hpp"
+#include "../environment/inverted_pendulum_state.hpp"
+#include "../environment/inverted_pendulum_action.hpp"
 
 #include <stddef.h>
 

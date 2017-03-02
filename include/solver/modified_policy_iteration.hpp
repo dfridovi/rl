@@ -44,8 +44,8 @@
 #ifndef RL_SOLVER_MODIFIED_POLICY_ITERATION_H
 #define RL_SOLVER_MODIFIED_POLICY_ITERATION_H
 
-#include <policy/discrete_deterministic_policy.hpp>
-#include <value/discrete_state_value_functor.hpp>
+#include "../policy/discrete_deterministic_policy.hpp"
+#include "../value/discrete_state_value_functor.hpp"
 
 #include <glog/logging.h>
 #include <vector>

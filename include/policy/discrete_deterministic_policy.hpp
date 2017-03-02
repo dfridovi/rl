@@ -46,9 +46,9 @@
 #ifndef RL_POLICY_DISCRETE_DETERMINISTIC_POLICY_H
 #define RL_POLICY_DISCRETE_DETERMINISTIC_POLICY_H
 
-#include <value/discrete_state_value_functor.hpp>
-#include <value/discrete_action_value_functor.hpp>
-#include <environment/discrete_environment.hpp>
+#include "../value/discrete_state_value_functor.hpp"
+#include "../value/discrete_action_value_functor.hpp"
+#include "../environment/discrete_environment.hpp"
 
 #include <unordered_map>
 #include <random>

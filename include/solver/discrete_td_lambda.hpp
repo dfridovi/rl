@@ -44,9 +44,9 @@
 #ifndef RL_SOLVER_DISCRETE_TD_LAMBDA_H
 #define RL_SOLVER_DISCRETE_TD_LAMBDA_H
 
-#include <policy/discrete_epsilon_greedy_policy.hpp>
-#include <value/discrete_state_value_functor.hpp>
-#include <solver/solver_params.hpp>
+#include "../policy/discrete_epsilon_greedy_policy.hpp"
+#include "../value/discrete_state_value_functor.hpp"
+#include "../solver/solver_params.hpp"
 
 #include <glog/logging.h>
 #include <vector>

@@ -44,10 +44,10 @@
 #ifndef RL_SOLVER_CONTINUOUS_Q_LEARNING_H
 #define RL_SOLVER_CONTINUOUS_Q_LEARNING_H
 
-#include <value/continuous_action_value_functor.hpp>
-#include <policy/continuous_epsilon_greedy_policy.hpp>
-#include <value/experience_replay.hpp>
-#include <solver/solver_params.hpp>
+#include "../value/continuous_action_value_functor.hpp"
+#include "../policy/continuous_epsilon_greedy_policy.hpp"
+#include "../value/experience_replay.hpp"
+#include "../solver/solver_params.hpp"
 
 #include <glog/logging.h>
 #include <vector>

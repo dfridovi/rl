@@ -43,9 +43,6 @@
 #ifndef RL_UTIL_MATH_H
 #define RL_UTIL_MATH_H
 
-#include <limits>
-#include <Eigen/Core>
-
 namespace rl {
   namespace math {
 

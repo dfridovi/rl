@@ -43,7 +43,7 @@
 #ifndef RL_ENVIRONMENT_INVERTED_PENDULUM_STATE_H
 #define RL_ENVIRONMENT_INVERTED_PENDULUM_STATE_H
 
-#include <util/types.hpp>
+#include "../util/types.hpp"
 
 #include <glog/logging.h>
 #include <boost/functional/hash.hpp>

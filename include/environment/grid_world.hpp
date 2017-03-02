@@ -43,9 +43,9 @@
 #ifndef RL_ENVIRONMENT_GRID_WORLD_H
 #define RL_ENVIRONMENT_GRID_WORLD_H
 
-#include <environment/discrete_environment.hpp>
-#include <environment/grid_state.hpp>
-#include <environment/grid_action.hpp>
+#include "../environment/discrete_environment.hpp"
+#include "../environment/grid_state.hpp"
+#include "../environment/grid_action.hpp"
 
 #include <stddef.h>
 
