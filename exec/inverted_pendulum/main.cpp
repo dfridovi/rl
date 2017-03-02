@@ -39,7 +39,7 @@
 #include <value/linear_action_value_functor.hpp>
 #include <solver/continuous_q_learning.hpp>
 
-#include <mininet/loss/L2.h>
+#include <mininet/loss/l2.h>
 
 #include <glog/logging.h>
 #include <gflags/gflags.h>
