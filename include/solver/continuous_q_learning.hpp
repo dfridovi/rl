@@ -77,14 +77,15 @@ namespace rl {
     // Solution is stored in the provided continuous value functor.
     void Solve(const ContinuousEnvironment<StateType, ActionType>& environment,
                ContinuousActionValueFunctor<StateType, ActionType>& value,
-               bool verbose = false);
+               bool verbose = false, bool random_initial_state = true);
 
   private:
     // Estimate the value function for the current policy using Q Learning,
     // from a single rollout.
     void UpdateValueFunction(
        const ContinuousEnvironment<StateType, ActionType>& environment,
-       ContinuousActionValueFunctor<StateType, ActionType>& value);
+       ContinuousActionValueFunctor<StateType, ActionType>& value,
+       bool random_initial_state);
 
     // Member variables.
     const StateType initial_state_;
@@ -109,13 +110,13 @@ namespace rl {
   void ContinuousQLearning<StateType, ActionType>::Solve(
      const ContinuousEnvironment<StateType, ActionType>& environment,
      ContinuousActionValueFunctor<StateType, ActionType>& value,
-     bool verbose) {
+     bool verbose, bool random_initial_state) {
     // Run for the specified number of iterations. Assume value functor
     // has already been initialized.
     for (size_t ii = 1; ii <= num_rollouts_; ii++) {
       if (verbose)
         std::cout << "Training rollout #" << ii << "..." << std::flush;
-      UpdateValueFunction(environment, value);
+      UpdateValueFunction(environment, value, random_initial_state);
       if (verbose)
         std::cout << "done." << std::endl;
 
@@ -129,9 +130,13 @@ namespace rl {
   template<typename StateType, typename ActionType>
   void ContinuousQLearning<StateType, ActionType>::UpdateValueFunction(
      const ContinuousEnvironment<StateType, ActionType>& environment,
-     ContinuousActionValueFunctor<StateType, ActionType>& value) {
-    // Initialize the current state to the initial state.
-    StateType current_state = initial_state_;
+     ContinuousActionValueFunctor<StateType, ActionType>& value,
+     bool random_initial_state) {
+    // Initialize the current state.
+    StateType current_state;
+
+    if (!random_initial_state)
+      current_state = initial_state_;
 
     // Get the optimal action in this state.
     ActionType current_action;

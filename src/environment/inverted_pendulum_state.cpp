@@ -36,41 +36,14 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Defines the Environment base class.
+// Defines the InvertedPendulumAction static variables.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef RL_ENVIRONMENT_ENVIRONMENT_H
-#define RL_ENVIRONMENT_ENVIRONMENT_H
+#include <environment/inverted_pendulum_state.hpp>
 
 namespace rl {
-
-
-  template<typename StateType, typename ActionType>
-  class Environment {
-  public:
-    virtual ~Environment() {}
-
-    // Pure virtual method to output the next state, given that the actor
-    // takes the specified action from the given state. Returns the reward.
-    virtual double Simulate(StateType& state,
-                            const ActionType& action) const = 0;
-
-    // Pure virtual method to return whether or not an action is valid in a
-    // given state.
-    virtual bool IsValid(const StateType& state,
-                         const ActionType& action) const = 0;
-
-    // Pure virtual method to return whether a state is terminal.
-    virtual bool IsTerminal(const StateType& state) const = 0;
-
-    // Pure virtual method to visualize (e.g. wuth OpenGL).
-    virtual void Visualize() const = 0;
-
-  protected:
-    explicit Environment() {}
-  }; //\class Environment
-
-}  //\namespace rl
-
-#endif
+  // Random number generation.
+  std::random_device InvertedPendulumState::rd_;
+  std::default_random_engine InvertedPendulumState::rng_(rd_());
+}

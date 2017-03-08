@@ -49,6 +49,7 @@
 #include <boost/functional/hash.hpp>
 #include <stddef.h>
 #include <math.h>
+#include <random>
 
 #ifdef SYSTEM_OSX
 #include <GLUT/glut.h>
@@ -65,12 +66,24 @@ namespace rl {
     double theta_;
     double omega_;
 
+    // Random number generator for initialization.
+    static std::random_device rd_;
+    static std::default_random_engine rng_;
+
     // Constructor/destructor.
     ~InvertedPendulumState() {}
     InvertedPendulumState(double theta, double omega)
       : theta_(theta), omega_(omega) {}
     InvertedPendulumState()
-      : theta_(M_PI_2), omega_(0.0) {}
+      : theta_(M_PI_2), omega_(0.0) {
+      // Reset randomly.
+      std::uniform_real_distribution<double> unif_theta(0.25 * M_PI,
+                                                        0.75 * M_PI);
+      std::uniform_real_distribution<double> unif_omega(-1.0, 1.0);
+
+      theta_ = unif_theta(rng_);
+      omega_ = unif_omega(rng_);
+    }
 
     // Static number of dimensions.
     static constexpr size_t FeatureDimension() { return 2; }

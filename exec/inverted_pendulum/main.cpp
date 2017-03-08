@@ -318,7 +318,7 @@ int main(int argc, char** argv) {
   glutDisplayFunc(SingleIteration);
   glutReshapeFunc(Reshape);
   glutTimerFunc(0, AnimationTimer, 0);
-  glutTimerFunc(0, ReplanningTimer, 0);
+  //  glutTimerFunc(0, ReplanningTimer, 0);
   InitGL();
   glutMainLoop();
 
