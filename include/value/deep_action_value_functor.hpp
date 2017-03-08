@@ -73,9 +73,10 @@ namespace rl {
     double operator()(const StateType& state, const ActionType& action) const;
 
     // Pure virtual method to do a gradient update to underlying weights.
-    void Update(const std::vector<StateType>& state,
-                const std::vector<ActionType>& action,
-                const std::vector<double>& target, double step_size);
+    // Returns the average loss.
+    double Update(const std::vector<StateType>& state,
+                  const std::vector<ActionType>& action,
+                  const std::vector<double>& target, double step_size);
 
     // Choose an optimal action in the given state. Returns whether or not
     // optimization was successful.
@@ -113,7 +114,7 @@ namespace rl {
 
   // Pure virtual method to do a gradient update to underlying weights.
   template<typename StateType, typename ActionType>
-  void DeepActionValueFunctor<StateType, ActionType>::
+  double DeepActionValueFunctor<StateType, ActionType>::
   Update(const std::vector<StateType>& states,
          const std::vector<ActionType>& actions,
          const std::vector<double>& targets, double step_size) {
@@ -147,6 +148,8 @@ namespace rl {
 
     // Update weights.
     net_.UpdateWeights(derivatives, step_size, momentum_, weight_decay_);
+
+    return loss;
   }
 
   // Choose an optimal action in the given state. Returns whether or not

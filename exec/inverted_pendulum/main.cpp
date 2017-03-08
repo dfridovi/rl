@@ -148,7 +148,7 @@ void Replan() {
                       InvertedPendulumAction> solver(*current_state, solver_params);
 
   std::cout << "Running solver..." << std::flush;
-  solver.Solve(*world, *value);
+  solver.Solve(*world, *value, true, true);
   std::cout << "done." << std::endl;
 }
 

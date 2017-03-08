@@ -186,7 +186,12 @@ namespace rl {
       }
 
       // Update.
-      value.Update(sample_states, sample_actions, targets, learning_rate_);
+      const double loss =
+        value.Update(sample_states, sample_actions, targets, learning_rate_);
+
+      if (ii % 100 == 0) {
+        std::printf("Loss on replay %zu was %f.\n", ii, loss);
+      }
     }
   }
 }  //\namespace rl

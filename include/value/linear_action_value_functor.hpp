@@ -65,9 +65,10 @@ namespace rl {
     double operator()(const StateType& state, const ActionType& action) const;
 
     // Pure virtual method to do a gradient update to underlying weights.
-    void Update(const std::vector<StateType>& states,
-                const std::vector<ActionType>& actions,
-                const std::vector<double>& targets, double step_size);
+    // Returns the average loss.
+    double Update(const std::vector<StateType>& states,
+                  const std::vector<ActionType>& actions,
+                  const std::vector<double>& targets, double step_size);
 
     // Choose an optimal action in the given state. Returns whether or not
     // optimization was successful.
@@ -116,8 +117,9 @@ namespace rl {
   }
 
   // Pure virtual method to do a gradient update to underlying weights.
+  // Returns the average loss.
   template<typename StateType, typename ActionType>
-  void LinearActionValueFunctor<StateType, ActionType>::
+  double LinearActionValueFunctor<StateType, ActionType>::
   Update(const std::vector<StateType>& states,
          const std::vector<ActionType>& actions,
          const std::vector<double>& targets, double step_size) {
@@ -129,6 +131,7 @@ namespace rl {
     double bias_derivative = 0.0;
 
     // Loop over all state/action/target triples and update gradients.
+    double loss = 0.0;
     for (size_t ii = 0; ii < states.size(); ii++) {
       // Extract feature from state and action.
       VectorXd state_features(state_weights_.size());
@@ -143,15 +146,20 @@ namespace rl {
         action_features.dot(action_weights_);
 
       // Update gradients.
-      state_gradient += (output - targets[ii]) * state_features;
-      action_gradient += (output - targets[ii]) * action_features;
-      bias_derivative += (output - targets[ii]);
+      const double error = output - targets[ii];
+      state_gradient += error * state_features;
+      action_gradient += error * action_features;
+      bias_derivative += error;
+
+      loss += 0.5 * error * error;
     }
 
     // Update.
     state_weights_ -= state_gradient * step_size;
     action_weights_ -= action_gradient * step_size;
     bias_ -= bias_derivative * step_size;
+
+    return loss / static_cast<double>(states.size());
   }
 
   // Choose an optimal action in the given state. Returns whether or not

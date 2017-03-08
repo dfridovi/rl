@@ -65,7 +65,8 @@ namespace rl {
                               const ActionType& action) const = 0;
 
     // Pure virtual method to do a gradient update to underlying weights.
-    virtual void Update(const std::vector<StateType>& states,
+    // Returns the average loss.
+    virtual double Update(const std::vector<StateType>& states,
                         const std::vector<ActionType>& actions,
                         const std::vector<double>& targets,
                         double step_size) = 0;
