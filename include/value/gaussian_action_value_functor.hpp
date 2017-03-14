@@ -97,10 +97,8 @@ namespace rl {
     VectorXd means_;
     VectorXd squared_lengths_;
 
-    // Stable Cholesky solver. This does not seem to work reliably though,
-    // so using QR decomposition instead.
+    // Fast Cholesky solver.
     Eigen::LLT<MatrixXd> cholesky_;
-    //    Eigen::ColPivHouseholderQR<MatrixXd> qr_;
 
     // Output of covariance.inv() * means_. Stored for speed.
     VectorXd regressed_means_;
