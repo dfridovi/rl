@@ -73,14 +73,14 @@ DEFINE_int32(gp_num_points, 30, "Number of random training points for GP.");
 DEFINE_int32(gp_num_inits, 10, "Number of random initial actions.");
 DEFINE_int32(gp_max_steps, 10,
              "Maximum number of gradient steps to find the optimal action.");
-DEFINE_double(gp_step_size, 0.1, "Step size for finding optimal action.");
+DEFINE_double(gp_step_size, 0.01, "Step size for finding optimal action.");
 DEFINE_double(gp_epsilon, 0.1,
               "Gradient size threshold for convergence of optimal action.");
 DEFINE_double(gp_regularizer, 1.0,
               "Regularization constant to trade off mean/variance.");
-DEFINE_double(gp_noise, 1.0, "Noise variance of GP.");
-DEFINE_double(gp_state_length, 0.25, "Length scale for state dimensions.");
-DEFINE_double(gp_action_length, 5.0, "Length scale for action dimensions");
+DEFINE_double(gp_noise, 100.0, "Noise variance of GP.");
+DEFINE_double(gp_state_length, 1.0, "Length scale for state dimensions.");
+DEFINE_double(gp_action_length, 10.0, "Length scale for action dimensions");
 
 // Deep value functor params.
 DEFINE_int32(num_layers, 3, "Number of layers in deep value approximator.");
@@ -95,7 +95,7 @@ DEFINE_double(discount_factor, 0.9, "Discount factor.");
 DEFINE_double(alpha, 0.01, "TD return interpolation parameter.");
 DEFINE_double(learning_rate, 0.25, "Learning rate for SGD.");
 DEFINE_int32(num_rollouts, 50, "Number of rollouts to learn from.");
-DEFINE_int32(rollout_length, 1000,
+DEFINE_int32(rollout_length, -1,
              "Rollout length. If negative, rollout until a terminal state.");
 DEFINE_int32(num_exp_replays, 201,
              "Number of SGD updates per Q Learning iteration.");

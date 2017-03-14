@@ -44,10 +44,10 @@
 #ifndef RL_VALUE_GAUSSIAN_ACTION_VALUE_FUNCTOR_H
 #define RL_VALUE_GAUSSIAN_ACTION_VALUE_FUNCTOR_H
 
-#include <value/continuous_action_value_functor.hpp>
-#include <util/types.hpp>
+#include "../value/continuous_action_value_functor.hpp"
+#include "util/types.hpp"
 
-#include <Eigen/Dense>
+#include <Eigen/Cholesky>
 #include <glog/logging.h>
 #include <limits>
 #include <iostream>

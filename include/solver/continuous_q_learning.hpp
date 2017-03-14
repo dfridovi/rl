@@ -183,9 +183,11 @@ namespace rl {
         }
 
         const double sample_value = value(sample_states[jj], sample_actions[jj]);
+        const double td_delta = sample_rewards[jj] + discount_factor_ *
+          value(sample_next_states[jj], optimal_next_action) - sample_value;
         const double target =
-          sample_value + alpha_ * (sample_rewards[jj] + discount_factor_ *
-            value(sample_next_states[jj], optimal_next_action) - sample_value);
+          sample_value + alpha_ * td_delta;
+
         targets.push_back(target);
       }
 
