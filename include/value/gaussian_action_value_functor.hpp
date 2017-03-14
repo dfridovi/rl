@@ -44,10 +44,10 @@
 #ifndef RL_VALUE_GAUSSIAN_ACTION_VALUE_FUNCTOR_H
 #define RL_VALUE_GAUSSIAN_ACTION_VALUE_FUNCTOR_H
 
-#include <value/action_value_functor.hpp>
+#include <value/continuous_action_value_functor.hpp>
 #include <util/types.hpp>
 
-#include <Eigen/LDLT>
+#include <Eigen/Cholesky>
 #include <limits>
 #include <iostream>
 #include <random>
@@ -58,12 +58,13 @@ namespace rl {
 
   template<typename StateType, typename ActionType>
   class GaussianActionValueFunctor :
-    public ActionValueFunctor<StateType, ActionType> {
+    public ContinuousActionValueFunctor<StateType, ActionType> {
+  public:
     // Constructor/destructor.
     ~GaussianActionValueFunctor() {}
     explicit GaussianActionValueFunctor(size_t num_points, double regularizer,
-                                        double noise_variance)
-      : ContinuousActionValueFunctor<StateType, ActionType>() {}
+                                        double noise_variance, double step_size,
+                                        size_t max_steps, double epsilon);
 
     // Pure virtual method to output the value at a state/action pair.
     double operator()(const StateType& state, const ActionType& action) const;
@@ -77,6 +78,13 @@ namespace rl {
     bool OptimalAction(const StateType& state, ActionType& action) const;
 
   private:
+    // Covariance kernel function.
+    double Kernel(const VectorXd& x, const VectorXd& y) const;
+
+    // Compute the cross covariance vector of a feature vector with
+    // the training data.
+    void CrossCovariance(const VectorXd& features, VectorXd& cross) const;
+
     // Training covariance matrix, with vectors of state/action features
     // training targets, and length scales.
     MatrixXd covariance_;
@@ -97,8 +105,11 @@ namespace rl {
     // choice of optimal action.
     double regularizer_;
 
-    // Covariance kernel function.
-    double Kernel(const VectorXd& x, const VectorXd& y) const;
+    // Max number of gradient steps to take for choosing the optimal action,
+    // with given step size. Epsilon is convergence criterion for gradient size.
+    const size_t max_steps_;
+    const double step_size_;
+    const double epsilon_;
   }; //\class GaussianActionValueFunctor
 
 // ------------------------------ IMPLEMENTATION ---------------------------- //
@@ -106,33 +117,75 @@ namespace rl {
   template<typename StateType, typename ActionType>
   GaussianActionValueFunctor<StateType, ActionType>::
   GaussianActionValueFunctor(size_t num_points, double regularizer,
-                             double noise_variance)
+                             double noise_variance, double step_size,
+                             size_t max_steps, double epsilon)
     : regularizer_(regularizer),
       noise_variance_(noise_variance),
+      max_steps_(max_steps),
+      step_size_(step_size),
+      epsilon_(epsilon),
       covariance_(MatrixXd::Zero(num_points, num_points)),
       targets_(VectorXd::Zero(num_points)),
       regressed_targets_(VectorXd::Zero(num_points)),
       squared_lengths_(VectorXd::Zero(StateType::FeatureDimension() +
-                                      ActionType::FeatureDimension())) {
-    // TODO! Be sure to call cholesky_.compute()!
+                                      ActionType::FeatureDimension())),
+      ContinuousActionValueFunctor<StateType, ActionType>() {
+    // Pick random points in the space for training.
+    for (size_t ii = 0; ii < num_points; ii++) {
+      const StateType state;
+      const ActionType action;
+
+      // Unpack into a feature vector.
+      VectorXd state_features(StateType::FeatureDimension());
+      state.Features(state_features);
+
+      VectorXd action_features(ActionType::FeatureDimension());
+      action.Features(action_features);
+
+      VectorXd features(state_features.size() + action_features.size());
+      features.head(state_features.size()) = state_features;
+      features.tail(action_features.size()) = action_features;
+
+      // Add to list of training points.
+      points_.push_back(features);
+    }
+
+    // Compute training covariance.
+    for (size_t ii = 0; ii < points_.size(); ii++) {
+      for (size_t jj = 0; jj < ii; jj++) {
+        covariance_(ii, jj) = Kernel(points_[ii], points_[jj]);
+        covariance_(jj, ii) = covariance_(ii, jj);
+      }
+
+      covariance_(ii, ii) = 1.0 + noise_variance;
+    }
+
+    // Randomize training targets.
+    std::random_device rd;
+    std::default_random_engine rng(rd());
+    std::normal_distribution<double> gaussian(0.0, 0.1);
+
+    for (size_t ii = 0; ii < targets_.size(); ii++)
+      targets_(ii) = gaussian(rng);
+
+    // Compute Cholesky decomposition of 'covariance_' for quick solving.
+    cholesky_.compute(covariance_);
+
+    // Set 'regressed_targets_' for speed.
+    regressed_targets_ = cholesky_.solve(targets_);
   }
 
   // Compute the expected value of the GP at this point.
   template<typename StateType, typename ActionType>
   double GaussianActionValueFunctor<StateType, ActionType>::
   operator()(const StateType& state, const ActionType& action) const {
-    // Extract a compound feature vector.
-    VectorXd features(squared_lengths_.size());
-    state.Features(features.head(StateType::FeatureDimension()));
-    action.Features(features.tail(ActionType::FeatureDimension()));
+    // Compute cross covariance vector.
+    VectorXd cross(points_.size());
+    CrossCovariance(state, action, cross);
 
-    // Accumulate the total inner product between the cross covariance
+    // Compute the total inner product between the cross covariance
     // of this point and the training set.
-    double output = 0.0;
-    for (size_t ii = 0; ii < points_.size(); ii++) {
-      const double cross_covariance = Kernel(points_[ii], features);
-      output += cross_covariance * regressed_targets_(ii);
-    }
+    return cross.dot(regressed_targets_);
   }
 
   // Update all parameters.
@@ -140,30 +193,105 @@ namespace rl {
   void GaussianActionValueFunctor<StateType, ActionType>::
   Update(const StateType& state, const ActionType& action,
          double target, double step_size) {
-    // TODO!
+    // Compute cross covariance.
+    VectorXd features(StateType::FeatureDimension() +
+                      ActionType::FeatureDimension());
+    Unpack(state, action, features);
+
+    VectorXd cross(points_.size());
+    CrossCovariance(features, cross);
+
+    // Compute the gradient.
+    const VectorXd regressed = cholesky_.solve(cross);
+    const VectorXd gradient = (regressed.dot(targets_) - target) * regressed;
+
+    // Do a gradient update.
+    targets_ -= step_size * gradient;
+
+    // Update 'regressed_targets_' for speed later.
+    regressed_targets_ = cholesky_.solve(targets_);
   }
 
   // Compute the optimal action, where 'optimal' is the solution to the
   // following program:
-  //                arg max mean(s, a) - reg * var(s, a)
+  //                arg max mean(s, a) + reg * var(s, a)
   //                     a
   // Note that the sign of 'regularizer' will determine whether the control
   // is biased toward "safe" areas or optimistic exploration.
   template<typename StateType, typename ActionType>
   bool GaussianActionValueFunctor<StateType, ActionType>::
   OptimalAction(const StateType& state, ActionType& action) const {
-    // TODO!
+    // Start from a random initial action.
+    ActionType current_action;
+    VectorXd features(StateType::FeatureDimension() +
+                      ActionType::FeatureDimension());
+    Unpack(state, current_action, features);
+
+    // Run a few steps of gradient ascent to adjust this action.
+    VectorXd cross(points_.size());
+    MatrixXd Jt(ActionType::FeatureDimension(), points_.size());
+    bool has_converged = false;
+    for (size_t ii = 0; ii < max_steps_; ii++) {
+      // Compute the cross covariance of this state-action pair with the data.
+      CrossCovariance(features, cross);
+
+      // Compute the Jacobian transpose of cross covariance with respect
+      // to feature vector.
+      for (size_t jj = 0; jj < points_.size(); jj++) {
+        const VectorXd action_diff =
+          points_[jj].tail(ActionType::FeatureDimension()) -
+          features.tail(ActionType::FeatureDimension());
+
+        Jt.col(jj) = cross(jj) * action_diff.cwiseQuotient(
+          squared_lengths_.tail(ActionType::FeatureDimension()));
+      }
+
+      // Compute the intermediate derivative with respect to cross covariance.
+      const VectorXd cross_gradient =
+        regressed_targets_ + regularizer_ * cholesky_.solve(cross);
+
+      // Compute the gradient with respect to the action feature vector.
+      const VectorXd gradient = Jt * cross_gradient;
+
+      // Gradient update.
+      features.tail(ActionType::FeatureDimension()) += step_size_ * gradient;
+
+      // Check convergence.
+      if (gradient.norm() < epsilon_) {
+        has_converged = true;
+        break;
+      }
+    }
+
+    // Set 'action' to optimum.
+    action.FromFeatures(features.tail(ActionType::FeatureDimension()));
+    return has_converged;
   }
 
   // Covariance kernel function.
   template<typename StateType, typename ActionType>
   double GaussianActionValueFunctor<StateType, ActionType>::
-  Kernel(const VectorXd& x, const VectorXd& y) {
+  Kernel(const VectorXd& x, const VectorXd& y) const {
     CHECK_EQ(x.size(), squared_lengths_.size());
     CHECK_EQ(y.size(), squared_lengths_.size());
 
     return std::exp(-0.5 * x.dot(y.cwiseQuotient(squared_lengths_)));
   }
+
+  // Compute the cross covariance vector of a feature vector with
+  // the training data.
+  template<typename StateType, typename ActionType>
+  void GaussianActionValueFunctor<StateType, ActionType>::
+  CrossCovariance(const VectorXd& features, VectorXd& cross) const {
+    CHECK_EQ(cross.size(), points_.size());
+    CHECK_EQ(features.size(),
+             StateType::FeatureDimension() + ActionType::FeatureDimension());
+
+    // Compute cross covariance of features with training points.
+    for (size_t ii = 0; ii < points_.size(); ii++)
+      cross(ii) = Kernel(features, points_[ii]);
+  }
+
 }  //\namespace rl
 
 #endif

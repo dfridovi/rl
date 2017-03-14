@@ -67,9 +67,9 @@ namespace rl {
     // Pure virtual method to do a gradient update to underlying weights.
     // Returns the average loss.
     virtual double Update(const std::vector<StateType>& states,
-                        const std::vector<ActionType>& actions,
-                        const std::vector<double>& targets,
-                        double step_size) = 0;
+                          const std::vector<ActionType>& actions,
+                          const std::vector<double>& targets,
+                          double step_size) = 0;
 
     // Choose an optimal action in the given state. Returns whether or not
     // optimization was successful.
@@ -78,6 +78,20 @@ namespace rl {
   protected:
     explicit ContinuousActionValueFunctor()
       : ActionValueFunctor<StateType, ActionType>() {}
+
+    // Unpack the state-action pair into a feature vector.
+    void Unpack(const StateType& state, const ActionType& action,
+                VectorXd& features) const {
+      VectorXd state_features(StateType::FeatureDimension());
+      state.Features(state_features);
+
+      VectorXd action_features(ActionType::FeatureDimension());
+      action.Features(action_features);
+
+      CHECK_EQ(features.size(), state_features.size() + action_features.size());
+      features.head(state_features.size()) = state_features;
+      features.tail(action_features.size()) = action_features;
+    }
   }; //\class ContinuousActionValueFunctor
 
 }  //\namespace rl

@@ -36,6 +36,7 @@
 
 #include <environment/inverted_pendulum.hpp>
 #include <value/deep_action_value_functor.hpp>
+#include <value/gaussian_action_value_functor.hpp>
 #include <value/linear_action_value_functor.hpp>
 #include <solver/continuous_q_learning.hpp>
 
@@ -64,14 +65,27 @@ DEFINE_double(motion_rate, 0.25, "Fraction of real-time.");
 DEFINE_int32(replan_rate, 1000, "Replanning rate in milliseconds.");
 
 // Value function approximator.
-DEFINE_string(value_approx, "deep",
-              "Type of value function approximator to use of {linear, deep}.");
+DEFINE_string(value_approx, "gp",
+              "Type of value function approx to use of {linear, deep, gp}.");
+
+// GP value functor params.
+DEFINE_int32(gp_num_points, 100, "Number of random training points for GP.");
+DEFINE_int32(gp_max_steps, 100,
+             "Maximum number of gradient steps to find the optimal action.");
+DEFINE_double(gp_step_size, 0.01, "Step size for finding optimal action.");
+DEFINE_double(gp_epsilon, 1e-3,
+              "Gradient size threshold for convergence of optimal action.");
+DEFINE_double(gp_regularizer, 1.0,
+              "Regularization constant to trade off mean/variance.");
+DEFINE_double(gp_noise, 1.0, "Noise variance of GP.");
+
+// Deep value functor params.
 DEFINE_int32(num_layers, 3, "Number of layers in deep value approximator.");
 DEFINE_int32(layer_size, 10, "Size of hidden layers.");
 DEFINE_double(momentum, 0.0, "Momentum coefficient in SGD.");
 DEFINE_double(weight_decay, 0.0, "L2 loss coefficient for weights.");
 DEFINE_string(nonlinearity, "relu",
-              "Type of nonlinearity on all but the last layer {relu, sigmoid}.");
+              "Nonlinearity on all but the last layer {relu, sigmoid}.");
 
 // Solver parameters.
 DEFINE_double(discount_factor, 0.1, "Discount factor.");
@@ -264,6 +278,14 @@ int main(int argc, char** argv) {
   if (FLAGS_value_approx == "linear")
     value = new LinearActionValueFunctor<InvertedPendulumState,
                                          InvertedPendulumAction>();
+  else if (FLAGS_value_approx == "gp")
+    value = new GaussianActionValueFunctor<
+      InvertedPendulumState, InvertedPendulumAction>(FLAGS_gp_num_points,
+                                                     FLAGS_gp_regularizer,
+                                                     FLAGS_gp_noise,
+                                                     FLAGS_gp_step_size,
+                                                     FLAGS_gp_max_steps,
+                                                     FLAGS_gp_epsilon);
   else if (FLAGS_value_approx == "deep") {
     CHECK_GE(FLAGS_num_layers, 1);
 
