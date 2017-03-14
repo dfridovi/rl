@@ -109,7 +109,10 @@ namespace rl {
         (state.theta_ >= theta_lower_ && state.theta_ <= theta_upper_);
 
       // Accumulate reward.
-      reward -= (state.theta_ - goal_.theta_) * math::sgn(state.omega_);
+      if (std::abs(state.theta_ - goal_.theta_) < 0.1)
+        reward += 1.0;
+      else
+        reward -= 1.0;
     }
 
     // If ever went out of bounds, set to invalid reward.

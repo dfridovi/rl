@@ -99,8 +99,8 @@ namespace rl {
 
     // Stable Cholesky solver. This does not seem to work reliably though,
     // so using QR decomposition instead.
-    //Eigen::LDLT<MatrixXd> cholesky_;
-    Eigen::ColPivHouseholderQR<MatrixXd> qr_;
+    Eigen::LLT<MatrixXd> cholesky_;
+    //    Eigen::ColPivHouseholderQR<MatrixXd> qr_;
 
     // Output of covariance.inv() * means_. Stored for speed.
     VectorXd regressed_means_;
@@ -176,10 +176,11 @@ namespace rl {
       means_(ii) = gaussian(rng);
 
     // Compute QR decomposition of 'covariance_' for quick solving.
-    qr_ = covariance_.colPivHouseholderQr();
+    //    qr_ = covariance_.colPivHouseholderQr();
+    cholesky_ = covariance_.llt();
 
     // Set 'regressed_means_' for speed.
-    regressed_means_ = qr_.solve(means_);
+    regressed_means_ = cholesky_.solve(means_);
   }
 
   // Compute the expected value of the GP at this point.
@@ -220,7 +221,7 @@ namespace rl {
       CrossCovariance(features, cross);
 
       // Compute the gradient.
-      const VectorXd regressed = qr_.solve(cross);
+      const VectorXd regressed = cholesky_.solve(cross);
       const double error = regressed.dot(means_) - targets[ii];
 
       // Catch nan. Set to zero.
@@ -237,7 +238,7 @@ namespace rl {
     means_ -= step_size * gradient;
 
     // Update 'regressed_means_' for speed later.
-    regressed_means_ = qr_.solve(means_);
+    regressed_means_ = cholesky_.solve(means_);
 
     // Return loss. Divide by two for consistency.
     return 0.5 * loss;
@@ -279,7 +280,7 @@ namespace rl {
 
       // Compute the intermediate derivative with respect to cross covariance.
       const VectorXd cross_gradient =
-        regressed_means_ + regularizer_ * qr_.solve(cross);
+        regressed_means_ + regularizer_ * cholesky_.solve(cross);
 
       // Compute the gradient with respect to the action feature vector.
       const VectorXd gradient = Jt * cross_gradient;
