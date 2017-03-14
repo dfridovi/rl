@@ -158,6 +158,9 @@ namespace rl {
 
       // Store this experience in the replay unit.
       replay_.Add(current_state, current_action, reward, next_state);
+
+      // Update current state!
+      current_state = next_state;
     }
 
     // Replay experience and each time update the value function.

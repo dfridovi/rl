@@ -70,7 +70,8 @@ DEFINE_string(value_approx, "gp",
 
 // GP value functor params.
 DEFINE_int32(gp_num_points, 30, "Number of random training points for GP.");
-DEFINE_int32(gp_max_steps, 20,
+DEFINE_int32(gp_num_inits, 10, "Number of random initial actions.");
+DEFINE_int32(gp_max_steps, 10,
              "Maximum number of gradient steps to find the optimal action.");
 DEFINE_double(gp_step_size, 0.1, "Step size for finding optimal action.");
 DEFINE_double(gp_epsilon, 0.1,
@@ -291,6 +292,7 @@ int main(int argc, char** argv) {
                                                      FLAGS_gp_regularizer,
                                                      FLAGS_gp_noise,
                                                      FLAGS_gp_step_size,
+                                                     FLAGS_gp_num_inits,
                                                      FLAGS_gp_max_steps,
                                                      FLAGS_gp_epsilon,
                                                      lengths);

@@ -65,7 +65,8 @@ namespace rl {
     ~GaussianActionValueFunctor() {}
     explicit GaussianActionValueFunctor(size_t num_points, double regularizer,
                                         double noise_variance, double step_size,
-                                        size_t max_steps, double epsilon,
+                                        size_t num_inits, size_t max_steps,
+                                        double epsilon,
                                         const VectorXd& lengths);
 
     // Pure virtual method to output the value at a state/action pair.
@@ -111,7 +112,9 @@ namespace rl {
     double regularizer_;
 
     // Max number of gradient steps to take for choosing the optimal action,
-    // with given step size. Epsilon is convergence criterion for gradient size.
+    // with given step size starting from one of 'num_inits_' random initial
+    // points. 'epsilon_' is convergence criterion for gradient size.
+    const size_t num_inits_;
     const size_t max_steps_;
     const double step_size_;
     const double epsilon_;
@@ -123,11 +126,12 @@ namespace rl {
   GaussianActionValueFunctor<StateType, ActionType>::
   GaussianActionValueFunctor(size_t num_points, double regularizer,
                              double noise_variance, double step_size,
-                             size_t max_steps, double epsilon,
+                             size_t num_inits, size_t max_steps, double epsilon,
                              const VectorXd& lengths)
     : regularizer_(regularizer),
       noise_variance_(noise_variance),
       max_steps_(max_steps),
+      num_inits_(num_inits),
       step_size_(step_size),
       epsilon_(epsilon),
       covariance_(MatrixXd::Zero(num_points, num_points)),
@@ -247,54 +251,74 @@ namespace rl {
   //                arg max mean(s, a) + reg * var(s, a)
   //                     a
   // Note that the sign of 'regularizer' will determine whether the control
-  // is biased toward "safe" areas or optimistic exploration.
+  // is biased toward "safe" areas or optimistic exploration. In practice, this
+  // problem is usually non-convex, and we solve it by taking several gradient
+  // steps from a few random initializations and returning the best final value.
   template<typename StateType, typename ActionType>
   bool GaussianActionValueFunctor<StateType, ActionType>::
   OptimalAction(const StateType& state, ActionType& action) const {
-    // Start from a random initial action.
-    ActionType current_action;
     VectorXd features(StateType::FeatureDimension() +
                       ActionType::FeatureDimension());
-    this->Unpack(state, current_action, features);
 
-    // Run a few steps of gradient ascent to adjust this action.
-    VectorXd cross(points_.size());
-    MatrixXd Jt(ActionType::FeatureDimension(), points_.size());
+    // Try a few random initial actions and keep the best one
+    // after running a few iterations of gradient ascent.
+    double best_value = kInvalidReward;
     bool has_converged = false;
-    for (size_t ii = 0; ii < max_steps_; ii++) {
-      // Compute the cross covariance of this state-action pair with the data.
-      CrossCovariance(features, cross);
 
-      // Compute the Jacobian transpose of cross covariance with respect
-      // to feature vector.
-      for (size_t jj = 0; jj < points_.size(); jj++) {
-        const VectorXd action_diff =
-          points_[jj].tail(ActionType::FeatureDimension()) -
-          features.tail(ActionType::FeatureDimension());
+    VectorXd cross(points_.size());
+    VectorXd regressed_cross(points_.size());
+    MatrixXd Jt(ActionType::FeatureDimension(), points_.size());
 
-        Jt.col(jj) = cross(jj) * action_diff.cwiseQuotient(
-          squared_lengths_.tail(ActionType::FeatureDimension()));
+    for (size_t ii = 0; ii < num_inits_; ii++) {
+      // Start from a random initial action.
+      ActionType current_action;
+      this->Unpack(state, current_action, features);
+
+      // Run a few steps of gradient ascent to adjust this action.
+      has_converged = false;
+      for (size_t jj = 0; jj < max_steps_; jj++) {
+        // Compute the cross covariance of this state-action pair with the data.
+        CrossCovariance(features, cross);
+
+        // Compute the Jacobian transpose of cross covariance with respect
+        // to feature vector.
+        for (size_t jj = 0; jj < points_.size(); jj++) {
+          const VectorXd action_diff =
+            points_[jj].tail(ActionType::FeatureDimension()) -
+            features.tail(ActionType::FeatureDimension());
+
+          Jt.col(jj) = cross(jj) * action_diff.cwiseQuotient(
+            squared_lengths_.tail(ActionType::FeatureDimension()));
+        }
+
+        // Compute the intermediate derivative with respect to cross covariance.
+        regressed_cross = cholesky_.solve(cross);
+        const VectorXd cross_gradient =
+          regressed_means_ + regularizer_ * regressed_cross;
+
+        // Compute the gradient with respect to the action feature vector.
+        const VectorXd gradient = Jt * cross_gradient;
+
+        // Gradient update.
+        features.tail(ActionType::FeatureDimension()) += step_size_ * gradient;
+
+        // Check convergence.
+        if (gradient.norm() < epsilon_) {
+          has_converged = true;
+          break;
+        }
       }
 
-      // Compute the intermediate derivative with respect to cross covariance.
-      const VectorXd cross_gradient =
-        regressed_means_ + regularizer_ * cholesky_.solve(cross);
+      // Check if this value is best.
+      const double value =
+        (regressed_means_ + regularizer_ * regressed_cross).dot(cross);
 
-      // Compute the gradient with respect to the action feature vector.
-      const VectorXd gradient = Jt * cross_gradient;
-
-      // Gradient update.
-      features.tail(ActionType::FeatureDimension()) += step_size_ * gradient;
-
-      // Check convergence.
-      if (gradient.norm() < epsilon_) {
-        has_converged = true;
-        break;
+      if (value > best_value) {
+        best_value = value;
+        action.FromFeatures(features.tail(ActionType::FeatureDimension()));
       }
     }
 
-    // Set 'action' to optimum.
-    action.FromFeatures(features.tail(ActionType::FeatureDimension()));
     return has_converged;
   }
 
