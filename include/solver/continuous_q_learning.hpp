@@ -175,8 +175,9 @@ namespace rl {
         // Get optimal next action.
         ActionType optimal_next_action;
         if (!policy_.Act(value, environment,
-                         sample_next_states[jj], optimal_next_action))
+                         sample_next_states[jj], optimal_next_action)) {
           LOG(WARNING) << "ContinuousQLearning: Policy error.";
+        }
 
         const double sample_value = value(sample_states[jj], sample_actions[jj]);
         const double target =

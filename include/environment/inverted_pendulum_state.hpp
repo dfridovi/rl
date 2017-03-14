@@ -77,8 +77,8 @@ namespace rl {
     InvertedPendulumState()
       : theta_(M_PI_2), omega_(0.0) {
       // Reset randomly.
-      std::uniform_real_distribution<double> unif_theta(0.0, M_PI);
-      std::uniform_real_distribution<double> unif_omega(-1.0, 1.0);
+      std::uniform_real_distribution<double> unif_theta(0.1 * M_PI, 0.9 * M_PI);
+      std::uniform_real_distribution<double> unif_omega(-0.25, 0.25);
 
       theta_ = unif_theta(rng_);
       omega_ = unif_omega(rng_);

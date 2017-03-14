@@ -47,7 +47,7 @@
 #include <value/continuous_action_value_functor.hpp>
 #include <util/types.hpp>
 
-#include <Eigen/Cholesky>
+#include <Eigen/Dense>
 #include <glog/logging.h>
 #include <limits>
 #include <iostream>
@@ -65,7 +65,8 @@ namespace rl {
     ~GaussianActionValueFunctor() {}
     explicit GaussianActionValueFunctor(size_t num_points, double regularizer,
                                         double noise_variance, double step_size,
-                                        size_t max_steps, double epsilon);
+                                        size_t max_steps, double epsilon,
+                                        const VectorXd& lengths);
 
     // Pure virtual method to output the value at a state/action pair.
     double operator()(const StateType& state, const ActionType& action) const;
@@ -96,8 +97,10 @@ namespace rl {
     VectorXd means_;
     VectorXd squared_lengths_;
 
-    // Stable Cholesky solver.
-    Eigen::LDLT<MatrixXd> cholesky_;
+    // Stable Cholesky solver. This does not seem to work reliably though,
+    // so using QR decomposition instead.
+    //Eigen::LDLT<MatrixXd> cholesky_;
+    Eigen::ColPivHouseholderQR<MatrixXd> qr_;
 
     // Output of covariance.inv() * means_. Stored for speed.
     VectorXd regressed_means_;
@@ -122,7 +125,8 @@ namespace rl {
   GaussianActionValueFunctor<StateType, ActionType>::
   GaussianActionValueFunctor(size_t num_points, double regularizer,
                              double noise_variance, double step_size,
-                             size_t max_steps, double epsilon)
+                             size_t max_steps, double epsilon,
+                             const VectorXd& lengths)
     : regularizer_(regularizer),
       noise_variance_(noise_variance),
       max_steps_(max_steps),
@@ -131,8 +135,7 @@ namespace rl {
       covariance_(MatrixXd::Zero(num_points, num_points)),
       means_(VectorXd::Zero(num_points)),
       regressed_means_(VectorXd::Zero(num_points)),
-      squared_lengths_(VectorXd::Zero(StateType::FeatureDimension() +
-                                      ActionType::FeatureDimension())),
+      squared_lengths_(lengths.cwiseProduct(lengths)),
       ContinuousActionValueFunctor<StateType, ActionType>() {
     // Pick random points in the space for training.
     for (size_t ii = 0; ii < num_points; ii++) {
@@ -172,11 +175,11 @@ namespace rl {
     for (size_t ii = 0; ii < means_.size(); ii++)
       means_(ii) = gaussian(rng);
 
-    // Compute Cholesky decomposition of 'covariance_' for quick solving.
-    cholesky_.compute(covariance_);
+    // Compute QR decomposition of 'covariance_' for quick solving.
+    qr_ = covariance_.colPivHouseholderQr();
 
     // Set 'regressed_means_' for speed.
-    regressed_means_ = cholesky_.solve(means_);
+    regressed_means_ = qr_.solve(means_);
   }
 
   // Compute the expected value of the GP at this point.
@@ -217,18 +220,24 @@ namespace rl {
       CrossCovariance(features, cross);
 
       // Compute the gradient.
-      const VectorXd regressed = cholesky_.solve(cross);
+      const VectorXd regressed = qr_.solve(cross);
       const double error = regressed.dot(means_) - targets[ii];
+
+      // Catch nan. Set to zero.
+      if (isnan(error)) {
+        LOG(WARNING) << "Error was nan.";
+        continue;
+      }
 
       loss += error * error;
       gradient += error * regressed;
     }
 
     // Do a gradient update.
-    means_ -= step_size * gradient / static_cast<double>(states.size());
+    means_ -= step_size * gradient;
 
     // Update 'regressed_means_' for speed later.
-    regressed_means_ = cholesky_.solve(means_);
+    regressed_means_ = qr_.solve(means_);
 
     // Return loss. Divide by two for consistency.
     return 0.5 * loss;
@@ -270,7 +279,7 @@ namespace rl {
 
       // Compute the intermediate derivative with respect to cross covariance.
       const VectorXd cross_gradient =
-        regressed_means_ + regularizer_ * cholesky_.solve(cross);
+        regressed_means_ + regularizer_ * qr_.solve(cross);
 
       // Compute the gradient with respect to the action feature vector.
       const VectorXd gradient = Jt * cross_gradient;
@@ -297,7 +306,8 @@ namespace rl {
     CHECK_EQ(x.size(), squared_lengths_.size());
     CHECK_EQ(y.size(), squared_lengths_.size());
 
-    return std::exp(-0.5 * x.dot(y.cwiseQuotient(squared_lengths_)));
+    const VectorXd normalized_delta = (x - y).cwiseQuotient(squared_lengths_);
+    return std::exp(-0.5 * normalized_delta.squaredNorm());
   }
 
   // Compute the cross covariance vector of a feature vector with

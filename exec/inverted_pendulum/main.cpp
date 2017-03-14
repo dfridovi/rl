@@ -73,11 +73,13 @@ DEFINE_int32(gp_num_points, 100, "Number of random training points for GP.");
 DEFINE_int32(gp_max_steps, 100,
              "Maximum number of gradient steps to find the optimal action.");
 DEFINE_double(gp_step_size, 0.01, "Step size for finding optimal action.");
-DEFINE_double(gp_epsilon, 1e-3,
+DEFINE_double(gp_epsilon, 0.1,
               "Gradient size threshold for convergence of optimal action.");
-DEFINE_double(gp_regularizer, 1.0,
+DEFINE_double(gp_regularizer, -2.0,
               "Regularization constant to trade off mean/variance.");
 DEFINE_double(gp_noise, 1.0, "Noise variance of GP.");
+DEFINE_double(gp_state_length, 0.25, "Length scale for state dimensions.");
+DEFINE_double(gp_action_length, 0.25, "Length scale for action dimensions");
 
 // Deep value functor params.
 DEFINE_int32(num_layers, 3, "Number of layers in deep value approximator.");
@@ -234,7 +236,9 @@ void SingleIteration() {
     // If not a terminal state, update state.
     // Extract optimal action from the value function.
     InvertedPendulumAction action;
-    CHECK(value->OptimalAction(*current_state, action));
+    if (!value->OptimalAction(*current_state, action)) {
+      LOG(WARNING) << "Taking a sub-optimal action.";
+    }
 
     // Simulate this action.
     const double reward = world->Simulate(*current_state, action);
@@ -278,15 +282,26 @@ int main(int argc, char** argv) {
   if (FLAGS_value_approx == "linear")
     value = new LinearActionValueFunctor<InvertedPendulumState,
                                          InvertedPendulumAction>();
-  else if (FLAGS_value_approx == "gp")
+  else if (FLAGS_value_approx == "gp") {
+    VectorXd lengths =
+      VectorXd::Zero(InvertedPendulumState::FeatureDimension() +
+                     InvertedPendulumAction::FeatureDimension());
+    lengths.head(InvertedPendulumState::FeatureDimension()) =
+      VectorXd::Constant(InvertedPendulumState::FeatureDimension(),
+                         FLAGS_gp_state_length);
+    lengths.tail(InvertedPendulumAction::FeatureDimension()) =
+      VectorXd::Constant(InvertedPendulumAction::FeatureDimension(),
+                         FLAGS_gp_action_length);
+
     value = new GaussianActionValueFunctor<
       InvertedPendulumState, InvertedPendulumAction>(FLAGS_gp_num_points,
                                                      FLAGS_gp_regularizer,
                                                      FLAGS_gp_noise,
                                                      FLAGS_gp_step_size,
                                                      FLAGS_gp_max_steps,
-                                                     FLAGS_gp_epsilon);
-  else if (FLAGS_value_approx == "deep") {
+                                                     FLAGS_gp_epsilon,
+                                                     lengths);
+  } else if (FLAGS_value_approx == "deep") {
     CHECK_GE(FLAGS_num_layers, 1);
 
     // Parse layer type.

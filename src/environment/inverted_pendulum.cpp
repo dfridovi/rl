@@ -114,7 +114,7 @@ namespace rl {
 
     // If ever went out of bounds, set to invalid reward.
     if (!bounds_check)
-      reward = kInvalidReward;
+      reward = -1000.0;
     return reward;
   }
 

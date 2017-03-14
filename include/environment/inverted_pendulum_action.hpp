@@ -125,7 +125,11 @@ namespace rl {
     void FromFeatures(const VectorXd& features) {
       CHECK_EQ(features.size(), FeatureDimension());
 
-      torque_ = features(0);
+      // Threshold.
+      if (isnan(features(0)))
+          torque_ = 0.5 * (max_torque_ + min_torque_);
+      else
+        torque_ = std::min(std::max(features(0), min_torque_), max_torque_);
     }
 
     // (In)equality operators. Note that these are not exactly transitive,
