@@ -47,6 +47,7 @@
 #include <value/action_value_functor.hpp>
 #include <util/types.hpp>
 
+#include <glog/logging.h>
 #include <unordered_map>
 #include <limits>
 #include <iostream>
@@ -81,18 +82,25 @@ namespace rl {
 
     // Unpack the state-action pair into a feature vector.
     void Unpack(const StateType& state, const ActionType& action,
-                VectorXd& features) const {
-      VectorXd state_features(StateType::FeatureDimension());
-      state.Features(state_features);
-
-      VectorXd action_features(ActionType::FeatureDimension());
-      action.Features(action_features);
-
-      CHECK_EQ(features.size(), state_features.size() + action_features.size());
-      features.head(state_features.size()) = state_features;
-      features.tail(action_features.size()) = action_features;
-    }
+                VectorXd& features) const;
   }; //\class ContinuousActionValueFunctor
+
+// ------------------------------- IMPLEMENTATION --------------------------- //
+
+  template<typename StateType, typename ActionType>
+  void ContinuousActionValueFunctor<StateType, ActionType>::
+  Unpack(const StateType& state, const ActionType& action,
+         VectorXd& features) const {
+    VectorXd state_features(StateType::FeatureDimension());
+    state.Features(state_features);
+
+    VectorXd action_features(ActionType::FeatureDimension());
+    action.Features(action_features);
+
+    CHECK_EQ(features.size(), state_features.size() + action_features.size());
+    features.head(state_features.size()) = state_features;
+    features.tail(action_features.size()) = action_features;
+  }
 
 }  //\namespace rl
 

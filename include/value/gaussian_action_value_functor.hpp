@@ -48,6 +48,7 @@
 #include <util/types.hpp>
 
 #include <Eigen/Cholesky>
+#include <glog/logging.h>
 #include <limits>
 #include <iostream>
 #include <random>
@@ -70,8 +71,11 @@ namespace rl {
     double operator()(const StateType& state, const ActionType& action) const;
 
     // Pure virtual method to do a gradient update to underlying weights.
-    void Update(const StateType& state, const ActionType& action,
-                double target, double step_size);
+    // Returns average loss.
+    double Update(const std::vector<StateType>& states,
+                  const std::vector<ActionType>& actions,
+                  const std::vector<double>& targets,
+                  double step_size);
 
     // Choose an optimal action in the given state. Returns whether or not
     // optimization was successful.
@@ -86,17 +90,17 @@ namespace rl {
     void CrossCovariance(const VectorXd& features, VectorXd& cross) const;
 
     // Training covariance matrix, with vectors of state/action features
-    // training targets, and length scales.
+    // training means, and length scales.
     MatrixXd covariance_;
     std::vector<VectorXd> points_;
-    VectorXd targets_;
+    VectorXd means_;
     VectorXd squared_lengths_;
 
     // Stable Cholesky solver.
     Eigen::LDLT<MatrixXd> cholesky_;
 
-    // Output of covariance.inv() * targets_. Stored for speed.
-    VectorXd regressed_targets_;
+    // Output of covariance.inv() * means_. Stored for speed.
+    VectorXd regressed_means_;
 
     // Noise variance.
     double noise_variance_;
@@ -125,8 +129,8 @@ namespace rl {
       step_size_(step_size),
       epsilon_(epsilon),
       covariance_(MatrixXd::Zero(num_points, num_points)),
-      targets_(VectorXd::Zero(num_points)),
-      regressed_targets_(VectorXd::Zero(num_points)),
+      means_(VectorXd::Zero(num_points)),
+      regressed_means_(VectorXd::Zero(num_points)),
       squared_lengths_(VectorXd::Zero(StateType::FeatureDimension() +
                                       ActionType::FeatureDimension())),
       ContinuousActionValueFunctor<StateType, ActionType>() {
@@ -165,14 +169,14 @@ namespace rl {
     std::default_random_engine rng(rd());
     std::normal_distribution<double> gaussian(0.0, 0.1);
 
-    for (size_t ii = 0; ii < targets_.size(); ii++)
-      targets_(ii) = gaussian(rng);
+    for (size_t ii = 0; ii < means_.size(); ii++)
+      means_(ii) = gaussian(rng);
 
     // Compute Cholesky decomposition of 'covariance_' for quick solving.
     cholesky_.compute(covariance_);
 
-    // Set 'regressed_targets_' for speed.
-    regressed_targets_ = cholesky_.solve(targets_);
+    // Set 'regressed_means_' for speed.
+    regressed_means_ = cholesky_.solve(means_);
   }
 
   // Compute the expected value of the GP at this point.
@@ -180,36 +184,54 @@ namespace rl {
   double GaussianActionValueFunctor<StateType, ActionType>::
   operator()(const StateType& state, const ActionType& action) const {
     // Compute cross covariance vector.
-    VectorXd cross(points_.size());
-    CrossCovariance(state, action, cross);
-
-    // Compute the total inner product between the cross covariance
-    // of this point and the training set.
-    return cross.dot(regressed_targets_);
-  }
-
-  // Update all parameters.
-  template<typename StateType, typename ActionType>
-  void GaussianActionValueFunctor<StateType, ActionType>::
-  Update(const StateType& state, const ActionType& action,
-         double target, double step_size) {
-    // Compute cross covariance.
     VectorXd features(StateType::FeatureDimension() +
                       ActionType::FeatureDimension());
-    Unpack(state, action, features);
+    this->Unpack(state, action, features);
 
     VectorXd cross(points_.size());
     CrossCovariance(features, cross);
 
-    // Compute the gradient.
-    const VectorXd regressed = cholesky_.solve(cross);
-    const VectorXd gradient = (regressed.dot(targets_) - target) * regressed;
+    // Compute the total inner product between the cross covariance
+    // of this point and the training set.
+    return cross.dot(regressed_means_);
+  }
+
+  // Update all parameters. Return average loss.
+  template<typename StateType, typename ActionType>
+  double GaussianActionValueFunctor<StateType, ActionType>::
+  Update(const std::vector<StateType>& states,
+         const std::vector<ActionType>& actions,
+         const std::vector<double>& targets, double step_size) {
+    CHECK_EQ(states.size(), actions.size());
+    CHECK_EQ(states.size(), targets.size());
+
+    // Iterate over each state/action pair and average the gradients.
+    double loss = 0.0;
+    VectorXd gradient = VectorXd::Zero(means_.size());
+    VectorXd features(StateType::FeatureDimension() +
+                      ActionType::FeatureDimension());
+    VectorXd cross(points_.size());
+    for (size_t ii = 0; ii < states.size(); ii++) {
+      // Compute cross covariance.
+      this->Unpack(states[ii], actions[ii], features);
+      CrossCovariance(features, cross);
+
+      // Compute the gradient.
+      const VectorXd regressed = cholesky_.solve(cross);
+      const double error = regressed.dot(means_) - targets[ii];
+
+      loss += error * error;
+      gradient += error * regressed;
+    }
 
     // Do a gradient update.
-    targets_ -= step_size * gradient;
+    means_ -= step_size * gradient / static_cast<double>(states.size());
 
-    // Update 'regressed_targets_' for speed later.
-    regressed_targets_ = cholesky_.solve(targets_);
+    // Update 'regressed_means_' for speed later.
+    regressed_means_ = cholesky_.solve(means_);
+
+    // Return loss. Divide by two for consistency.
+    return 0.5 * loss;
   }
 
   // Compute the optimal action, where 'optimal' is the solution to the
@@ -225,7 +247,7 @@ namespace rl {
     ActionType current_action;
     VectorXd features(StateType::FeatureDimension() +
                       ActionType::FeatureDimension());
-    Unpack(state, current_action, features);
+    this->Unpack(state, current_action, features);
 
     // Run a few steps of gradient ascent to adjust this action.
     VectorXd cross(points_.size());
@@ -248,7 +270,7 @@ namespace rl {
 
       // Compute the intermediate derivative with respect to cross covariance.
       const VectorXd cross_gradient =
-        regressed_targets_ + regularizer_ * cholesky_.solve(cross);
+        regressed_means_ + regularizer_ * cholesky_.solve(cross);
 
       // Compute the gradient with respect to the action feature vector.
       const VectorXd gradient = Jt * cross_gradient;
