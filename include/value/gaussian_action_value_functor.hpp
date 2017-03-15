@@ -64,7 +64,8 @@ namespace rl {
     // Constructor/destructor.
     ~GaussianActionValueFunctor() {}
     explicit GaussianActionValueFunctor(size_t num_points, double regularizer,
-                                        double noise_variance, double step_size,
+                                        double noise_variance, size_t num_action_values,
+                                        double step_size,
                                         size_t num_inits, size_t max_steps,
                                         double epsilon,
                                         const VectorXd& lengths);
@@ -91,6 +92,10 @@ namespace rl {
     // the training data.
     void CrossCovariance(const VectorXd& features, VectorXd& cross) const;
 
+    // Helper function to evaluate the GP.
+    void Evaluate(const StateType& state, const ActionType& action,
+                  double& mean, double& variance) const;
+
     // Training covariance matrix, with vectors of state/action features
     // training means, and length scales.
     MatrixXd covariance_;
@@ -114,6 +119,7 @@ namespace rl {
     // Max number of gradient steps to take for choosing the optimal action,
     // with given step size starting from one of 'num_inits_' random initial
     // points. 'epsilon_' is convergence criterion for gradient size.
+    const size_t num_action_values_;
     const size_t num_inits_;
     const size_t max_steps_;
     const double step_size_;
@@ -125,11 +131,13 @@ namespace rl {
   template<typename StateType, typename ActionType>
   GaussianActionValueFunctor<StateType, ActionType>::
   GaussianActionValueFunctor(size_t num_points, double regularizer,
-                             double noise_variance, double step_size,
+                             double noise_variance, size_t num_action_values,
+                             double step_size,
                              size_t num_inits, size_t max_steps, double epsilon,
                              const VectorXd& lengths)
     : regularizer_(regularizer),
       noise_variance_(noise_variance),
+      num_action_values_(num_action_values),
       max_steps_(max_steps),
       num_inits_(num_inits),
       step_size_(step_size),
@@ -183,6 +191,28 @@ namespace rl {
 
     // Set 'regressed_means_' for speed.
     regressed_means_ = cholesky_.solve(means_);
+  }
+
+  // Helper function to evaluate the GP.
+  template<typename StateType, typename ActionType>
+  void GaussianActionValueFunctor<StateType, ActionType>::
+  Evaluate(const StateType& state, const ActionType& action,
+           double& mean, double& variance) const {
+    // Compute cross covariance vector.
+    VectorXd features(StateType::FeatureDimension() +
+                      ActionType::FeatureDimension());
+    this->Unpack(state, action, features);
+
+    VectorXd cross(points_.size());
+    CrossCovariance(features, cross);
+
+    // Regress the cross covariance on the training covariance.
+    const VectorXd regressed_cross = cholesky_.solve(cross);
+
+    // Compute the total inner product between the cross covariance
+    // of this point and the training set.
+    mean = cross.dot(regressed_means_);
+    variance = noise_variance_ - cross.dot(regressed_cross);
   }
 
   // Compute the expected value of the GP at this point.
@@ -257,6 +287,27 @@ namespace rl {
   template<typename StateType, typename ActionType>
   bool GaussianActionValueFunctor<StateType, ActionType>::
   OptimalAction(const StateType& state, ActionType& action) const {
+    // Get a list of possible actions.
+    std::vector<ActionType> candidates;
+    ActionType::DiscreteValues(candidates);
+
+    // Find the best option in this list.
+    double max_value = kInvalidValue;
+    for (const auto& candidate : candidates) {
+      double mean, variance;
+      Evaluate(state, candidate, mean, variance);
+
+      const double value = mean + regularizer_ * variance;
+
+      if (value > max_value) {
+        max_value = value;
+        action = candidate;
+      }
+    }
+
+    return (max_value != kInvalidValue);
+
+#if 0
     VectorXd features(StateType::FeatureDimension() +
                       ActionType::FeatureDimension());
 
@@ -320,6 +371,7 @@ namespace rl {
     }
 
     return has_converged;
+#endif
   }
 
   // Covariance kernel function.

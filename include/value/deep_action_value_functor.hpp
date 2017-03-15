@@ -83,15 +83,15 @@ namespace rl {
     bool OptimalAction(const StateType& state, ActionType& action) const;
 
   private:
+    // Helper function to evaluate the neural network.
+    double Evaluate(const StateType& state, const ActionType& action) const;
+
     // A deep network.
     Network net_;
 
     // Training params.
     const double momentum_;
     const double weight_decay_;
-
-    // Helper function to evaluate the neural network.
-    double Evaluate(const StateType& state, const ActionType& action) const;
   }; //\class DeepStateValueFunctor
 
 // ----------------------------- IMPLEMENTATION ----------------------------- //
