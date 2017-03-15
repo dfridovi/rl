@@ -262,18 +262,21 @@ namespace rl {
         continue;
       }
 
+      //      std::printf("Error was: %f = %f - %f\n",
+      //                  error, error + targets[ii], targets[ii]);
+
       loss += error * error;
       gradient += error * regressed;
     }
 
     // Do a gradient update.
-    means_ -= step_size * gradient;
+    means_ -= step_size * gradient / static_cast<double>(states.size());
 
     // Update 'regressed_means_' for speed later.
     regressed_means_ = cholesky_.solve(means_);
 
     // Return loss. Divide by two for consistency.
-    return 0.5 * loss;
+    return 0.5 * loss / static_cast<double>(states.size());
   }
 
   // Compute the optimal action, where 'optimal' is the solution to the

@@ -94,6 +94,7 @@ DEFINE_string(nonlinearity, "relu",
 DEFINE_double(discount_factor, 0.9, "Discount factor.");
 DEFINE_double(alpha, 0.01, "TD return interpolation parameter.");
 DEFINE_double(learning_rate, 0.25, "Learning rate for SGD.");
+DEFINE_double(learning_rate_decay, 0.9, "Learning rate decay.");
 DEFINE_int32(num_rollouts, 50, "Number of rollouts to learn from.");
 DEFINE_int32(rollout_length, -1,
              "Rollout length. If negative, rollout until a terminal state.");
@@ -158,6 +159,7 @@ void Replan() {
   solver_params.num_exp_replays_ = FLAGS_num_exp_replays;
   solver_params.batch_size_ = FLAGS_batch_size;
   solver_params.learning_rate_ = FLAGS_learning_rate;
+  solver_params.learning_rate_decay_ = FLAGS_learning_rate_decay;
   ContinuousQLearning<InvertedPendulumState,
                       InvertedPendulumAction> solver(*current_state, solver_params);
 

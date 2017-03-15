@@ -67,6 +67,7 @@ namespace rl {
         discount_factor_(params.discount_factor_),
         alpha_(params.alpha_),
         learning_rate_(params.learning_rate_),
+        learning_rate_decay_(params.learning_rate_decay_),
         num_rollouts_(params.num_rollouts_),
         rollout_length_(params.rollout_length_),
         num_exp_replays_(params.num_exp_replays_),
@@ -92,7 +93,8 @@ namespace rl {
     const double discount_factor_;
     const double initial_epsilon_;
     const double alpha_;
-    const double learning_rate_;
+    double learning_rate_;
+    const double learning_rate_decay_;
     const size_t num_exp_replays_;
     const size_t batch_size_;
     const size_t num_rollouts_;
@@ -186,7 +188,7 @@ namespace rl {
         const double td_delta = sample_rewards[jj] + discount_factor_ *
           value(sample_next_states[jj], optimal_next_action) - sample_value;
         const double target =
-          sample_value + alpha_ * td_delta;
+          sample_value + alpha_ * std::min(std::max(td_delta, -10.0), 10.0);
 
         targets.push_back(target);
       }
@@ -195,10 +197,13 @@ namespace rl {
       const double loss =
         value.Update(sample_states, sample_actions, targets, learning_rate_);
 
-      if (ii % 100 == 0) {
+      if (ii % 1000 == 0) {
         std::printf("Loss on replay %zu was %f.\n", ii, loss);
       }
     }
+
+    // Decay learning rate.
+    learning_rate_ *= learning_rate_decay_;
   }
 }  //\namespace rl
 
