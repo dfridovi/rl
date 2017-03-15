@@ -64,8 +64,7 @@ namespace rl {
     // Constructor/destructor.
     ~GaussianActionValueFunctor() {}
     explicit GaussianActionValueFunctor(size_t num_points, double regularizer,
-                                        double noise_variance, size_t num_action_values,
-                                        double step_size,
+                                        double noise_variance, double step_size,
                                         size_t num_inits, size_t max_steps,
                                         double epsilon,
                                         const VectorXd& lengths);
@@ -101,7 +100,7 @@ namespace rl {
     MatrixXd covariance_;
     std::vector<VectorXd> points_;
     VectorXd means_;
-    VectorXd squared_lengths_;
+    VectorXd lengths_;
 
     // Fast Cholesky solver.
     Eigen::LLT<MatrixXd> cholesky_;
@@ -119,7 +118,6 @@ namespace rl {
     // Max number of gradient steps to take for choosing the optimal action,
     // with given step size starting from one of 'num_inits_' random initial
     // points. 'epsilon_' is convergence criterion for gradient size.
-    const size_t num_action_values_;
     const size_t num_inits_;
     const size_t max_steps_;
     const double step_size_;
@@ -131,13 +129,11 @@ namespace rl {
   template<typename StateType, typename ActionType>
   GaussianActionValueFunctor<StateType, ActionType>::
   GaussianActionValueFunctor(size_t num_points, double regularizer,
-                             double noise_variance, size_t num_action_values,
-                             double step_size,
+                             double noise_variance, double step_size,
                              size_t num_inits, size_t max_steps, double epsilon,
                              const VectorXd& lengths)
     : regularizer_(regularizer),
       noise_variance_(noise_variance),
-      num_action_values_(num_action_values),
       max_steps_(max_steps),
       num_inits_(num_inits),
       step_size_(step_size),
@@ -145,7 +141,7 @@ namespace rl {
       covariance_(MatrixXd::Zero(num_points, num_points)),
       means_(VectorXd::Zero(num_points)),
       regressed_means_(VectorXd::Zero(num_points)),
-      squared_lengths_(lengths.cwiseProduct(lengths)),
+      lengths_(lengths),
       ContinuousActionValueFunctor<StateType, ActionType>() {
     // Pick random points in the space for training.
     for (size_t ii = 0; ii < num_points; ii++) {
@@ -185,8 +181,7 @@ namespace rl {
     for (size_t ii = 0; ii < means_.size(); ii++)
       means_(ii) = gaussian(rng);
 
-    // Compute QR decomposition of 'covariance_' for quick solving.
-    //    qr_ = covariance_.colPivHouseholderQr();
+    // Compute Cholesky decomposition of 'covariance_' for quick solving.
     cholesky_ = covariance_.llt();
 
     // Set 'regressed_means_' for speed.
@@ -258,7 +253,7 @@ namespace rl {
 
       // Catch nan. Set to zero.
       if (isnan(error)) {
-        LOG(WARNING) << "Error was nan.";
+        LOG(WARNING) << "GaussianActionValueFunctor: Error was nan. Skipping.";
         continue;
       }
 
@@ -342,7 +337,7 @@ namespace rl {
             features.tail(ActionType::FeatureDimension());
 
           Jt.col(jj) = cross(jj) * action_diff.cwiseQuotient(
-            squared_lengths_.tail(ActionType::FeatureDimension()));
+            lengths_.tail(ActionType::FeatureDimension()));
         }
 
         // Compute the intermediate derivative with respect to cross covariance.
@@ -381,10 +376,10 @@ namespace rl {
   template<typename StateType, typename ActionType>
   double GaussianActionValueFunctor<StateType, ActionType>::
   Kernel(const VectorXd& x, const VectorXd& y) const {
-    CHECK_EQ(x.size(), squared_lengths_.size());
-    CHECK_EQ(y.size(), squared_lengths_.size());
+    CHECK_EQ(x.size(), lengths_.size());
+    CHECK_EQ(y.size(), lengths_.size());
 
-    const VectorXd normalized_delta = (x - y).cwiseQuotient(squared_lengths_);
+    const VectorXd normalized_delta = (x - y).cwiseQuotient(lengths_);
     return std::exp(-0.5 * normalized_delta.squaredNorm());
   }
 

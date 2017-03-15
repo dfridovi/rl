@@ -293,7 +293,6 @@ int main(int argc, char** argv) {
       InvertedPendulumState, InvertedPendulumAction>(FLAGS_gp_num_points,
                                                      FLAGS_gp_regularizer,
                                                      FLAGS_gp_noise,
-                                                     FLAGS_num_action_values,
                                                      FLAGS_gp_step_size,
                                                      FLAGS_gp_num_inits,
                                                      FLAGS_gp_max_steps,
