@@ -181,7 +181,7 @@ TEST(GaussianActionValueFunctor, TestConvergence) {
     const double loss = value.Update(states, actions, targets, kLearningRate);
 
     if (ii % 100 == 0) {
-      std::printf("Loss at interation %zu = %f.\n", ii, loss);
+      //      std::printf("Loss at interation %zu = %f.\n", ii, loss);
       kLearningRate *= kLearningRateDecay;
     }
   }

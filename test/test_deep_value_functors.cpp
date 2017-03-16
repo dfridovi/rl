@@ -103,7 +103,7 @@ TEST(DeepActionValueFunctor, TestConvergence) {
   const size_t kNumTrainingPoints = 100;
   const size_t kNumTestingPoints = 10;
   const double kStepSize = 1e-2;
-  const double kEpsilon = 1e-3;
+  const double kEpsilon = 1e-2;
   const double kMomentum = 0.0;
   const double kWeightDecay = 0.0;
   const size_t kBatchSize = 5;
