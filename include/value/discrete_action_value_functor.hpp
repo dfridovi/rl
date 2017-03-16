@@ -101,18 +101,18 @@ namespace rl {
 
   // Factory method.
   template<typename StateType, typename ActionType>
-  DiscreteActionValue<StateType, ActionType>::Ptr DiscreteActionValue::
-  Create() {
-    DiscreteActionValue<StateType, ActionType>::Ptr
+  typename DiscreteActionValue<StateType, ActionType>::Ptr
+  DiscreteActionValue<StateType, ActionType>::Create() {
+    typename DiscreteActionValue<StateType, ActionType>::Ptr
       ptr(new DiscreteActionValue<StateType, ActionType>());
     return ptr;
   }
 
   // Must implement a deep copy.
   template<typename StateType, typename ActionType>
-  DiscreteActionValue<StateType, ActionType>::Ptr DiscreteActionValue::
-  Copy() const {
-    DiscreteActionValue<StateType, ActionType>::Ptr
+  typename DiscreteActionValue<StateType, ActionType>::Ptr
+  DiscreteActionValue<StateType, ActionType>::Copy() const {
+    typename DiscreteActionValue<StateType, ActionType>::Ptr
       ptr(new DiscreteActionValue<StateType, ActionType>(*this));
     return ptr;
   }
