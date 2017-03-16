@@ -119,8 +119,7 @@ InvertedPendulum* world = NULL;
 InvertedPendulumState* current_state = NULL;
 
 // Create a continuous value function.
-ContinuousActionValueFunctor<InvertedPendulumState,
-                             InvertedPendulumAction>* value = NULL;
+ContinuousActionValue<InvertedPendulumState, InvertedPendulumAction>::Ptr value;
 
 // Initialize OpenGL.
 void InitGL() {
@@ -148,7 +147,7 @@ void Visualize() {
 void Replan() {
   CHECK_NOTNULL(current_state);
   CHECK_NOTNULL(world);
-  CHECK_NOTNULL(value);
+  CHECK_NOTNULL(value.get());
 
   // Set up the solver.
   SolverParams solver_params;
@@ -164,7 +163,7 @@ void Replan() {
                       InvertedPendulumAction> solver(*current_state, solver_params);
 
   std::cout << "Running solver..." << std::flush;
-  solver.Solve(*world, *value, true, true);
+  solver.Solve(*world, value, true, true);
   std::cout << "done." << std::endl;
 }
 
@@ -223,7 +222,7 @@ void Reshape(GLsizei width, GLsizei height) {
 void SingleIteration() {
   CHECK_NOTNULL(world);
   CHECK_NOTNULL(current_state);
-  CHECK_NOTNULL(value);
+  CHECK_NOTNULL(value.get());
 
   // Check for terminal state.
   if (world->IsTerminal(*current_state))
@@ -276,8 +275,8 @@ int main(int argc, char** argv) {
 
   // Initialize the value function.
   if (FLAGS_value_approx == "linear")
-    value = new LinearActionValueFunctor<InvertedPendulumState,
-                                         InvertedPendulumAction>();
+    value = LinearActionValue<InvertedPendulumState,
+                              InvertedPendulumAction>::Create();
   else if (FLAGS_value_approx == "gp") {
     VectorXd lengths =
       VectorXd::Zero(InvertedPendulumState::FeatureDimension() +
@@ -289,15 +288,18 @@ int main(int argc, char** argv) {
       VectorXd::Constant(InvertedPendulumAction::FeatureDimension(),
                          FLAGS_gp_action_length);
 
-    value = new GaussianActionValueFunctor<
-      InvertedPendulumState, InvertedPendulumAction>(FLAGS_gp_num_points,
-                                                     FLAGS_gp_regularizer,
-                                                     FLAGS_gp_noise,
-                                                     FLAGS_gp_step_size,
-                                                     FLAGS_gp_num_inits,
-                                                     FLAGS_gp_max_steps,
-                                                     FLAGS_gp_epsilon,
-                                                     lengths);
+    GaussianParams params;
+    params.num_points_ = FLAGS_gp_num_points;
+    params.noise_variance_ = FLAGS_gp_noise;
+    params.regularizer_ = FLAGS_gp_regularizer;
+    params.step_size_ = FLAGS_gp_step_size;
+    params.max_steps_ = FLAGS_gp_max_steps;
+    params.num_inits_ = FLAGS_gp_num_inits;
+    params.epsilon_ = FLAGS_gp_epsilon;
+    params.lengths_ = lengths;
+
+    value = GaussianActionValue<InvertedPendulumState,
+                                       InvertedPendulumAction>::Create(params);
   } else if (FLAGS_value_approx == "deep") {
     CHECK_GE(FLAGS_num_layers, 1);
 
@@ -335,9 +337,9 @@ int main(int argc, char** argv) {
     // Create L2 loss functor.
     LossFunctor::ConstPtr loss = L2::Create();
 
-    value = new DeepActionValueFunctor<InvertedPendulumState,
-                                       InvertedPendulumAction>(
-                   layers, loss, FLAGS_momentum, FLAGS_weight_decay);
+    value = DeepActionValue<
+      InvertedPendulumState, InvertedPendulumAction>::Create(
+      layers, loss, FLAGS_momentum, FLAGS_weight_decay);
   }
 
   // Set up the solver.
@@ -358,6 +360,5 @@ int main(int argc, char** argv) {
 
   delete world;
   delete current_state;
-  delete value;
   return 0;
 }

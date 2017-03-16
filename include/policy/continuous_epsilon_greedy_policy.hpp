@@ -71,9 +71,10 @@ namespace rl {
 
     // Return an action given the current state. If state is not valid,
     // returns false.
-    bool Act(const ContinuousActionValue<StateType, ActionType>::ConstPtr& value,
-             const ContinuousEnvironment<StateType, ActionType>& environment,
-             const StateType& state, ActionType& action) const;
+    bool Act(
+      const typename ContinuousActionValue<StateType,ActionType>::ConstPtr& value,
+      const ContinuousEnvironment<StateType, ActionType>& environment,
+      const StateType& state, ActionType& action) const;
 
   private:
     // Epsilon value.
@@ -95,7 +96,7 @@ namespace rl {
   // Act epsilon-greedily in the given state.
   template<typename StateType, typename ActionType>
   bool ContinuousEpsilonGreedyPolicy<StateType, ActionType>::Act(
-     const ContinuousActionValue<StateType, ActionType>::ConstPtr& value,
+     const typename ContinuousActionValue<StateType, ActionType>::ConstPtr& value,
      const ContinuousEnvironment<StateType, ActionType>& environment,
      const StateType& state, ActionType& action) const {
     CHECK_NOTNULL(value.get());

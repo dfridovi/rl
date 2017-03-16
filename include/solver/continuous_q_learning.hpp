@@ -77,7 +77,7 @@ namespace rl {
     // Runs Q Learning algorithm for the specified number of iterations.
     // Solution is stored in the provided continuous value functor.
     void Solve(const ContinuousEnvironment<StateType, ActionType>& environment,
-               ContinuousActionValue&<StateType, ActionType>::Ptr& value,
+               typename ContinuousActionValue<StateType, ActionType>::Ptr& value,
                bool verbose = false, bool random_initial_state = true);
 
   private:
@@ -86,7 +86,7 @@ namespace rl {
     // const fixed one for training.
     void UpdateValueFunction(
        const ContinuousEnvironment<StateType, ActionType>& environment,
-       ContinuousActionValue<StateType, ActionType>::Ptr& value,
+       typename ContinuousActionValue<StateType, ActionType>::Ptr& value,
        bool random_initial_state);
 
     // Member variables.
@@ -112,7 +112,7 @@ namespace rl {
   template<typename StateType, typename ActionType>
   void ContinuousQLearning<StateType, ActionType>::Solve(
      const ContinuousEnvironment<StateType, ActionType>& environment,
-     ContinuousActionValue::Ptr&<StateType, ActionType>& value,
+     typename ContinuousActionValue<StateType, ActionType>::Ptr& value,
      bool verbose, bool random_initial_state) {
     // Run for the specified number of iterations. Assume value functor
     // has already been initialized.
@@ -136,7 +136,7 @@ namespace rl {
   template<typename StateType, typename ActionType>
   void ContinuousQLearning<StateType, ActionType>::UpdateValueFunction(
      const ContinuousEnvironment<StateType, ActionType>& environment,
-     ContinuousActionValue<StateType, ActionType>::Ptr& value,
+     typename ContinuousActionValue<StateType, ActionType>::Ptr& value,
      bool random_initial_state) {
     // Make a const copy of the value functor.
     const auto fixed_value = value->Copy();
