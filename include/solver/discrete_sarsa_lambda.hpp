@@ -83,7 +83,8 @@ namespace rl {
       return policy_;
     }
 
-    const DiscreteActionValue<StateType, ActionType>::ConstPtr& Value() const {
+    const typename DiscreteActionValue<StateType, ActionType>::ConstPtr&
+    Value() const {
       return value_;
     }
 
@@ -108,7 +109,7 @@ namespace rl {
     const int rollout_length_;
     double initial_epsilon_;
     DiscreteEpsilonGreedyPolicy<StateType, ActionType> policy_;
-    DiscreteActionValue<StateType, ActionType>::Ptr value_;
+    typename DiscreteActionValue<StateType, ActionType>::Ptr value_;
   }; //\class DiscreteSarsaLambda
 
 // ---------------------------- IMPLEMENTATION ------------------------------ //
@@ -174,7 +175,7 @@ namespace rl {
       // All states/actions in the trace will be tracked as normal. If a
       // state/action pair is not in the trace yet, that means it has not
       // been visited this rollout.
-      DiscreteActionValue<StateType, ActionType>::Ptr trace =
+      typename DiscreteActionValue<StateType, ActionType>::Ptr trace =
         DiscreteActionValue<StateType, ActionType>::Create();
 
       // Simulate the rollout.
@@ -184,14 +185,14 @@ namespace rl {
            jj++) {
 
         // Increment elegibility trace at this state/action pair.
-        const double current_trace = trace(current_state, current_action);
+        const double current_trace = trace->Get(current_state, current_action);
         if (current_trace == kInvalidValue)
-          trace.Set(current_state, current_action, 1.0);
+          trace->Set(current_state, current_action, 1.0);
         else
-          trace.Set(current_state, current_action, current_trace + 1.0);
+          trace->Set(current_state, current_action, current_trace + 1.0);
 
         // Get the current value at this state/action pair.
-        const double current_value = value_(current_state, current_action);
+        const double current_value = value_->Get(current_state, current_action);
 
         // Simulate this action.
         const double reward =
@@ -201,14 +202,14 @@ namespace rl {
         CHECK(policy_.Act(environment, current_state, current_action));
 
         // Compute SARSA delta.
-        const double next_value = value_(current_state, current_action);
+        const double next_value = value_->Get(current_state, current_action);
         const double delta =
            reward + discount_factor_ * next_value - current_value;
 
         // Update values and decay eligibility trace.
-        for (auto& state_entry : trace.value_) {
+        for (auto& state_entry : trace->value_) {
           for (auto& action_entry : state_entry.second) {
-            value_.Reference(state_entry.first, action_entry.first) +=
+            value_->Reference(state_entry.first, action_entry.first) +=
               alpha_ * delta * action_entry.second;
             action_entry.second *= discount_factor_ * lambda_;
           }

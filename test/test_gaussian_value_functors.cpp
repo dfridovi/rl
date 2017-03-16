@@ -85,8 +85,8 @@ TEST(GaussianActionValueFunctor, TestConvergence) {
   params.epsilon_ = kEpsilon;
   params.lengths_ = kLengths;
 
-  ContinousActionValue<DummyState, DummyAction>::Ptr value =
-    GaussianActionValueFunctor<DummyState, DummyAction>::Create(params);
+  ContinuousActionValue<DummyState, DummyAction>::Ptr value =
+    GaussianActionValue<DummyState, DummyAction>::Create(params);
 
   // Start a random number generator.
   std::random_device rd;
@@ -170,8 +170,8 @@ TEST(GaussianActionValueFunctor, TestCopyConstructor) {
   params.epsilon_ = kEpsilon;
   params.lengths_ = kLengths;
 
-  ContinousActionValue<DummyState, DummyAction>::Ptr value =
-    GaussianActionValueFunctor<DummyState, DummyAction>::Create(params);
+  ContinuousActionValue<DummyState, DummyAction>::Ptr value =
+    GaussianActionValue<DummyState, DummyAction>::Create(params);
 
   // Create a const copy.
   const auto copy = value->Copy();

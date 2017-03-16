@@ -63,14 +63,15 @@ namespace rl {
     ~LinearStateValue() {}
 
     // Factory method.
-    static ContinuousStateValue::Ptr Create(double eligibility_decay = 0.0) {
-      ContinuousStateValue::Ptr ptr(new LinearStateValue(eligibility_decay));
+    static typename ContinuousStateValue<StateType>::Ptr
+    Create(double eligibility_decay = 0.0) {
+      typename ContinuousStateValue<StateType>::Ptr ptr(new LinearStateValue(eligibility_decay));
       return ptr;
     }
 
     // Must implement a deep copy.
-    ContinuousStateValue::Ptr Copy() const {
-      ContinuousStateValue::Ptr ptr(new LinearStateValue(*this));
+    typename ContinuousStateValue<StateType>::Ptr Copy() const {
+      typename ContinuousStateValue<StateType>::Ptr ptr(new LinearStateValue(*this));
       return ptr;
     }
 

@@ -70,7 +70,7 @@ namespace rl {
         max_iterations_(params.max_iterations_),
         initial_epsilon_(params.initial_epsilon_),
         policy_(params.initial_epsilon_) {
-      value_ = DiscreteStateValue<StateType, ActionType>::Create();
+      value_ = DiscreteStateValue<StateType>::Create();
     }
 
     // Solve the MDP defined by the given environment. Returns whether or not
@@ -83,7 +83,7 @@ namespace rl {
       return policy_;
     }
 
-    const DiscreteStateValue<StateType>::ConstPtr& Value() const {
+    const typename DiscreteStateValue<StateType>::ConstPtr& Value() const {
       return value_;
     }
 
@@ -108,7 +108,7 @@ namespace rl {
     const int rollout_length_;
     double initial_epsilon_;
     DiscreteEpsilonGreedyPolicy<StateType, ActionType> policy_;
-    DiscreteStateValue<StateType>::Ptr value_;
+    typename DiscreteStateValue<StateType>::Ptr value_;
   }; //\class DiscreteTdLambda
 
 // ---------------------------- IMPLEMENTATION ------------------------------ //

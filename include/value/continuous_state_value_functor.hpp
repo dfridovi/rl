@@ -54,7 +54,14 @@ namespace rl {
 
   template<typename StateType>
   struct ContinuousStateValue : public StateValue<StateType> {
+    // Typedefs.
+    typedef std::shared_ptr<ContinuousStateValue> Ptr;
+    typedef std::shared_ptr<const ContinuousStateValue> ConstPtr;
+
     virtual ~ContinuousStateValue() {}
+
+    // Must implement a deep copy.
+    virtual Ptr Copy() const = 0;
 
     // Pure virtual method to output the value at a state.
     virtual double Get(const StateType& state) const = 0;

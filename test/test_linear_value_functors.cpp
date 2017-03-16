@@ -61,7 +61,7 @@ TEST(LinearStateValueFunctor, TestConvergence) {
   const double kStepSize = 1e-2;
   const double kEpsilon = 1e-3;
 
-  ContinousStateValue<DummyState>::Ptr value =
+  ContinuousStateValue<DummyState>::Ptr value =
     LinearStateValue<DummyState>::Create(kEligibilityDecay);
 
   // Start a random number generator.
@@ -83,7 +83,7 @@ TEST(LinearStateValueFunctor, TestConvergence) {
   for (size_t ii = 0; ii < kNumTestingPoints; ii++) {
     DummyState random_state;
 
-    EXPECT_NEAR(value(random_state),
+    EXPECT_NEAR(value->Get(random_state),
                 state_coeff * random_state.state_, kEpsilon);
   }
 }
@@ -96,7 +96,7 @@ TEST(LinearStateValueFunctor, TestCopyConstructor) {
   const double kStepSize = 1e-2;
   const double kEpsilon = 1e-3;
 
-  ContinousStateValue<DummyState>::Ptr value =
+  ContinuousStateValue<DummyState>::Ptr value =
     LinearStateValue<DummyState>::Create(kEligibilityDecay);
 
   // Create a const copy.
@@ -145,8 +145,8 @@ TEST(LinearActionValueFunctor, TestConvergence) {
   const double kStepSize = 1e-2;
   const double kEpsilon = 1e-3;
 
-  ContinousStateValue<DummyState>::Ptr value =
-    LinearActionValue<DummyState>::Create();
+  ContinuousActionValue<DummyState, DummyAction>::Ptr value =
+    LinearActionValue<DummyState, DummyAction>::Create();
 
   // Start a random number generator.
   std::random_device rd;
@@ -188,8 +188,8 @@ TEST(LinearActionValueFunctor, TestCopyConstructor) {
   const double kStepSize = 1e-2;
   const double kEpsilon = 1e-3;
 
-  ContinousStateValue<DummyState>::Ptr value =
-    LinearActionValue<DummyState>::Create();
+  ContinuousActionValue<DummyState, DummyAction>::Ptr value =
+    LinearActionValue<DummyState, DummyAction>::Create();
 
   // Create a const copy.
   const auto copy = value->Copy();

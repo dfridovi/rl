@@ -81,11 +81,11 @@ namespace rl {
     // Set to the greedy policy given a state value function V or an
     // action value function Q. Returns the total number of changes made.
     size_t SetGreedily(
-       const DiscreteStateValue<StateType>::ConstPtr& V,
+       const typename DiscreteStateValue<StateType>::ConstPtr& V,
        const DiscreteEnvironment<StateType, ActionType>& environment,
        double discount_factor);
     size_t SetGreedily(
-       const DiscreteActionValue<StateType, ActionType>::ConstPtr& Q);
+       const typename DiscreteActionValue<StateType, ActionType>::ConstPtr& Q);
 
     // Return an action given the current state. If state is not valid,
     // returns false.
@@ -145,7 +145,7 @@ namespace rl {
   // the total number of changes made.
   template<typename StateType, typename ActionType>
   size_t DiscreteEpsilonGreedyPolicy<StateType, ActionType>::SetGreedily(
-     const DiscreteStateValue<StateType>::ConstPtr& V,
+     const typename DiscreteStateValue<StateType>::ConstPtr& V,
      const DiscreteEnvironment<StateType, ActionType>& environment,
      double discount_factor) {
     CHECK_NOTNULL(V.get());
@@ -196,7 +196,7 @@ namespace rl {
   // Returns the total number of changes made.
   template<typename StateType, typename ActionType>
   size_t DiscreteEpsilonGreedyPolicy<StateType, ActionType>::SetGreedily(
-     const DiscreteActionValue<StateType, ActionType>::ConstPtr& Q) {
+     const typename DiscreteActionValue<StateType, ActionType>::ConstPtr& Q) {
     CHECK_NOTNULL(Q.get());
 
     // Iterate over all states.

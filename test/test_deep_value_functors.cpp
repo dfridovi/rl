@@ -148,7 +148,7 @@ TEST(DeepActionValueFunctor, TestCopyConstructor) {
   LossFunctor::ConstPtr loss = L2::Create();
 
   // Create action value functor.
-  ContinousActionValue<DummyState, DummyAction>::Ptr value =
+  ContinuousActionValue<DummyState, DummyAction>::Ptr value =
     DeepActionValue<DummyState, DummyAction>::Create(layers, loss, kMomentum,
                                                      kWeightDecay);
 
