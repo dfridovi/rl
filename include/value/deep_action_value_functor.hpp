@@ -45,8 +45,8 @@
 #ifndef RL_VALUE_DEEP_ACTION_VALUE_FUNCTOR_H
 #define RL_VALUE_DEEP_ACTION_VALUE_FUNCTOR_H
 
-#include <value/continuous_action_value_functor.hpp>
-#include <util/types.hpp>
+#include "../value/continuous_action_value_functor.hpp"
+#include "../util/types.hpp"
 
 #include <mininet/layer/layer_params.h>
 #include <mininet/net/network.h>
@@ -60,17 +60,22 @@ using namespace mininet;
 namespace rl {
 
   template<typename StateType, typename ActionType>
-  class DeepActionValueFunctor :
-    public ContinuousActionValueFunctor<StateType, ActionType> {
+  class DeepActionValue :
+    public ContinuousActionValue<StateType, ActionType> {
   public:
-    // Constructor/destructor.
-    ~DeepActionValueFunctor() {}
-    DeepActionValueFunctor(const std::vector<LayerParams>& layers,
-                           const LossFunctor::ConstPtr& loss,
-                           double momentum, double weight_decay);
+    ~DeepActionValue() {}
+
+    // Factory method.
+    static typename ContinuousActionValue<StateType, ActionType>::Ptr Create(
+       const std::vector<LayerParams>& layers,
+       const LossFunctor::ConstPtr& loss,
+       double momentum, double weight_decay);
+
+    // Must implement a deep copy.
+    typename ContinuousActionValue<StateType, ActionType>::Ptr Copy() const;
 
     // Pure virtual method to output the value at a state/action pair.
-    double operator()(const StateType& state, const ActionType& action) const;
+    double Get(const StateType& state, const ActionType& action) const;
 
     // Pure virtual method to do a gradient update to underlying weights.
     // Returns the average loss.
@@ -83,8 +88,9 @@ namespace rl {
     bool OptimalAction(const StateType& state, ActionType& action) const;
 
   private:
-    // Helper function to evaluate the neural network.
-    double Evaluate(const StateType& state, const ActionType& action) const;
+    explicit DeepActionValue(const std::vector<LayerParams>& layers,
+                             const LossFunctor::ConstPtr& loss,
+                             double momentum, double weight_decay);
 
     // A deep network.
     Network net_;
@@ -92,13 +98,36 @@ namespace rl {
     // Training params.
     const double momentum_;
     const double weight_decay_;
-  }; //\class DeepStateValueFunctor
+  }; //\class DeepStateValue
 
 // ----------------------------- IMPLEMENTATION ----------------------------- //
 
+  // Factory method.
   template<typename StateType, typename ActionType>
-  DeepActionValueFunctor<StateType, ActionType>::
-  DeepActionValueFunctor(const std::vector<LayerParams>& layers,
+  typename ContinuousActionValue<StateType, ActionType>::Ptr
+  DeepActionValue<StateType, ActionType>::Create(
+     const std::vector<LayerParams>& layers,
+     const LossFunctor::ConstPtr& loss,
+     double momentum, double weight_decay) {
+    typename ContinuousActionValue<StateType, ActionType>::Ptr
+      ptr(new DeepActionValue<StateType, ActionType>(layers, loss,
+                                                     momentum, weight_decay));
+    return ptr;
+  }
+
+  // Must implement a deep copy.
+  template<typename StateType, typename ActionType>
+  typename ContinuousActionValue<StateType, ActionType>::Ptr
+  DeepActionValue<StateType, ActionType>::Copy() const {
+    typename ContinuousActionValue<StateType, ActionType>::Ptr
+      ptr(new DeepActionValue<StateType, ActionType>(*this));
+    return ptr;
+  }
+
+  // Constructor.
+  template<typename StateType, typename ActionType>
+  DeepActionValue<StateType, ActionType>::
+  DeepActionValue(const std::vector<LayerParams>& layers,
                          const LossFunctor::ConstPtr& loss,
                          double momentum, double weight_decay)
     : net_(layers, loss),
@@ -107,14 +136,29 @@ namespace rl {
 
   // Pure virtual method to output the value at a state/action pair.
   template<typename StateType, typename ActionType>
-  double DeepActionValueFunctor<StateType, ActionType>::
-  operator()(const StateType& state, const ActionType& action) const {
-    return Evaluate(state, action);
+  double DeepActionValue<StateType, ActionType>::
+  Get(const StateType& state, const ActionType& action) const {
+    // Unpack state and action into a single feature vector.
+    VectorXd state_features(StateType::FeatureDimension());
+    state.Features(state_features);
+
+    VectorXd action_features(ActionType::FeatureDimension());
+    action.Features(action_features);
+
+    VectorXd input(state_features.size() + action_features.size());
+    input.head(state_features.size()) = state_features;
+    input.tail(action_features.size()) = action_features;
+
+    // Run through the net.
+    VectorXd output(1);
+    net_(input, output);
+
+    return output(0);
   }
 
   // Pure virtual method to do a gradient update to underlying weights.
   template<typename StateType, typename ActionType>
-  double DeepActionValueFunctor<StateType, ActionType>::
+  double DeepActionValue<StateType, ActionType>::
   Update(const std::vector<StateType>& states,
          const std::vector<ActionType>& actions,
          const std::vector<double>& targets, double step_size) {
@@ -155,7 +199,7 @@ namespace rl {
   // Choose an optimal action in the given state. Returns whether or not
   // optimization was successful.
   template<typename StateType, typename ActionType>
-  bool DeepActionValueFunctor<StateType, ActionType>::
+  bool DeepActionValue<StateType, ActionType>::
   OptimalAction(const StateType& state, ActionType& action) const {
     // Get a list of possible actions.
     std::vector<ActionType> candidates;
@@ -164,7 +208,7 @@ namespace rl {
     // Find the best option in this list.
     double max_value = kInvalidValue;
     for (const auto& candidate : candidates) {
-      const double value = Evaluate(state, candidate);
+      const double value = Get(state, candidate);
 
       if (value > max_value) {
         max_value = value;
@@ -173,28 +217,6 @@ namespace rl {
     }
 
     return (max_value != kInvalidValue);
-  }
-
-  // Helper function to evaluate the neural network.
-  template<typename StateType, typename ActionType>
-  double DeepActionValueFunctor<StateType, ActionType>::
-  Evaluate(const StateType& state, const ActionType& action) const {
-    // Unpack state and action into a single feature vector.
-    VectorXd state_features(StateType::FeatureDimension());
-    state.Features(state_features);
-
-    VectorXd action_features(ActionType::FeatureDimension());
-    action.Features(action_features);
-
-    VectorXd input(state_features.size() + action_features.size());
-    input.head(state_features.size()) = state_features;
-    input.tail(action_features.size()) = action_features;
-
-    // Run through the net.
-    VectorXd output(1);
-    net_(input, output);
-
-    return output(0);
   }
 
 }  //\namespace rl

@@ -69,7 +69,9 @@ namespace rl {
         rollout_length_(params.rollout_length_),
         max_iterations_(params.max_iterations_),
         initial_epsilon_(params.initial_epsilon_),
-        policy_(params.initial_epsilon_) {}
+        policy_(params.initial_epsilon_) {
+      value_ = DiscreteStateValue<StateType, ActionType>::Create();
+    }
 
     // Solve the MDP defined by the given environment. Returns whether or not
     // iteration reached convergence. If convergence is reached, the solver
@@ -81,7 +83,7 @@ namespace rl {
       return policy_;
     }
 
-    const DiscreteStateValueFunctor<StateType>& Value() const {
+    const DiscreteStateValue<StateType>::ConstPtr& Value() const {
       return value_;
     }
 
@@ -106,7 +108,7 @@ namespace rl {
     const int rollout_length_;
     double initial_epsilon_;
     DiscreteEpsilonGreedyPolicy<StateType, ActionType> policy_;
-    DiscreteStateValueFunctor<StateType> value_;
+    DiscreteStateValue<StateType>::Ptr value_;
   }; //\class DiscreteTdLambda
 
 // ---------------------------- IMPLEMENTATION ------------------------------ //
@@ -122,7 +124,7 @@ namespace rl {
     // Initialize value function to zero.
     std::vector<StateType> states;
     environment.States(states);
-    value_.Initialize(states);
+    value_->Initialize(states);
 
     // Run until convergence.
     bool has_converged = false;
@@ -189,14 +191,14 @@ namespace rl {
         CHECK(policy_.Act(environment, current_state, action));
 
         // Simulate this action and compute TD delta.
-        const double current_value = value_(current_state);
+        const double current_value = value_->Get(current_state);
         const double reward = environment.Simulate(current_state, action);
-        const double delta =
-           reward + discount_factor_ * value_(current_state) - current_value;
+        const double delta = -current_value + reward + discount_factor_ *
+          value_->Get(current_state);
 
         // Update values and decay eligibility trace.
         for (auto& entry : trace) {
-          value_[entry.first] += alpha_ * delta * entry.second;
+          value_->Reference(entry.first) += alpha_ * delta * entry.second;
           entry.second *= discount_factor_ * lambda_;
         }
       }

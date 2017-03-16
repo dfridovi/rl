@@ -76,8 +76,9 @@ TEST(DeepActionValueFunctor, TestConvergence) {
   LossFunctor::ConstPtr loss = L2::Create();
 
   // Create action value functor.
-  DeepActionValueFunctor<DummyState, DummyAction> value(layers, loss, kMomentum,
-                                                        kWeightDecay);
+  ContinousActionValue<DummyState, DummyAction>::Ptr value =
+    DeepActionValue<DummyState, DummyAction>::Create(layers, loss, kMomentum,
+                                                     kWeightDecay);
 
   // Start a random number generator.
   std::random_device rd;
@@ -110,21 +111,18 @@ TEST(DeepActionValueFunctor, TestConvergence) {
                               targets, next_states));
 
     // Update.
-    value.Update(states, actions, targets, kStepSize);
+    value->Update(states, actions, targets, kStepSize);
   }
 
   // Test the specified number of times.
   for (size_t ii = 0; ii < kNumTestingPoints; ii++) {
     DummyState random_state;
-    random_state.state_ = unif(rng);
-
     DummyAction random_action;
-    random_action.action_ = unif(rng);
 
     const double result =
       state_coeff * random_state.state_ + action_coeff * random_action.action_;
 
-    EXPECT_NEAR(value(random_state, random_action), result, kEpsilon);
+    EXPECT_NEAR(value->Get(random_state, random_action), result, kEpsilon);
   }
 }
 
@@ -150,11 +148,12 @@ TEST(DeepActionValueFunctor, TestCopyConstructor) {
   LossFunctor::ConstPtr loss = L2::Create();
 
   // Create action value functor.
-  DeepActionValueFunctor<DummyState, DummyAction> value(layers, loss, kMomentum,
-                                                        kWeightDecay);
+  ContinousActionValue<DummyState, DummyAction>::Ptr value =
+    DeepActionValue<DummyState, DummyAction>::Create(layers, loss, kMomentum,
+                                                     kWeightDecay);
 
   // Create a const copy.
-  const DeepActionValueFunctor<DummyState, DummyAction> copy = value;
+  const auto copy = value->Copy();
 
   // Try out a bunch of points on the original value functor.
   std::vector<DummyState> old_states;
@@ -167,7 +166,7 @@ TEST(DeepActionValueFunctor, TestCopyConstructor) {
 
     old_states.push_back(random_state);
     old_actions.push_back(random_action);
-    old_values.push_back(value(random_state, random_action));
+    old_values.push_back(value->Get(random_state, random_action));
   }
 
   // Start a random number generator.
@@ -201,13 +200,13 @@ TEST(DeepActionValueFunctor, TestCopyConstructor) {
                               targets, next_states));
 
     // Update.
-    const double loss = value.Update(states, actions, targets, kStepSize);
+    const double loss = value->Update(states, actions, targets, kStepSize);
   }
 
   // Test the specified number of times. For each stored state/action/value,
   // make sure that the copied value functor still matches the original before
   // it was trained.
   for (size_t ii = 0; ii < kNumChecks; ii++) {
-    EXPECT_EQ(copy(old_states[ii], old_actions[ii]), old_values[ii]);
+    EXPECT_EQ(copy->Get(old_states[ii], old_actions[ii]), old_values[ii]);
   }
 }

@@ -68,11 +68,11 @@ namespace rl {
     // Set to the greedy policy given a state value function V or an
     // action value function Q. Returns the total number of changes made.
     size_t SetGreedily(
-       const DiscreteStateValueFunctor<StateType>& V,
+       const DiscreteStateValue<StateType>::ConstPtr& V,
        const DiscreteEnvironment<StateType, ActionType>& environment,
        double discount_factor);
     size_t SetGreedily(
-       const DiscreteActionValueFunctor<StateType, ActionType>& Q);
+       const DiscreteActionValue<StateType, ActionType>::ConstPtr& Q);
 
     // Act deterministically at every state.
     bool Act(const StateType& state, ActionType& action) const;
@@ -121,14 +121,16 @@ namespace rl {
   // the total number of changes made.
   template<typename StateType, typename ActionType>
   size_t DiscreteDeterministicPolicy<StateType, ActionType>::SetGreedily(
-     const DiscreteStateValueFunctor<StateType>& V,
+     const DiscreteStateValue<StateType>::ConstPtr& V,
      const DiscreteEnvironment<StateType, ActionType>& environment,
      double discount_factor) {
+    CHECK_NOTNULL(V.get());
+
     // Iterate over all states. For each one, find the action which
     // leads to the maximum value on the next step.
     size_t num_changes = 0;
     std::vector<ActionType> actions;
-    for (const auto& entry : V.value_) {
+    for (const auto& entry : V->value_) {
       const StateType state = entry.first;
       const double value = entry.second;
 
@@ -144,7 +146,7 @@ namespace rl {
       for (const auto& action : actions) {
         StateType next_state = state;
         const double reward = environment.Simulate(next_state, action);
-        const double value = discount_factor * V(next_state) + reward;
+        const double value = discount_factor * V->Get(next_state) + reward;
 
         // Only update existing action if value has increased.
         if (value > max_value) {
@@ -170,10 +172,12 @@ namespace rl {
   // Returns the total number of changes made.
   template<typename StateType, typename ActionType>
   size_t DiscreteDeterministicPolicy<StateType, ActionType>::SetGreedily(
-     const DiscreteActionValueFunctor<StateType, ActionType>& Q) {
+     const DiscreteActionValue<StateType, ActionType>::ConstPtr& Q) {
+    CHECK_NOTNULL(Q.get());
+
     // Iterate over all states.
     size_t num_changes = 0;
-    for (const auto& state_entry : Q.value_) {
+    for (const auto& state_entry : Q->value_) {
       const StateType state = state_entry.first;
 
       // Check if this is a new state or not.

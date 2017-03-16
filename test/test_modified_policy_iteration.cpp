@@ -65,7 +65,6 @@ TEST(ModifiedPolicyIteration, TestConvergence) {
   const size_t kNumRows = 1;
   const size_t kNumCols = 5;
   const GridState goal(kNumRows - 1, kNumCols - 1);
-
   const GridWorld world(kNumRows, kNumCols, goal);
 
   // Solve.
@@ -88,7 +87,6 @@ TEST(ModifiedPolicyIteration, TestConvergenceToOptimum) {
   const size_t kNumRows = 1;
   const size_t kNumCols = 5;
   const GridState goal(kNumRows - 1, kNumCols - 1);
-
   const GridWorld world(kNumRows, kNumCols, goal);
 
   // Solve.

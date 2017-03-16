@@ -44,8 +44,8 @@
 #ifndef RL_VALUE_CONTINUOUS_ACTION_VALUE_FUNCTOR_H
 #define RL_VALUE_CONTINUOUS_ACTION_VALUE_FUNCTOR_H
 
-#include <value/action_value_functor.hpp>
-#include <util/types.hpp>
+#include "../value/action_value_functor.hpp"
+#include "../util/types.hpp"
 
 #include <glog/logging.h>
 #include <unordered_map>
@@ -57,14 +57,15 @@
 namespace rl {
 
   template<typename StateType, typename ActionType>
-  struct ContinuousActionValue :
+  class ContinuousActionValue :
     public ActionValue<StateType, ActionType> {
+  public:
     // Typedefs.
     typedef std::shared_ptr<ContinuousActionValue> Ptr;
     typedef std::shared_ptr<const ContinuousActionValue> ConstPtr;
 
     // Constructor/destructor.
-    virtual ~ContinuousActionValueFunctor() {}
+    virtual ~ContinuousActionValue() {}
 
     // Must implement a deep copy.
     virtual Ptr Copy() const = 0;
@@ -85,8 +86,8 @@ namespace rl {
     virtual bool OptimalAction(const StateType& state,
                                ActionType& action) const = 0;
   protected:
-    explicit ContinuousActionValueFunctor()
-      : ActionValueFunctor<StateType, ActionType>() {}
+    explicit ContinuousActionValue()
+      : ActionValue<StateType, ActionType>() {}
 
     // Unpack the state-action pair into a feature vector.
     void Unpack(const StateType& state, const ActionType& action,
@@ -96,7 +97,7 @@ namespace rl {
 // ------------------------------- IMPLEMENTATION --------------------------- //
 
   template<typename StateType, typename ActionType>
-  void ContinuousActionValueFunctor<StateType, ActionType>::
+  void ContinuousActionValue<StateType, ActionType>::
   Unpack(const StateType& state, const ActionType& action,
          VectorXd& features) const {
     VectorXd state_features(StateType::FeatureDimension());

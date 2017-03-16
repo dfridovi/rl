@@ -53,10 +53,27 @@
 namespace rl {
 
   template<typename StateType>
-  struct DiscreteStateValueFunctor : public StateValueFunctor<StateType> {
-    virtual ~DiscreteStateValueFunctor() {}
-    explicit DiscreteStateValueFunctor()
-      : StateValueFunctor<StateType>() {}
+  struct DiscreteStateValue : public StateValue<StateType> {
+    // Hash table to store the value function.
+    std::unordered_map<StateType, double, typename StateType::Hash> value_;
+
+    virtual ~DiscreteStateValue() {}
+
+    // Typedefs.
+    typedef std::shared_ptr<DiscreteStateValue> Ptr;
+    typedef std::shared_ptr<const DiscreteStateValue> ConstPtr;
+
+    // Factory method.
+    static Ptr Create() {
+      Ptr ptr(new DiscreteStateValue);
+      return ptr;
+    }
+
+    // Must implement a deep copy.
+    Ptr Copy() const {
+      Ptr ptr(new DiscreteStateValue(*this));
+      return ptr;
+    }
 
     // Set the value at the current state. If the state is already in the table
     // reset its value to what is given here.
@@ -68,7 +85,7 @@ namespace rl {
     }
 
     // Pure virtual method to output the value at a state.
-    double operator()(const StateType& state) const {
+    double Get(const StateType& state) const {
       if (value_.count(state) == 0)
         return -std::numeric_limits<double>::infinity();
 
@@ -76,7 +93,7 @@ namespace rl {
     }
 
     // Operator to get a reference to the value at a state.
-    double& operator[](const StateType& state) {
+    double& Reference(const StateType& state) {
       return value_.at(state);
     }
 
@@ -88,9 +105,13 @@ namespace rl {
         value_.insert({state, 0.0});
     }
 
-    // Hash table to store the value function.
-    std::unordered_map<StateType, double, typename StateType::Hash> value_;
-  }; //\struct DiscreteStateValueFunctor
+
+  private:
+    explicit DiscreteStateValue()
+      : StateValue<StateType>() {}
+
+
+  }; //\struct DiscreteStateValue
 
 }  //\namespace rl
 

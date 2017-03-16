@@ -64,7 +64,9 @@ namespace rl {
                                      double discount_factor)
       : num_value_updates_(num_value_updates),
         max_iterations_(max_iterations),
-        discount_factor_(discount_factor) {}
+        discount_factor_(discount_factor) {
+      value_ = DiscreteStateValue<StateType>::Create();
+    }
 
     // Solve the MDP defined by the given environment. Returns whether or not
     // iteration reached convergence.
@@ -75,7 +77,7 @@ namespace rl {
       return policy_;
     }
 
-    const DiscreteStateValueFunctor<StateType>& Value() const {
+    const DiscreteStateValue<StateType>::ConstPtr& Value() const {
       return value_;
     }
 
@@ -98,7 +100,7 @@ namespace rl {
     const size_t max_iterations_;
     const double discount_factor_;
     DiscreteDeterministicPolicy<StateType, ActionType> policy_;
-    DiscreteStateValueFunctor<StateType> value_;
+    DiscreteStateValue<StateType>::Ptr value_;
 
   }; //\class ModifiedPolicyIteration
 
@@ -115,7 +117,7 @@ namespace rl {
     // Initialize value function to zero.
     std::vector<StateType> states;
     environment.States(states);
-    value_.Initialize(states);
+    value_->Initialize(states);
 
     // Run until convergence.
     bool has_converged = false;
@@ -154,14 +156,15 @@ namespace rl {
      const DiscreteEnvironment<StateType, ActionType>& environment) {
     // Iterate over all states.
     size_t num_changes = 0;
-    for (auto& entry : value_.value_) {
+    for (auto& entry : value_->value_) {
       StateType next_state = entry.first;
       ActionType action;
       CHECK(policy_.Act(next_state, action));
 
       // Simulate this action.
       const double reward = environment.Simulate(next_state, action);
-      const double next_value = value_(next_state) * discount_factor_ + reward;
+      const double next_value =
+        value_->Get(next_state) * discount_factor_ + reward;
 
       if (std::abs(entry.second - next_value) > 1e-8)
         num_changes++;

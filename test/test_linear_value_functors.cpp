@@ -61,7 +61,8 @@ TEST(LinearStateValueFunctor, TestConvergence) {
   const double kStepSize = 1e-2;
   const double kEpsilon = 1e-3;
 
-  LinearStateValueFunctor<DummyState> value(kEligibilityDecay);
+  ContinousStateValue<DummyState>::Ptr value =
+    LinearStateValue<DummyState>::Create(kEligibilityDecay);
 
   // Start a random number generator.
   std::random_device rd;
@@ -75,7 +76,7 @@ TEST(LinearStateValueFunctor, TestConvergence) {
   for (size_t ii = 0; ii < kNumTrainingPoints; ii++) {
     DummyState random_state;
 
-    value.Update(random_state, state_coeff * random_state.state_, kStepSize);
+    value->Update(random_state, state_coeff * random_state.state_, kStepSize);
   }
 
   // Test the specified number of times.
@@ -95,10 +96,11 @@ TEST(LinearStateValueFunctor, TestCopyConstructor) {
   const double kStepSize = 1e-2;
   const double kEpsilon = 1e-3;
 
-  LinearStateValueFunctor<DummyState> value(kEligibilityDecay);
+  ContinousStateValue<DummyState>::Ptr value =
+    LinearStateValue<DummyState>::Create(kEligibilityDecay);
 
   // Create a const copy.
-  const LinearStateValueFunctor<DummyState> copy = value;
+  const auto copy = value->Copy();
 
   // Try out a bunch of points on the original value functor.
   std::vector<DummyState> old_states;
@@ -108,7 +110,7 @@ TEST(LinearStateValueFunctor, TestCopyConstructor) {
     DummyState random_state;
 
     old_states.push_back(random_state);
-    old_values.push_back(value(random_state));
+    old_values.push_back(value->Get(random_state));
   }
 
   // Start a random number generator.
@@ -123,14 +125,14 @@ TEST(LinearStateValueFunctor, TestCopyConstructor) {
   for (size_t ii = 0; ii < kNumTrainingPoints; ii++) {
     DummyState random_state;
 
-    value.Update(random_state, state_coeff * random_state.state_, kStepSize);
+    value->Update(random_state, state_coeff * random_state.state_, kStepSize);
   }
 
   // Test the specified number of times. For each stored state/action/value,
   // make sure that the copied value functor still matches the original before
   // it was trained.
   for (size_t ii = 0; ii < kNumChecks; ii++) {
-    EXPECT_EQ(copy(old_states[ii]), old_values[ii]);
+    EXPECT_EQ(copy->Get(old_states[ii]), old_values[ii]);
   }
 
 }
@@ -143,7 +145,8 @@ TEST(LinearActionValueFunctor, TestConvergence) {
   const double kStepSize = 1e-2;
   const double kEpsilon = 1e-3;
 
-  LinearActionValueFunctor<DummyState, DummyAction> value;
+  ContinousStateValue<DummyState>::Ptr value =
+    LinearActionValue<DummyState>::Create();
 
   // Start a random number generator.
   std::random_device rd;
@@ -162,9 +165,9 @@ TEST(LinearActionValueFunctor, TestConvergence) {
     const double result =
       state_coeff * random_state.state_ + action_coeff * random_action.action_;
 
-    value.Update(std::vector<DummyState>({random_state}),
-                 std::vector<DummyAction>({random_action}),
-                 std::vector<double>({result}), kStepSize);
+    value->Update(std::vector<DummyState>({random_state}),
+                  std::vector<DummyAction>({random_action}),
+                  std::vector<double>({result}), kStepSize);
   }
 
   // Test the specified number of times.
@@ -175,7 +178,7 @@ TEST(LinearActionValueFunctor, TestConvergence) {
     const double result =
       state_coeff * random_state.state_ + action_coeff * random_action.action_;
 
-    EXPECT_NEAR(value(random_state, random_action), result, kEpsilon);
+    EXPECT_NEAR(value->Get(random_state, random_action), result, kEpsilon);
   }
 }
 
@@ -185,10 +188,11 @@ TEST(LinearActionValueFunctor, TestCopyConstructor) {
   const double kStepSize = 1e-2;
   const double kEpsilon = 1e-3;
 
-  LinearActionValueFunctor<DummyState, DummyAction> value;
+  ContinousStateValue<DummyState>::Ptr value =
+    LinearActionValue<DummyState>::Create();
 
   // Create a const copy.
-  const LinearActionValueFunctor<DummyState, DummyAction> copy = value;
+  const auto copy = value->Copy();
 
   // Try out a bunch of points on the original value functor.
   std::vector<DummyState> old_states;
@@ -201,7 +205,7 @@ TEST(LinearActionValueFunctor, TestCopyConstructor) {
 
     old_states.push_back(random_state);
     old_actions.push_back(random_action);
-    old_values.push_back(value(random_state, random_action));
+    old_values.push_back(value->Get(random_state, random_action));
   }
 
   // Start a random number generator.
@@ -221,15 +225,15 @@ TEST(LinearActionValueFunctor, TestCopyConstructor) {
     const double result =
       state_coeff * random_state.state_ + action_coeff * random_action.action_;
 
-    value.Update(std::vector<DummyState>({random_state}),
-                 std::vector<DummyAction>({random_action}),
-                 std::vector<double>({result}), kStepSize);
+    value->Update(std::vector<DummyState>({random_state}),
+                  std::vector<DummyAction>({random_action}),
+                  std::vector<double>({result}), kStepSize);
   }
 
   // Test the specified number of times. For each stored state/action/value,
   // make sure that the copied value functor still matches the original before
   // it was trained.
   for (size_t ii = 0; ii < kNumChecks; ii++) {
-    EXPECT_EQ(copy(old_states[ii], old_actions[ii]), old_values[ii]);
+    EXPECT_EQ(copy->Get(old_states[ii], old_actions[ii]), old_values[ii]);
   }
 }

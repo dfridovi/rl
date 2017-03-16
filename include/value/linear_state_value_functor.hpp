@@ -57,32 +57,25 @@
 namespace rl {
 
   template<typename StateType>
-  class LinearStateValueFunctor :
-    public ContinuousStateValueFunctor<StateType> {
+  class LinearStateValue :
+    public ContinuousStateValue<StateType> {
   public:
-    // Constructor/destructor.
-    ~LinearStateValueFunctor() {}
-    explicit LinearStateValueFunctor(double eligibility_decay = 0.0)
-      : weights_(VectorXd::Zero(StateType::FeatureDimension())),
-        eligibility_(VectorXd::Zero(StateType::FeatureDimension())),
-        bias_(0.0),
-        eligibility_decay_(eligibility_decay),
-        ContinuousStateValueFunctor<StateType>() {
-      // Create a random number generator for a normal distribution of mean
-      // 0.0 and standard deviation 0.1.
-      std::random_device rd;
-      std::default_random_engine rng(rd());
-      std::normal_distribution<double> gaussian(0.0, 0.1);
+    ~LinearStateValue() {}
 
-      // Populate weights from this distribution.
-      for (size_t ii = 0; ii < weights_.size(); ii++)
-        weights_(ii) = gaussian(rng);
+    // Factory method.
+    static ContinuousStateValue::Ptr Create(double eligibility_decay = 0.0) {
+      ContinuousStateValue::Ptr ptr(new LinearStateValue(eligibility_decay));
+      return ptr;
+    }
 
-      bias_ = gaussian(rng);
+    // Must implement a deep copy.
+    ContinuousStateValue::Ptr Copy() const {
+      ContinuousStateValue::Ptr ptr(new LinearStateValue(*this));
+      return ptr;
     }
 
     // Pure virtual method to output the value at a state.
-    double operator()(const StateType& state) const {
+    double Get(const StateType& state) const {
       // Extract feature from state.
       VectorXd features(weights_.size());
       state.Features(features);
@@ -106,6 +99,25 @@ namespace rl {
     }
 
   private:
+    explicit LinearStateValue(double eligibility_decay = 0.0)
+      : weights_(VectorXd::Zero(StateType::FeatureDimension())),
+        eligibility_(VectorXd::Zero(StateType::FeatureDimension())),
+        bias_(0.0),
+        eligibility_decay_(eligibility_decay),
+        ContinuousStateValue<StateType>() {
+      // Create a random number generator for a normal distribution of mean
+      // 0.0 and standard deviation 0.1.
+      std::random_device rd;
+      std::default_random_engine rng(rd());
+      std::normal_distribution<double> gaussian(0.0, 0.1);
+
+      // Populate weights from this distribution.
+      for (size_t ii = 0; ii < weights_.size(); ii++)
+        weights_(ii) = gaussian(rng);
+
+      bias_ = gaussian(rng);
+    }
+
     // Vector of weights.
     VectorXd weights_;
     double bias_;
@@ -113,7 +125,7 @@ namespace rl {
     // Eligibility trace with decay rate.
     VectorXd eligibility_;
     const double eligibility_decay_;
-  }; //\struct LinearStateValueFunctor
+  }; //\struct LinearStateValue
 
 }  //\namespace rl
 

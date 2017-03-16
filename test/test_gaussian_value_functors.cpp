@@ -75,9 +75,18 @@ TEST(GaussianActionValueFunctor, TestConvergence) {
                        DummyAction::FeatureDimension(), kLengthScale);
 
   // Create action value functor.
-  GaussianActionValueFunctor<DummyState, DummyAction> value(
-    kNumGpPoints, kRegularizer, kNoiseVariance, kStepSize, kNumInits, kMaxSteps,
-    kEpsilon, kLengths);
+  GaussianParams params;
+  params.num_points_ = kNumGpPoints;
+  params.noise_variance_ = kNoiseVariance;
+  params.regularizer_ = kRegularizer;
+  params.step_size_ = kStepSize;
+  params.max_steps_ = kMaxSteps;
+  params.num_inits_ = kNumInits;
+  params.epsilon_ = kEpsilon;
+  params.lengths_ = kLengths;
+
+  ContinousActionValue<DummyState, DummyAction>::Ptr value =
+    GaussianActionValueFunctor<DummyState, DummyAction>::Create(params);
 
   // Start a random number generator.
   std::random_device rd;
@@ -110,7 +119,7 @@ TEST(GaussianActionValueFunctor, TestConvergence) {
                               targets, next_states));
 
     // Update.
-    const double loss = value.Update(states, actions, targets, kLearningRate);
+    const double loss = value->Update(states, actions, targets, kLearningRate);
 
     if (ii % 100 == 0) {
       //      std::printf("Loss at interation %zu = %f.\n", ii, loss);
@@ -126,7 +135,7 @@ TEST(GaussianActionValueFunctor, TestConvergence) {
     const double result =
       state_coeff * random_state.state_ + action_coeff * random_action.action_;
 
-    EXPECT_NEAR(value(random_state, random_action), result, kEpsilon);
+    EXPECT_NEAR(value->Get(random_state, random_action), result, kEpsilon);
   }
 }
 
@@ -151,12 +160,21 @@ TEST(GaussianActionValueFunctor, TestCopyConstructor) {
                        DummyAction::FeatureDimension(), kLengthScale);
 
   // Create action value functor.
-  GaussianActionValueFunctor<DummyState, DummyAction> value(
-    kNumGpPoints, kRegularizer, kNoiseVariance, kStepSize, kNumInits, kMaxSteps,
-    kEpsilon, kLengths);
+  GaussianParams params;
+  params.num_points_ = kNumGpPoints;
+  params.noise_variance_ = kNoiseVariance;
+  params.regularizer_ = kRegularizer;
+  params.step_size_ = kStepSize;
+  params.max_steps_ = kMaxSteps;
+  params.num_inits_ = kNumInits;
+  params.epsilon_ = kEpsilon;
+  params.lengths_ = kLengths;
+
+  ContinousActionValue<DummyState, DummyAction>::Ptr value =
+    GaussianActionValueFunctor<DummyState, DummyAction>::Create(params);
 
   // Create a const copy.
-  const GaussianActionValueFunctor<DummyState, DummyAction> copy = value;
+  const auto copy = value->Copy();
 
   // Try out a bunch of points on the original value functor.
   std::vector<DummyState> old_states;
@@ -169,7 +187,7 @@ TEST(GaussianActionValueFunctor, TestCopyConstructor) {
 
     old_states.push_back(random_state);
     old_actions.push_back(random_action);
-    old_values.push_back(value(random_state, random_action));
+    old_values.push_back(value->Get(random_state, random_action));
   }
 
   // Start a random number generator.
@@ -203,13 +221,13 @@ TEST(GaussianActionValueFunctor, TestCopyConstructor) {
                               targets, next_states));
 
     // Update.
-    const double loss = value.Update(states, actions, targets, kLearningRate);
+    const double loss = value->Update(states, actions, targets, kLearningRate);
   }
 
   // Test the specified number of times. For each stored state/action/value,
   // make sure that the copied value functor still matches the original before
   // it was trained.
   for (size_t ii = 0; ii < kNumChecks; ii++) {
-    EXPECT_EQ(copy(old_states[ii], old_actions[ii]), old_values[ii]);
+    EXPECT_EQ(copy->Get(old_states[ii], old_actions[ii]), old_values[ii]);
   }
 }

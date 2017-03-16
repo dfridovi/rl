@@ -55,8 +55,8 @@
 namespace rl {
 
   template<typename StateType, typename ActionType>
-  struct DiscreteActionValueFunctor :
-    public ActionValueFunctor<StateType, ActionType> {
+  struct DiscreteActionValue :
+    public ActionValue<StateType, ActionType> {
     // Hash table to store the value function. Both StateType and ActionType
     // must implement their own 'Hash' functors.
     std::unordered_map<
@@ -64,63 +64,112 @@ namespace rl {
       std::unordered_map<ActionType, double, typename ActionType::Hash>,
       typename StateType::Hash> value_;
 
-    // Constructor/destructor.
-    ~DiscreteActionValueFunctor() {}
-    explicit DiscreteActionValueFunctor()
-      : ActionValueFunctor<StateType, ActionType>() {}
+    // Typedefs.
+    typedef std::shared_ptr<DiscreteActionValue> Ptr;
+    typedef std::shared_ptr<const DiscreteActionValue> ConstPtr;
+
+    // Destructor.
+    ~DiscreteActionValue() {}
+
+    // Factory method.
+    static Ptr Create();
+
+    // Must implement a deep copy.
+    Ptr Copy() const;
 
     // Pure virtual method to output the value at a state/action pair.
-    double operator()(const StateType& state, const ActionType& action) const {
-      if (value_.count(state) == 0)
-        return kInvalidValue;
-
-      if (value_.at(state).count(action) == 0)
-        return kInvalidValue;
-
-      return value_.at(state).at(action);
-    }
+    double Get(const StateType& state, const ActionType& action) const;
 
     // Set the value of a given state, action pair. If pair is already in
     // the table, updates the value to what is given here.
-    void Set(const StateType& state, const ActionType& action, double value) {
-      if (value_.count(state) > 0) {
-        if (value_.at(state).count(action) > 0)
-          // Table contains this pair.
-          value_.at(state).at(action) = value;
-        else
-          // Table contains state but not action.
-          value_.at(state).insert({action, value});
-      } else {
-        // Table does not contain this state.
-        value_.insert({state, std::unordered_map<
-          ActionType, double, typename ActionType::Hash>({{action, value}})});
-      }
-    }
+    void Set(const StateType& state, const ActionType& action, double value);
 
     // Operator to get a reference to the value at a state.
-    double& Reference(const StateType& state, const ActionType& action) {
-      return value_.at(state).at(action);
-    }
+    double& Reference(const StateType& state, const ActionType& action);
 
     // Initialize all feasible actions at each state to zero.
     void Initialize(
-       const DiscreteEnvironment<StateType, ActionType>& environment) {
-      value_.clear();
+      const DiscreteEnvironment<StateType, ActionType>& environment);
 
-      // Get a list of all states.
-      std::vector<StateType> states;
-      environment.States(states);
+  private:
+    explicit DiscreteActionValue()
+      : ActionValue<StateType, ActionType>() {}
 
-      for (const auto& state : states) {
-        // Get a list of all feasible actions in this state.
-        std::vector<ActionType> actions;
-        environment.Actions(state, actions);
+  }; //\class DiscreteActionValue
 
-        for (const auto& action : actions)
-          Set(state, action, 0.0);
-      }
+// ----------------------------- IMPLEMENTATION ----------------------------- //
+
+  // Factory method.
+  template<typename StateType, typename ActionType>
+  DiscreteActionValue<StateType, ActionType>::Ptr DiscreteActionValue::
+  Create() {
+    DiscreteActionValue<StateType, ActionType>::Ptr
+      ptr(new DiscreteActionValue<StateType, ActionType>());
+    return ptr;
+  }
+
+  // Must implement a deep copy.
+  template<typename StateType, typename ActionType>
+  DiscreteActionValue<StateType, ActionType>::Ptr DiscreteActionValue::
+  Copy() const {
+    DiscreteActionValue<StateType, ActionType>::Ptr
+      ptr(new DiscreteActionValue<StateType, ActionType>(*this));
+    return ptr;
+  }
+
+  template<typename StateType, typename ActionType>
+  double DiscreteActionValue<StateType, ActionType>::
+  Get(const StateType& state, const ActionType& action) {
+    if (value_.count(state) == 0)
+      return kInvalidValue;
+
+    if (value_.at(state).count(action) == 0)
+      return kInvalidValue;
+
+    return value_.at(state).at(action);
+  }
+
+  template<typename StateType, typename ActionType>
+  void DiscreteActionValue<StateType, ActionType>::
+  Set(const StateType& state, const ActionType& action, double value) {
+    if (value_.count(state) > 0) {
+      if (value_.at(state).count(action) > 0)
+        // Table contains this pair.
+        value_.at(state).at(action) = value;
+      else
+        // Table contains state but not action.
+        value_.at(state).insert({action, value});
+    } else {
+      // Table does not contain this state.
+      value_.insert({state, std::unordered_map<
+        ActionType, double, typename ActionType::Hash>({{action, value}})});
     }
-  }; //\class DiscreteActionValueFunctor
+  }
+
+  template<typename StateType, typename ActionType>
+  double& DiscreteActionValue<StateType, ActionType>::
+  Reference(const StateType& state, const ActionType& action) {
+    return value_.at(state).at(action);
+  }
+
+  template<typename StateType, typename ActionType>
+  void DiscreteActionValue<StateType, ActionType>::
+  Initialize(const DiscreteEnvironment<StateType, ActionType>& environment) {
+    value_.clear();
+
+    // Get a list of all states.
+    std::vector<StateType> states;
+    environment.States(states);
+
+    for (const auto& state : states) {
+      // Get a list of all feasible actions in this state.
+      std::vector<ActionType> actions;
+      environment.Actions(state, actions);
+
+      for (const auto& action : actions)
+        Set(state, action, 0.0);
+    }
+  }
 
 }  //\namespace rl
 

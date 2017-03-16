@@ -45,8 +45,8 @@
 #ifndef RL_VALUE_LINEAR_ACTION_VALUE_FUNCTOR_H
 #define RL_VALUE_LINEAR_ACTION_VALUE_FUNCTOR_H
 
-#include <value/continuous_action_value_functor.hpp>
-#include <util/types.hpp>
+#include "../value/continuous_action_value_functor.hpp"
+#include "../util/types.hpp"
 
 #include <glog/logging.h>
 #include <random>
@@ -54,15 +54,20 @@
 namespace rl {
 
   template<typename StateType, typename ActionType>
-  class LinearActionValueFunctor :
-    public ContinuousActionValueFunctor<StateType, ActionType> {
+  class LinearActionValue :
+    public ContinuousActionValue<StateType, ActionType> {
   public:
     // Constructor/destructor.
-    ~LinearActionValueFunctor() {}
-    LinearActionValueFunctor();
+    ~LinearActionValue() {}
+
+    // Factory method.
+    static ContinuousActionValue::Ptr Create();
+
+    // Must implement a deep copy.
+    ContinuousActionValue::Ptr Copy() const;
 
     // Pure virtual method to output the value at a state/action pair.
-    double operator()(const StateType& state, const ActionType& action) const;
+    double Get(const StateType& state, const ActionType& action) const;
 
     // Pure virtual method to do a gradient update to underlying weights.
     // Returns the average loss.
@@ -75,24 +80,41 @@ namespace rl {
     bool OptimalAction(const StateType& state, ActionType& action) const;
 
   private:
+    explicit LinearActionValue();
+
     // Vectors of weights.
     VectorXd state_weights_;
     VectorXd action_weights_;
     double bias_;
-
-    // Private helper to compute function output.
-    double Evaluate(const StateType& state, const ActionType& action) const;
-  }; //\struct LinearStateValueFunctor
+  }; //\struct LinearStateValue
 
 // ----------------------------- IMPLEMENTATION ----------------------------- //
 
+  // Factory method.
   template<typename StateType, typename ActionType>
-  LinearActionValueFunctor<StateType, ActionType>::
-  LinearActionValueFunctor()
+  ContinuousActionValue<StateType, ActionType>::Ptr LinearActionValue::
+  Create() {
+    ContinuousActionValue<StateType, ActionType>::Ptr
+      ptr(new LinearActionValue<StateType, ActionType>);
+    return ptr;
+  }
+
+  // Must implement a deep copy.
+  template<typename StateType, typename ActionType>
+  ContinuousActionValue<StateType, ActionType>::Ptr Copy() const {
+    ContinuousActionValue<StateType, ActionType>::Ptr
+      ptr(new LinearActionValue<StateType, ActionType>(*this));
+    return ptr;
+  }
+
+  // Constructor.
+  template<typename StateType, typename ActionType>
+  LinearActionValue<StateType, ActionType>::
+  LinearActionValue()
     : state_weights_(VectorXd::Zero(StateType::FeatureDimension())),
       action_weights_(VectorXd::Zero(ActionType::FeatureDimension())),
       bias_(0.0),
-      ContinuousActionValueFunctor<StateType, ActionType>() {
+      ContinuousActionValue<StateType, ActionType>() {
     // Create a random number generator for a normal distribution of mean
     // 0.0 and standard deviation 0.1.
     std::random_device rd;
@@ -111,15 +133,27 @@ namespace rl {
 
   // Pure virtual method to output the value at a state/action pair.
   template<typename StateType, typename ActionType>
-  double LinearActionValueFunctor<StateType, ActionType>::
-  operator()(const StateType& state, const ActionType& action) const {
-    return Evaluate(state, action);
+  double LinearActionValue<StateType, ActionType>::
+  Get(const StateType& state, const ActionType& action) const {
+    // Extract feature from state and action.
+    VectorXd state_features(state_weights_.size());
+    state.Features(state_features);
+
+    VectorXd action_features(action_weights_.size());
+    action.Features(action_features);
+
+    // Compute inner product.
+    const double inner_product = bias_ +
+      state_features.dot(state_weights_) +
+      action_features.dot(action_weights_);
+
+    return inner_product;
   }
 
   // Pure virtual method to do a gradient update to underlying weights.
   // Returns the average loss.
   template<typename StateType, typename ActionType>
-  double LinearActionValueFunctor<StateType, ActionType>::
+  double LinearActionValue<StateType, ActionType>::
   Update(const std::vector<StateType>& states,
          const std::vector<ActionType>& actions,
          const std::vector<double>& targets, double step_size) {
@@ -165,7 +199,7 @@ namespace rl {
   // Choose an optimal action in the given state. Returns whether or not
   // optimization was successful.
   template<typename StateType, typename ActionType>
-  bool LinearActionValueFunctor<StateType, ActionType>::
+  bool LinearActionValue<StateType, ActionType>::
   OptimalAction(const StateType& state, ActionType& action) const {
     VectorXd optimal_features(action_weights_.size());
 
@@ -181,24 +215,6 @@ namespace rl {
 
     action.FromFeatures(optimal_features);
     return true;
-  }
-
-  // Private helper to compute function output.
-  template<typename StateType, typename ActionType>
-  double LinearActionValueFunctor<StateType, ActionType>::
-  Evaluate(const StateType& state, const ActionType& action) const {
-    // Extract feature from state and action.
-    VectorXd state_features(state_weights_.size());
-    state.Features(state_features);
-
-    VectorXd action_features(action_weights_.size());
-    action.Features(action_features);
-
-    // Compute inner product.
-    const double inner_product = bias_ +
-      state_features.dot(state_weights_) +
-      action_features.dot(action_weights_);
-    return inner_product;
   }
 
 }  //\namespace rl

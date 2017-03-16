@@ -53,18 +53,20 @@
 namespace rl {
 
   template<typename StateType>
-  struct ContinuousStateValueFunctor : public StateValueFunctor<StateType> {
-    virtual ~ContinuousStateValueFunctor() {}
-    explicit ContinuousStateValueFunctor()
-      : StateValueFunctor<StateType>() {}
+  struct ContinuousStateValue : public StateValue<StateType> {
+    virtual ~ContinuousStateValue() {}
 
     // Pure virtual method to output the value at a state.
-    virtual double operator()(const StateType& state) const = 0;
+    virtual double Get(const StateType& state) const = 0;
 
     // Pure virtual method to do a gradient update to underlying weights.
     virtual void Update(const StateType& state, double target,
                         double step_size) = 0;
-  }; //\struct ContinuousStateValueFunctor
+
+  protected:
+    explicit ContinuousStateValue()
+      : StateValue<StateType>() {}
+  }; //\struct ContinuousStateValue
 
 }  //\namespace rl
 

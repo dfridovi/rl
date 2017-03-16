@@ -55,8 +55,8 @@ namespace rl {
                        const ActionType& action) const = 0;
 
   protected:
-    explicit ActionValueFunctor() {}
-  }; //\class ActionValueFunctor
+    explicit ActionValue() {}
+  }; //\class ActionValue
 
 }  //\namespace rl
 

@@ -46,16 +46,16 @@
 namespace rl {
 
   template<typename StateType>
-  struct StateValueFunctor {
+  struct StateValue {
   public:
-    virtual ~StateValueFunctor() {}
+    virtual ~StateValue() {}
 
     // Pure virtual method to output the value at a state.
-    virtual double operator()(const StateType& state) const = 0;
+    virtual double Get(const StateType& state) const = 0;
 
   protected:
-    explicit StateValueFunctor() {}
-  }; //\struct StateValueFunctor
+    explicit StateValue() {}
+  }; //\struct StateValue
 
 }  //\namespace rl
 

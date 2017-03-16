@@ -69,7 +69,9 @@ namespace rl {
         rollout_length_(params.rollout_length_),
         max_iterations_(params.max_iterations_),
         initial_epsilon_(params.initial_epsilon_),
-        policy_(params.initial_epsilon_) {}
+        policy_(params.initial_epsilon_) {
+      value_ = DiscreteActionValue<StateType, ActionType>::Create();
+    }
 
     // Solve the MDP defined by the given environment. Returns whether or not
     // iteration reached convergence. If convergence is reached, the solver
@@ -81,7 +83,7 @@ namespace rl {
       return policy_;
     }
 
-    const DiscreteActionValueFunctor<StateType, ActionType>& Value() const {
+    const DiscreteActionValue<StateType, ActionType>::ConstPtr& Value() const {
       return value_;
     }
 
@@ -106,7 +108,7 @@ namespace rl {
     const int rollout_length_;
     double initial_epsilon_;
     DiscreteEpsilonGreedyPolicy<StateType, ActionType> policy_;
-    DiscreteActionValueFunctor<StateType, ActionType> value_;
+    DiscreteActionValue<StateType, ActionType>::Ptr value_;
   }; //\class DiscreteSarsaLambda
 
 // ---------------------------- IMPLEMENTATION ------------------------------ //
@@ -120,7 +122,7 @@ namespace rl {
     policy_.SetRandomly(environment);
 
     // Initialize value function to zero.
-    value_.Initialize(environment);
+    value_->Initialize(environment);
 
     // Run until convergence.
     bool has_converged = false;
@@ -172,7 +174,8 @@ namespace rl {
       // All states/actions in the trace will be tracked as normal. If a
       // state/action pair is not in the trace yet, that means it has not
       // been visited this rollout.
-      DiscreteActionValueFunctor<StateType, ActionType> trace;
+      DiscreteActionValue<StateType, ActionType>::Ptr trace =
+        DiscreteActionValue<StateType, ActionType>::Create();
 
       // Simulate the rollout.
       for (int jj = 0;

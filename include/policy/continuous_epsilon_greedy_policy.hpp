@@ -71,7 +71,7 @@ namespace rl {
 
     // Return an action given the current state. If state is not valid,
     // returns false.
-    bool Act(const ContinuousActionValueFunctor<StateType, ActionType>& value,
+    bool Act(const ContinuousActionValue<StateType, ActionType>::ConstPtr& value,
              const ContinuousEnvironment<StateType, ActionType>& environment,
              const StateType& state, ActionType& action) const;
 
@@ -95,9 +95,11 @@ namespace rl {
   // Act epsilon-greedily in the given state.
   template<typename StateType, typename ActionType>
   bool ContinuousEpsilonGreedyPolicy<StateType, ActionType>::Act(
-     const ContinuousActionValueFunctor<StateType, ActionType>& value,
+     const ContinuousActionValue<StateType, ActionType>::ConstPtr& value,
      const ContinuousEnvironment<StateType, ActionType>& environment,
      const StateType& state, ActionType& action) const {
+    CHECK_NOTNULL(value.get());
+
     // With probability epsilon, pick a random action.
     std::uniform_real_distribution<double> unif(0.0, 1.0);
     if (unif(rng_) < epsilon_) {
@@ -107,7 +109,7 @@ namespace rl {
 
       action = random_action;
     } else {
-      if (!value.OptimalAction(state, action)) {
+      if (!value->OptimalAction(state, action)) {
         LOG(WARNING) << "ContinuousEpsilonGreedyPolicy: Could not "
                      << "find optimal action.";
         return false;

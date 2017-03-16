@@ -65,10 +65,11 @@ namespace rl {
     ~GaussianActionValue() {}
 
     // Factory method.
-    static ContinousActionValue::Ptr Create(const GaussianParams& params);
+    static typename ContinuousActionValue<StateType, ActionType>::Ptr
+    Create(const GaussianParams& params);
 
     // Must implement a deep copy.
-    ContinousActionValue::Ptr Copy() const = 0;
+    typename ContinuousActionValue<StateType, ActionType>::Ptr Copy() const;
 
     // Pure virtual method to output the value at a state/action pair.
     double Get(const StateType& state, const ActionType& action) const;
@@ -131,12 +132,22 @@ namespace rl {
 
   // Factory method.
   template<typename StateType, typename ActionType>
-  ContinousActionValue::Ptr GaussianActionValue::
-  Create(const GaussianParams& params);
+  typename ContinuousActionValue<StateType, ActionType>::Ptr
+  GaussianActionValue<StateType, ActionType>::
+  Create(const GaussianParams& params) {
+    typename ContinuousActionValue<StateType, ActionType>::Ptr
+      ptr(new GaussianActionValue<StateType, ActionType>(params));
+    return ptr;
+  }
 
   // Must implement a deep copy.
-  ContinousActionValue::Ptr Copy() const = 0;
-
+  template<typename StateType, typename ActionType>
+  typename ContinuousActionValue<StateType, ActionType>::Ptr
+  GaussianActionValue<StateType, ActionType>::Copy() const {
+    typename ContinuousActionValue<StateType, ActionType>::Ptr
+      ptr(new GaussianActionValue<StateType, ActionType>(*this));
+    return ptr;
+  }
 
   // Constructor.
   template<typename StateType, typename ActionType>
@@ -154,7 +165,7 @@ namespace rl {
       lengths_(params.lengths_),
       ContinuousActionValue<StateType, ActionType>() {
     // Pick random points in the space for training.
-    for (size_t ii = 0; ii < num_points; ii++) {
+    for (size_t ii = 0; ii < params.num_points_; ii++) {
       const StateType state;
       const ActionType action;
 
@@ -180,7 +191,7 @@ namespace rl {
         covariance_(jj, ii) = covariance_(ii, jj);
       }
 
-      covariance_(ii, ii) = 1.0 + noise_variance;
+      covariance_(ii, ii) = 1.0 + noise_variance_;
     }
 
     // Randomize training targets.
