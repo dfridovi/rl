@@ -61,10 +61,10 @@ namespace rl {
     ~LinearActionValue() {}
 
     // Factory method.
-    static ContinuousActionValue::Ptr Create();
+    static typename ContinuousActionValue<StateType, ActionType>::Ptr Create();
 
     // Must implement a deep copy.
-    ContinuousActionValue::Ptr Copy() const;
+    typename ContinuousActionValue<StateType, ActionType>::Ptr Copy() const;
 
     // Pure virtual method to output the value at a state/action pair.
     double Get(const StateType& state, const ActionType& action) const;
@@ -92,17 +92,18 @@ namespace rl {
 
   // Factory method.
   template<typename StateType, typename ActionType>
-  ContinuousActionValue<StateType, ActionType>::Ptr LinearActionValue::
-  Create() {
-    ContinuousActionValue<StateType, ActionType>::Ptr
+  typename ContinuousActionValue<StateType, ActionType>::Ptr
+  LinearActionValue<StateType, ActionType>::Create() {
+    typename ContinuousActionValue<StateType, ActionType>::Ptr
       ptr(new LinearActionValue<StateType, ActionType>);
     return ptr;
   }
 
   // Must implement a deep copy.
   template<typename StateType, typename ActionType>
-  ContinuousActionValue<StateType, ActionType>::Ptr Copy() const {
-    ContinuousActionValue<StateType, ActionType>::Ptr
+  typename ContinuousActionValue<StateType, ActionType>::Ptr
+  LinearActionValue<StateType, ActionType>::Copy() const {
+    typename ContinuousActionValue<StateType, ActionType>::Ptr
       ptr(new LinearActionValue<StateType, ActionType>(*this));
     return ptr;
   }
