@@ -43,59 +43,15 @@
 #include <value/experience_replay.hpp>
 #include <util/types.hpp>
 
+#include "dummy_state_action.hpp"
+
 #include <glog/logging.h>
 #include <gtest/gtest.h>
 #include <random>
 
 using namespace rl;
+using namespace rl::test;
 using namespace mininet;
-
-// Dummy scalar state and action structs.
-struct DummyState {
-  double state_;
-
-  static constexpr size_t FeatureDimension() { return 1; }
-  void Features(VectorXd& features) const {
-    CHECK_EQ(features.size(), FeatureDimension());
-    features(0) = state_;
-  }
-}; //\ struct DummyState
-
-struct DummyAction {
-  double action_;
-
-  static constexpr size_t FeatureDimension() { return 1; }
-  void Features(VectorXd& features) const {
-    CHECK_EQ(features.size(), FeatureDimension());
-    features(0) = action_;
-  }
-  void FromFeatures(const VectorXd& features) {
-    CHECK_EQ(features.size(), FeatureDimension());
-    action_ = features(0);
-  }
-
-  static double MaxAlongDimension(size_t ii) {
-    CHECK_LE(ii, FeatureDimension() - 1);
-    return 1.0;
-  }
-
-  static double MinAlongDimension(size_t ii) {
-    CHECK_LE(ii, FeatureDimension() - 1);
-    return -1.0;
-  }
-
-  static void DiscreteValues(std::vector<DummyAction>& actions) {
-    actions.clear();
-
-    DummyAction action1;
-    action1.action_ = -1.0;
-    actions.push_back(action1);
-
-    DummyAction action2;
-    action1.action_ = 1.0;
-    actions.push_back(action2);
-  }
-}; //\ struct DummyAction
 
 // Test that a deep action value function converges to a true linear
 // ground truth.
@@ -136,10 +92,7 @@ TEST(DeepActionValueFunctor, TestConvergence) {
   ExperienceReplay<DummyState, DummyAction> replay;
   for (size_t ii = 0; ii < kNumTrainingPoints; ii++) {
     DummyState random_state;
-    random_state.state_ = unif(rng);
-
     DummyAction random_action;
-    random_action.action_ = unif(rng);
 
     const double result =
       state_coeff * random_state.state_ + action_coeff * random_action.action_;
@@ -172,5 +125,89 @@ TEST(DeepActionValueFunctor, TestConvergence) {
       state_coeff * random_state.state_ + action_coeff * random_action.action_;
 
     EXPECT_NEAR(value(random_state, random_action), result, kEpsilon);
+  }
+}
+
+// Test that this action value functor's copy constructor is correct.
+TEST(DeepActionValueFunctor, TestCopyConstructor) {
+  const size_t kNumTrainingPoints = 100;
+  const size_t kNumChecks = 100;
+  const double kStepSize = 1e-2;
+  const double kEpsilon = 1e-2;
+  const double kMomentum = 0.0;
+  const double kWeightDecay = 0.0;
+  const size_t kBatchSize = 5;
+  const size_t kNumUpdates = 100;
+
+  // Construct layers.
+  std::vector<LayerParams> layers;
+  layers.push_back(LayerParams(LINEAR,
+                               DummyState::FeatureDimension() +
+                               DummyAction::FeatureDimension(),
+                               1));
+
+  // Construct loss.
+  LossFunctor::ConstPtr loss = L2::Create();
+
+  // Create action value functor.
+  DeepActionValueFunctor<DummyState, DummyAction> value(layers, loss, kMomentum,
+                                                        kWeightDecay);
+
+  // Create a const copy.
+  const DeepActionValueFunctor<DummyState, DummyAction> copy = value;
+
+  // Try out a bunch of points on the original value functor.
+  std::vector<DummyState> old_states;
+  std::vector<DummyAction> old_actions;
+  std::vector<double> old_values;
+
+  for (size_t ii = 0; ii < kNumChecks; ii++) {
+    DummyState random_state;
+    DummyAction random_action;
+
+    old_states.push_back(random_state);
+    old_actions.push_back(random_action);
+    old_values.push_back(value(random_state, random_action));
+  }
+
+  // Start a random number generator.
+  std::random_device rd;
+  std::default_random_engine rng(rd());
+  std::uniform_real_distribution<double> unif(-1.0, 1.0);
+
+  // Pick random coefficients.
+  const double state_coeff = unif(rng);
+  const double action_coeff = unif(rng);
+
+  // Generate training data.
+  ExperienceReplay<DummyState, DummyAction> replay;
+  for (size_t ii = 0; ii < kNumTrainingPoints; ii++) {
+    DummyState random_state;
+    DummyAction random_action;
+
+    const double result =
+      state_coeff * random_state.state_ + action_coeff * random_action.action_;
+
+    replay.Add(random_state, random_action, result, random_state);
+  }
+
+  // Iterate the specified number of times to train.
+  std::vector<DummyState> states, next_states;
+  std::vector<DummyAction> actions;
+  std::vector<double> targets;
+  for (size_t ii = 0; ii < kNumUpdates; ii++) {
+    // Get a batch.
+    ASSERT_TRUE(replay.Sample(kBatchSize, states, actions,
+                              targets, next_states));
+
+    // Update.
+    const double loss = value.Update(states, actions, targets, kStepSize);
+  }
+
+  // Test the specified number of times. For each stored state/action/value,
+  // make sure that the copied value functor still matches the original before
+  // it was trained.
+  for (size_t ii = 0; ii < kNumChecks; ii++) {
+    EXPECT_EQ(copy(old_states[ii], old_actions[ii]), old_values[ii]);
   }
 }

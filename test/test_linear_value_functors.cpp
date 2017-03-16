@@ -43,47 +43,14 @@
 #include <value/linear_action_value_functor.hpp>
 #include <util/types.hpp>
 
+#include "dummy_state_action.hpp"
+
 #include <glog/logging.h>
 #include <gtest/gtest.h>
 #include <random>
 
 using namespace rl;
-
-// Dummy scalar state and action structs.
-struct DummyState {
-  double state_;
-
-  static constexpr size_t FeatureDimension() { return 1; }
-  void Features(VectorXd& features) const {
-    CHECK_EQ(features.size(), FeatureDimension());
-    features(0) = state_;
-  }
-}; //\ struct DummyState
-
-struct DummyAction {
-  double action_;
-
-  static constexpr size_t FeatureDimension() { return 1; }
-  void Features(VectorXd& features) const {
-    CHECK_EQ(features.size(), FeatureDimension());
-    features(0) = action_;
-  }
-  void FromFeatures(const VectorXd& features) {
-    CHECK_EQ(features.size(), FeatureDimension());
-    action_ = features(0);
-  }
-
-  static double MaxAlongDimension(size_t ii) {
-    CHECK_LE(ii, FeatureDimension() - 1);
-    return 1.0;
-  }
-
-  static double MinAlongDimension(size_t ii) {
-    CHECK_LE(ii, FeatureDimension() - 1);
-    return -1.0;
-  }
-
-}; //\ struct DummyAction
+using namespace rl::test;
 
 // Test that a linear state value function converges to a true linear
 // ground truth.
@@ -107,7 +74,6 @@ TEST(LinearStateValueFunctor, TestConvergence) {
   // Iterate the specified number of times to train.
   for (size_t ii = 0; ii < kNumTrainingPoints; ii++) {
     DummyState random_state;
-    random_state.state_ = unif(rng);
 
     value.Update(random_state, state_coeff * random_state.state_, kStepSize);
   }
@@ -115,11 +81,58 @@ TEST(LinearStateValueFunctor, TestConvergence) {
   // Test the specified number of times.
   for (size_t ii = 0; ii < kNumTestingPoints; ii++) {
     DummyState random_state;
-    random_state.state_ = unif(rng);
 
     EXPECT_NEAR(value(random_state),
                 state_coeff * random_state.state_, kEpsilon);
   }
+}
+
+// Test that this action value functor's copy constructor is correct.
+TEST(LinearStateValueFunctor, TestCopyConstructor) {
+  const double kEligibilityDecay = 0.0;
+  const size_t kNumTrainingPoints = 100;
+  const size_t kNumChecks = 100;
+  const double kStepSize = 1e-2;
+  const double kEpsilon = 1e-3;
+
+  LinearStateValueFunctor<DummyState> value(kEligibilityDecay);
+
+  // Create a const copy.
+  const LinearStateValueFunctor<DummyState> copy = value;
+
+  // Try out a bunch of points on the original value functor.
+  std::vector<DummyState> old_states;
+  std::vector<double> old_values;
+
+  for (size_t ii = 0; ii < kNumChecks; ii++) {
+    DummyState random_state;
+
+    old_states.push_back(random_state);
+    old_values.push_back(value(random_state));
+  }
+
+  // Start a random number generator.
+  std::random_device rd;
+  std::default_random_engine rng(rd());
+  std::uniform_real_distribution<double> unif(-1.0, 1.0);
+
+  // Pick a random coefficient.
+  const double state_coeff = unif(rng);
+
+  // Iterate the specified number of times to train.
+  for (size_t ii = 0; ii < kNumTrainingPoints; ii++) {
+    DummyState random_state;
+
+    value.Update(random_state, state_coeff * random_state.state_, kStepSize);
+  }
+
+  // Test the specified number of times. For each stored state/action/value,
+  // make sure that the copied value functor still matches the original before
+  // it was trained.
+  for (size_t ii = 0; ii < kNumChecks; ii++) {
+    EXPECT_EQ(copy(old_states[ii]), old_values[ii]);
+  }
+
 }
 
 // Test that a linear action value function converges to a true linear
@@ -144,10 +157,7 @@ TEST(LinearActionValueFunctor, TestConvergence) {
   // Iterate the specified number of times to train.
   for (size_t ii = 0; ii < kNumTrainingPoints; ii++) {
     DummyState random_state;
-    random_state.state_ = unif(rng);
-
     DummyAction random_action;
-    random_action.action_ = unif(rng);
 
     const double result =
       state_coeff * random_state.state_ + action_coeff * random_action.action_;
@@ -160,14 +170,66 @@ TEST(LinearActionValueFunctor, TestConvergence) {
   // Test the specified number of times.
   for (size_t ii = 0; ii < kNumTestingPoints; ii++) {
     DummyState random_state;
-    random_state.state_ = unif(rng);
-
     DummyAction random_action;
-    random_action.action_ = unif(rng);
 
     const double result =
       state_coeff * random_state.state_ + action_coeff * random_action.action_;
 
     EXPECT_NEAR(value(random_state, random_action), result, kEpsilon);
+  }
+}
+
+TEST(LinearActionValueFunctor, TestCopyConstructor) {
+  const size_t kNumTrainingPoints = 100;
+  const size_t kNumChecks = 100;
+  const double kStepSize = 1e-2;
+  const double kEpsilon = 1e-3;
+
+  LinearActionValueFunctor<DummyState, DummyAction> value;
+
+  // Create a const copy.
+  const LinearActionValueFunctor<DummyState, DummyAction> copy = value;
+
+  // Try out a bunch of points on the original value functor.
+  std::vector<DummyState> old_states;
+  std::vector<DummyAction> old_actions;
+  std::vector<double> old_values;
+
+  for (size_t ii = 0; ii < kNumChecks; ii++) {
+    DummyState random_state;
+    DummyAction random_action;
+
+    old_states.push_back(random_state);
+    old_actions.push_back(random_action);
+    old_values.push_back(value(random_state, random_action));
+  }
+
+  // Start a random number generator.
+  std::random_device rd;
+  std::default_random_engine rng(rd());
+  std::uniform_real_distribution<double> unif(-1.0, 1.0);
+
+  // Pick random coefficients.
+  const double state_coeff = unif(rng);
+  const double action_coeff = unif(rng);
+
+  // Iterate the specified number of times to train.
+  for (size_t ii = 0; ii < kNumTrainingPoints; ii++) {
+    DummyState random_state;
+    DummyAction random_action;
+
+    const double result =
+      state_coeff * random_state.state_ + action_coeff * random_action.action_;
+
+    value.Update(std::vector<DummyState>({random_state}),
+                 std::vector<DummyAction>({random_action}),
+                 std::vector<double>({result}), kStepSize);
+  }
+
+  // Test the specified number of times. For each stored state/action/value,
+  // make sure that the copied value functor still matches the original before
+  // it was trained.
+  for (size_t ii = 0; ii < kNumChecks; ii++) {
+    EXPECT_EQ(copy(old_states[ii], old_actions[ii]), old_values[ii]);
   }
 }
