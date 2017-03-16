@@ -36,28 +36,37 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Defines the ActionValueFunctor base class.
+// Struct to hold parameters for Gaussian Process value functors.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef RL_VALUE_ACTION_VALUE_FUNCTOR_H
-#define RL_VALUE_ACTION_VALUE_FUNCTOR_H
+#ifndef RL_VALUE_GAUSSIAN_PARAMS_H
+#define RL_VALUE_GAUSSIAN_PARAMS_H
+
+#include "../util/types.hpp"
 
 namespace rl {
 
-  template<typename StateType, typename ActionType>
-  struct ActionValue {
-    virtual ~ActionValue() {}
+  struct GaussianParams {
+    // Number of training points.
+    size_t num_points_ = 10;
 
-    // Pure virtual method to output the value at a state after taking a
-    // specific action.
-    virtual double Get(const StateType& state,
-                       const ActionType& action) const = 0;
+    // Noise variance (assumed isotropic).
+    double noise_variance_ = 1.0;
 
-  protected:
-    explicit ActionValueFunctor() {}
-  }; //\class ActionValueFunctor
+    // Regularization constant for trading off mean and variance in the GP.
+    double regularizer_ = 0.0;
 
+    // Length scales for each dimension. Note that this MUST be set before
+    // it is used.
+    VectorXd lengths_;
+
+    // Optimization parameters.
+    double step_size_ = 0.01;
+    double max_steps_ = 10;
+    double num_inits_ = 10;
+    double epsilon_ = 0.1;
+  }; //\ struct GaussianParams
 }  //\namespace rl
 
 #endif

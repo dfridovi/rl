@@ -65,9 +65,9 @@ namespace rl {
   public:
     // Constructor/destructor.
     ~DeepActionValueFunctor() {}
-    explicit DeepActionValueFunctor(const std::vector<LayerParams>& layers,
-                                    const LossFunctor::ConstPtr& loss,
-                                    double momentum, double weight_decay);
+    DeepActionValueFunctor(const std::vector<LayerParams>& layers,
+                           const LossFunctor::ConstPtr& loss,
+                           double momentum, double weight_decay);
 
     // Pure virtual method to output the value at a state/action pair.
     double operator()(const StateType& state, const ActionType& action) const;

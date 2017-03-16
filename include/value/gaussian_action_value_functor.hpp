@@ -45,6 +45,7 @@
 #define RL_VALUE_GAUSSIAN_ACTION_VALUE_FUNCTOR_H
 
 #include "../value/continuous_action_value_functor.hpp"
+#include "../value/gaussian_params.hpp"
 #include "util/types.hpp"
 
 #include <Eigen/Cholesky>
@@ -58,19 +59,19 @@
 namespace rl {
 
   template<typename StateType, typename ActionType>
-  class GaussianActionValueFunctor :
-    public ContinuousActionValueFunctor<StateType, ActionType> {
+  class GaussianActionValue :
+    public ContinuousActionValue<StateType, ActionType> {
   public:
-    // Constructor/destructor.
-    ~GaussianActionValueFunctor() {}
-    explicit GaussianActionValueFunctor(size_t num_points, double regularizer,
-                                        double noise_variance, double step_size,
-                                        size_t num_inits, size_t max_steps,
-                                        double epsilon,
-                                        const VectorXd& lengths);
+    ~GaussianActionValue() {}
+
+    // Factory method.
+    static ContinousActionValue::Ptr Create(const GaussianParams& params);
+
+    // Must implement a deep copy.
+    ContinousActionValue::Ptr Copy() const = 0;
 
     // Pure virtual method to output the value at a state/action pair.
-    double operator()(const StateType& state, const ActionType& action) const;
+    double Get(const StateType& state, const ActionType& action) const;
 
     // Pure virtual method to do a gradient update to underlying weights.
     // Returns average loss.
@@ -84,6 +85,8 @@ namespace rl {
     bool OptimalAction(const StateType& state, ActionType& action) const;
 
   private:
+    explicit GaussianActionValue(const GaussianParams& params);
+
     // Covariance kernel function.
     double Kernel(const VectorXd& x, const VectorXd& y) const;
 
@@ -122,27 +125,34 @@ namespace rl {
     const size_t max_steps_;
     const double step_size_;
     const double epsilon_;
-  }; //\class GaussianActionValueFunctor
+  }; //\class GaussianActionValue
 
 // ------------------------------ IMPLEMENTATION ---------------------------- //
 
+  // Factory method.
   template<typename StateType, typename ActionType>
-  GaussianActionValueFunctor<StateType, ActionType>::
-  GaussianActionValueFunctor(size_t num_points, double regularizer,
-                             double noise_variance, double step_size,
-                             size_t num_inits, size_t max_steps, double epsilon,
-                             const VectorXd& lengths)
-    : regularizer_(regularizer),
-      noise_variance_(noise_variance),
-      max_steps_(max_steps),
-      num_inits_(num_inits),
-      step_size_(step_size),
-      epsilon_(epsilon),
-      covariance_(MatrixXd::Zero(num_points, num_points)),
-      means_(VectorXd::Zero(num_points)),
-      regressed_means_(VectorXd::Zero(num_points)),
-      lengths_(lengths),
-      ContinuousActionValueFunctor<StateType, ActionType>() {
+  ContinousActionValue::Ptr GaussianActionValue::
+  Create(const GaussianParams& params);
+
+  // Must implement a deep copy.
+  ContinousActionValue::Ptr Copy() const = 0;
+
+
+  // Constructor.
+  template<typename StateType, typename ActionType>
+  GaussianActionValue<StateType, ActionType>::
+  GaussianActionValue(const GaussianParams& params)
+    : regularizer_(params.regularizer_),
+      noise_variance_(params.noise_variance_),
+      max_steps_(params.max_steps_),
+      num_inits_(params.num_inits_),
+      step_size_(params.step_size_),
+      epsilon_(params.epsilon_),
+      covariance_(MatrixXd::Zero(params.num_points_, params.num_points_)),
+      means_(VectorXd::Zero(params.num_points_)),
+      regressed_means_(VectorXd::Zero(params.num_points_)),
+      lengths_(params.lengths_),
+      ContinuousActionValue<StateType, ActionType>() {
     // Pick random points in the space for training.
     for (size_t ii = 0; ii < num_points; ii++) {
       const StateType state;
@@ -190,7 +200,7 @@ namespace rl {
 
   // Helper function to evaluate the GP.
   template<typename StateType, typename ActionType>
-  void GaussianActionValueFunctor<StateType, ActionType>::
+  void GaussianActionValue<StateType, ActionType>::
   Evaluate(const StateType& state, const ActionType& action,
            double& mean, double& variance) const {
     // Compute cross covariance vector.
@@ -212,8 +222,8 @@ namespace rl {
 
   // Compute the expected value of the GP at this point.
   template<typename StateType, typename ActionType>
-  double GaussianActionValueFunctor<StateType, ActionType>::
-  operator()(const StateType& state, const ActionType& action) const {
+  double GaussianActionValue<StateType, ActionType>::
+  Get(const StateType& state, const ActionType& action) const {
     // Compute cross covariance vector.
     VectorXd features(StateType::FeatureDimension() +
                       ActionType::FeatureDimension());
@@ -229,7 +239,7 @@ namespace rl {
 
   // Update all parameters. Return average loss.
   template<typename StateType, typename ActionType>
-  double GaussianActionValueFunctor<StateType, ActionType>::
+  double GaussianActionValue<StateType, ActionType>::
   Update(const std::vector<StateType>& states,
          const std::vector<ActionType>& actions,
          const std::vector<double>& targets, double step_size) {
@@ -253,7 +263,7 @@ namespace rl {
 
       // Catch nan. Set to zero.
       if (isnan(error)) {
-        LOG(WARNING) << "GaussianActionValueFunctor: Error was nan. Skipping.";
+        LOG(WARNING) << "GaussianActionValue: Error was nan. Skipping.";
         continue;
       }
 
@@ -283,7 +293,7 @@ namespace rl {
   // problem is usually non-convex, and we solve it by taking several gradient
   // steps from a few random initializations and returning the best final value.
   template<typename StateType, typename ActionType>
-  bool GaussianActionValueFunctor<StateType, ActionType>::
+  bool GaussianActionValue<StateType, ActionType>::
   OptimalAction(const StateType& state, ActionType& action) const {
     // Get a list of possible actions.
     std::vector<ActionType> candidates;
@@ -374,7 +384,7 @@ namespace rl {
 
   // Covariance kernel function.
   template<typename StateType, typename ActionType>
-  double GaussianActionValueFunctor<StateType, ActionType>::
+  double GaussianActionValue<StateType, ActionType>::
   Kernel(const VectorXd& x, const VectorXd& y) const {
     CHECK_EQ(x.size(), lengths_.size());
     CHECK_EQ(y.size(), lengths_.size());
@@ -386,7 +396,7 @@ namespace rl {
   // Compute the cross covariance vector of a feature vector with
   // the training data.
   template<typename StateType, typename ActionType>
-  void GaussianActionValueFunctor<StateType, ActionType>::
+  void GaussianActionValue<StateType, ActionType>::
   CrossCovariance(const VectorXd& features, VectorXd& cross) const {
     CHECK_EQ(cross.size(), points_.size());
     CHECK_EQ(features.size(),

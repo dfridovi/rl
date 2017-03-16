@@ -77,15 +77,16 @@ namespace rl {
     // Runs Q Learning algorithm for the specified number of iterations.
     // Solution is stored in the provided continuous value functor.
     void Solve(const ContinuousEnvironment<StateType, ActionType>& environment,
-               ContinuousActionValueFunctor<StateType, ActionType>& value,
+               ContinuousActionValue&<StateType, ActionType>::Ptr& value,
                bool verbose = false, bool random_initial_state = true);
 
   private:
     // Estimate the value function for the current policy using Q Learning,
-    // from a single rollout.
+    // from a single rollout. Takes in both a floating value functor and a
+    // const fixed one for training.
     void UpdateValueFunction(
        const ContinuousEnvironment<StateType, ActionType>& environment,
-       ContinuousActionValueFunctor<StateType, ActionType>& value,
+       ContinuousActionValue<StateType, ActionType>::Ptr& value,
        bool random_initial_state);
 
     // Member variables.
@@ -111,14 +112,17 @@ namespace rl {
   template<typename StateType, typename ActionType>
   void ContinuousQLearning<StateType, ActionType>::Solve(
      const ContinuousEnvironment<StateType, ActionType>& environment,
-     ContinuousActionValueFunctor<StateType, ActionType>& value,
+     ContinuousActionValue::Ptr&<StateType, ActionType>& value,
      bool verbose, bool random_initial_state) {
     // Run for the specified number of iterations. Assume value functor
     // has already been initialized.
     for (size_t ii = 1; ii <= num_rollouts_; ii++) {
       if (verbose)
         std::cout << "Training rollout #" << ii << "..." << std::flush;
+
+      // Update the given value functor.
       UpdateValueFunction(environment, value, random_initial_state);
+
       if (verbose)
         std::cout << "done." << std::endl;
 
@@ -132,8 +136,11 @@ namespace rl {
   template<typename StateType, typename ActionType>
   void ContinuousQLearning<StateType, ActionType>::UpdateValueFunction(
      const ContinuousEnvironment<StateType, ActionType>& environment,
-     ContinuousActionValueFunctor<StateType, ActionType>& value,
+     ContinuousActionValue<StateType, ActionType>::Ptr& value,
      bool random_initial_state) {
+    // Make a const copy of the value functor.
+    const auto fixed_value = value->Copy();
+
     // Initialize the current state.
     StateType current_state;
 
@@ -142,7 +149,7 @@ namespace rl {
 
     // Get the optimal action in this state.
     ActionType current_action;
-    if (!value.OptimalAction(current_state, current_action))
+    if (!fixed_value->OptimalAction(current_state, current_action))
       LOG(WARNING) << "ContinuousQLearning: Could not find optimal action.";
 
     // Simulate the rollout.
@@ -184,9 +191,11 @@ namespace rl {
           LOG(WARNING) << "ContinuousQLearning: Policy error.";
         }
 
-        const double sample_value = value(sample_states[jj], sample_actions[jj]);
-        const double td_delta = sample_rewards[jj] + discount_factor_ *
-          value(sample_next_states[jj], optimal_next_action) - sample_value;
+        const double sample_value =
+          value->Get(sample_states[jj], sample_actions[jj]);
+        const double td_delta =
+          sample_rewards[jj] - sample_value + discount_factor_ *
+          fixed_value->Get(sample_next_states[jj], optimal_next_action);
         const double target =
           sample_value + alpha_ * std::min(std::max(td_delta, -10.0), 10.0);
 
@@ -195,7 +204,7 @@ namespace rl {
 
       // Update.
       const double loss =
-        value.Update(sample_states, sample_actions, targets, learning_rate_);
+        value->Update(sample_states, sample_actions, targets, learning_rate_);
 
       if (ii % 1000 == 0) {
         std::printf("Loss on replay %zu was %f.\n", ii, loss);

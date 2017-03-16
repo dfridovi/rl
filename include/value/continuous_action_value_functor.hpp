@@ -52,18 +52,26 @@
 #include <limits>
 #include <iostream>
 #include <vector>
+#include <memory>
 
 namespace rl {
 
   template<typename StateType, typename ActionType>
-  struct ContinuousActionValueFunctor :
-    public ActionValueFunctor<StateType, ActionType> {
+  struct ContinuousActionValue :
+    public ActionValue<StateType, ActionType> {
+    // Typedefs.
+    typedef std::shared_ptr<ContinuousActionValue> Ptr;
+    typedef std::shared_ptr<const ContinuousActionValue> ConstPtr;
+
     // Constructor/destructor.
     virtual ~ContinuousActionValueFunctor() {}
 
+    // Must implement a deep copy.
+    virtual Ptr Copy() const = 0;
+
     // Pure virtual method to output the value at a state/action pair.
-    virtual double operator()(const StateType& state,
-                              const ActionType& action) const = 0;
+    virtual double Get(const StateType& state,
+                       const ActionType& action) const = 0;
 
     // Pure virtual method to do a gradient update to underlying weights.
     // Returns the average loss.

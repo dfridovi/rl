@@ -59,7 +59,7 @@ namespace rl {
   public:
     // Constructor/destructor.
     ~LinearActionValueFunctor() {}
-    explicit LinearActionValueFunctor();
+    LinearActionValueFunctor();
 
     // Pure virtual method to output the value at a state/action pair.
     double operator()(const StateType& state, const ActionType& action) const;
