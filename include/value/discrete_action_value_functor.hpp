@@ -51,6 +51,7 @@
 #include <unordered_map>
 #include <limits>
 #include <iostream>
+#include <memory>
 
 namespace rl {
 

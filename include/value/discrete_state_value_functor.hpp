@@ -49,6 +49,7 @@
 #include <unordered_map>
 #include <limits>
 #include <vector>
+#include <memory>
 
 namespace rl {
 
