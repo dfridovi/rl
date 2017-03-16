@@ -147,10 +147,9 @@ void SingleIteration() {
   if (world->IsTerminal(*current_state))
     is_terminal = true;
   else {
-    // Extract optimal policy and value function.
+    // Extract optimal policy.
     const DiscreteDeterministicPolicy<GridState, GridAction> policy =
       solver->Policy();
-    const DiscreteStateValueFunctor<GridState> value = solver->Value();
 
     const GridState copy_state(current_state->ii_, current_state->jj_);
     history.push_back(copy_state);

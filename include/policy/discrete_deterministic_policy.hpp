@@ -50,6 +50,7 @@
 #include "../value/discrete_action_value_functor.hpp"
 #include "../environment/discrete_environment.hpp"
 
+#include <glog/logging.h>
 #include <unordered_map>
 #include <random>
 
@@ -68,11 +69,11 @@ namespace rl {
     // Set to the greedy policy given a state value function V or an
     // action value function Q. Returns the total number of changes made.
     size_t SetGreedily(
-       const DiscreteStateValue<StateType>::ConstPtr& V,
+       const typename DiscreteStateValue<StateType>::ConstPtr& V,
        const DiscreteEnvironment<StateType, ActionType>& environment,
        double discount_factor);
     size_t SetGreedily(
-       const DiscreteActionValue<StateType, ActionType>::ConstPtr& Q);
+       const typename DiscreteActionValue<StateType, ActionType>::ConstPtr& Q);
 
     // Act deterministically at every state.
     bool Act(const StateType& state, ActionType& action) const;
@@ -121,7 +122,7 @@ namespace rl {
   // the total number of changes made.
   template<typename StateType, typename ActionType>
   size_t DiscreteDeterministicPolicy<StateType, ActionType>::SetGreedily(
-     const DiscreteStateValue<StateType>::ConstPtr& V,
+     const typename DiscreteStateValue<StateType>::ConstPtr& V,
      const DiscreteEnvironment<StateType, ActionType>& environment,
      double discount_factor) {
     CHECK_NOTNULL(V.get());
@@ -172,7 +173,7 @@ namespace rl {
   // Returns the total number of changes made.
   template<typename StateType, typename ActionType>
   size_t DiscreteDeterministicPolicy<StateType, ActionType>::SetGreedily(
-     const DiscreteActionValue<StateType, ActionType>::ConstPtr& Q) {
+     const typename DiscreteActionValue<StateType, ActionType>::ConstPtr& Q) {
     CHECK_NOTNULL(Q.get());
 
     // Iterate over all states.

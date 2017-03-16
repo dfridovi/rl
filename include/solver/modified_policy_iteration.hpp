@@ -77,7 +77,7 @@ namespace rl {
       return policy_;
     }
 
-    const DiscreteStateValue<StateType>::ConstPtr& Value() const {
+    const typename DiscreteStateValue<StateType>::ConstPtr& Value() const {
       return value_;
     }
 
@@ -100,7 +100,7 @@ namespace rl {
     const size_t max_iterations_;
     const double discount_factor_;
     DiscreteDeterministicPolicy<StateType, ActionType> policy_;
-    DiscreteStateValue<StateType>::Ptr value_;
+    typename DiscreteStateValue<StateType>::Ptr value_;
 
   }; //\class ModifiedPolicyIteration
 

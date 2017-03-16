@@ -119,7 +119,7 @@ namespace rl {
 
   template<typename StateType, typename ActionType>
   double DiscreteActionValue<StateType, ActionType>::
-  Get(const StateType& state, const ActionType& action) {
+  Get(const StateType& state, const ActionType& action) const {
     if (value_.count(state) == 0)
       return kInvalidValue;
 
