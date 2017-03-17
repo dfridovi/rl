@@ -69,14 +69,14 @@ DEFINE_string(value_approx, "gp",
               "Type of value function approx to use of {linear, deep, gp}.");
 
 // GP value functor params.
-DEFINE_int32(gp_num_points, 50, "Number of random training points for GP.");
+DEFINE_int32(gp_num_points, 32, "Number of random training points for GP.");
 DEFINE_int32(gp_num_inits, 10, "Number of random initial actions.");
 DEFINE_int32(gp_max_steps, 10,
              "Maximum number of gradient steps to find the optimal action.");
 DEFINE_double(gp_step_size, 0.01, "Step size for finding optimal action.");
 DEFINE_double(gp_epsilon, 0.1,
               "Gradient size threshold for convergence of optimal action.");
-DEFINE_double(gp_regularizer, 1.0,
+DEFINE_double(gp_regularizer, 0.0,
               "Regularization constant to trade off mean/variance.");
 DEFINE_double(gp_noise, 0.1, "Noise variance of GP.");
 DEFINE_double(gp_state_length, 3.0, "Length scale for state dimensions.");
@@ -93,14 +93,14 @@ DEFINE_string(nonlinearity, "relu",
 // Solver parameters.
 DEFINE_double(discount_factor, 0.9, "Discount factor.");
 DEFINE_double(alpha, 0.01, "TD return interpolation parameter.");
-DEFINE_double(learning_rate, 1.0, "Learning rate for SGD.");
+DEFINE_double(learning_rate, 0.5, "Learning rate for SGD.");
 DEFINE_double(learning_rate_decay, 0.9, "Learning rate decay.");
 DEFINE_int32(num_rollouts, 100, "Number of rollouts to learn from.");
-DEFINE_int32(rollout_length, 100,
+DEFINE_int32(rollout_length, 200,
              "Rollout length. If negative, rollout until a terminal state.");
-DEFINE_int32(num_exp_replays, 1000,
+DEFINE_int32(num_exp_replays, 2000,
              "Number of SGD updates per Q Learning iteration.");
-DEFINE_int32(batch_size, 5,
+DEFINE_int32(batch_size, 16,
              "Number of experience replays per SGD iteration.");
 
 // Environment parameters.
@@ -109,7 +109,7 @@ DEFINE_double(ball_radius, 0.1, "Ball radius in meters.");
 DEFINE_double(ball_mass, 1.0, "Ball mass in kilograms.");
 DEFINE_double(initial_theta, 1.25, "Initial angle from the +x axis.");
 DEFINE_double(initial_omega, 0.0, "Initial angular velocity.");
-DEFINE_double(friction, 5.0, "Torque applied by friction.");
+DEFINE_double(friction, 0.0, "Torque applied by friction.");
 DEFINE_double(torque_limit, 20.0, "Limit for applied torque.");
 DEFINE_double(time_step, 0.01, "Time step for numerical integration.");
 DEFINE_int32(num_action_values, 5, "Number of discrete action values.");
