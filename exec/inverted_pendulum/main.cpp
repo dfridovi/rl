@@ -92,10 +92,10 @@ DEFINE_string(nonlinearity, "relu",
 
 // Solver parameters.
 DEFINE_double(discount_factor, 0.9, "Discount factor.");
-DEFINE_double(alpha, 0.1, "TD return interpolation parameter.");
-DEFINE_double(learning_rate, 0.5, "Learning rate for SGD.");
-DEFINE_double(learning_rate_decay, 1.0, "Learning rate decay.");
-DEFINE_int32(num_rollouts, 100, "Number of rollouts to learn from.");
+DEFINE_double(alpha, 1.0, "TD return interpolation parameter.");
+DEFINE_double(learning_rate, 10.0, "Learning rate for SGD.");
+DEFINE_double(learning_rate_decay, 0.75, "Learning rate decay.");
+DEFINE_int32(num_rollouts, 20, "Number of rollouts to learn from.");
 DEFINE_int32(rollout_length, 200,
              "Rollout length. If negative, rollout until a terminal state.");
 DEFINE_int32(num_exp_replays, 200,
