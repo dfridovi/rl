@@ -105,6 +105,7 @@ namespace rl {
     std::vector<VectorXd> points_;
     VectorXd means_;
     VectorXd lengths_;
+    VectorXd squared_lengths_;
 
     // Fast Cholesky solver.
     Eigen::LLT<MatrixXd> cholesky_;
@@ -163,6 +164,7 @@ namespace rl {
       means_(VectorXd::Zero(params.num_points_)),
       regressed_means_(VectorXd::Zero(params.num_points_)),
       lengths_(params.lengths_),
+      squared_lengths_(params.lengths_.cwiseProduct(params.lengths_)),
       ContinuousActionValue<StateType, ActionType>() {
     // Pick random points in the space for training.
     for (size_t ii = 0; ii < params.num_points_; ii++) {
@@ -358,7 +360,7 @@ namespace rl {
             features.tail(ActionType::FeatureDimension());
 
           Jt.col(jj) = cross(jj) * action_diff.cwiseQuotient(
-            lengths_.tail(ActionType::FeatureDimension()));
+            squared_lengths_.tail(ActionType::FeatureDimension()));
         }
 
         // Compute the intermediate derivative with respect to cross covariance.
