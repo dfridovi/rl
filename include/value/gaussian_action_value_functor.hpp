@@ -230,7 +230,7 @@ namespace rl {
     // Compute the total inner product between the cross covariance
     // of this point and the training set.
     mean = cross.dot(regressed_means_);
-    variance = noise_variance_ - cross.dot(regressed_cross);
+    variance = 1.0 - cross.dot(regressed_cross);
   }
 
   // Compute the expected value of the GP at this point.
