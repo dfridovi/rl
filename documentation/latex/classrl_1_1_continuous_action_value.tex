@@ -1,0 +1,53 @@
+\hypertarget{classrl_1_1_continuous_action_value}{}\section{rl\+:\+:Continuous\+Action\+Value$<$ State\+Type, Action\+Type $>$ Class Template Reference}
+\label{classrl_1_1_continuous_action_value}\index{rl\+::\+Continuous\+Action\+Value$<$ State\+Type, Action\+Type $>$@{rl\+::\+Continuous\+Action\+Value$<$ State\+Type, Action\+Type $>$}}
+Inheritance diagram for rl\+:\+:Continuous\+Action\+Value$<$ State\+Type, Action\+Type $>$\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=1.755486cm]{classrl_1_1_continuous_action_value}
+\end{center}
+\end{figure}
+\subsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{classrl_1_1_continuous_action_value_a2e736bf645ad40c3f15ba4da245d6193}{}\label{classrl_1_1_continuous_action_value_a2e736bf645ad40c3f15ba4da245d6193} 
+typedef std\+::shared\+\_\+ptr$<$ \hyperlink{classrl_1_1_continuous_action_value}{Continuous\+Action\+Value} $>$ {\bfseries Ptr}
+\item 
+\hypertarget{classrl_1_1_continuous_action_value_af9004ef834679e18cc0edd277aa65010}{}\label{classrl_1_1_continuous_action_value_af9004ef834679e18cc0edd277aa65010} 
+typedef std\+::shared\+\_\+ptr$<$ const \hyperlink{classrl_1_1_continuous_action_value}{Continuous\+Action\+Value} $>$ {\bfseries Const\+Ptr}
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{classrl_1_1_continuous_action_value_a211d1af3c70b2b3567a7e7a41751522e}{}\label{classrl_1_1_continuous_action_value_a211d1af3c70b2b3567a7e7a41751522e} 
+virtual Ptr {\bfseries Copy} () const =0
+\item 
+\hypertarget{classrl_1_1_continuous_action_value_aa3f772e32730a219738e4fae4ef042a4}{}\label{classrl_1_1_continuous_action_value_aa3f772e32730a219738e4fae4ef042a4} 
+virtual double {\bfseries Get} (const State\+Type \&state, const Action\+Type \&action) const =0
+\item 
+\hypertarget{classrl_1_1_continuous_action_value_a5ceb3561af43ed0e48897083ca856452}{}\label{classrl_1_1_continuous_action_value_a5ceb3561af43ed0e48897083ca856452} 
+virtual double {\bfseries Update} (const std\+::vector$<$ State\+Type $>$ \&states, const std\+::vector$<$ Action\+Type $>$ \&actions, const std\+::vector$<$ double $>$ \&targets, double step\+\_\+size)=0
+\item 
+\hypertarget{classrl_1_1_continuous_action_value_a070636438e4c111f1b3fe215f455dcd6}{}\label{classrl_1_1_continuous_action_value_a070636438e4c111f1b3fe215f455dcd6} 
+virtual bool {\bfseries Optimal\+Action} (const State\+Type \&state, Action\+Type \&action) const =0
+\end{DoxyCompactItemize}
+\subsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{classrl_1_1_continuous_action_value_aa35b3c3850fbb1045cc497b847e68f50}{}\label{classrl_1_1_continuous_action_value_aa35b3c3850fbb1045cc497b847e68f50} 
+void {\bfseries Unpack} (const State\+Type \&state, const Action\+Type \&action, Vector\+Xd \&features) const
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+\subsubsection*{template$<$typename State\+Type, typename Action\+Type$>$\newline
+class rl\+::\+Continuous\+Action\+Value$<$ State\+Type, Action\+Type $>$}
+
+
+
+Definition at line 60 of file continuous\+\_\+action\+\_\+value\+\_\+functor.\+hpp.
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+/\+Users/davidfridovichkeil/\+Documents/\+Developer/rl/include/value/continuous\+\_\+action\+\_\+value\+\_\+functor.\+hpp\end{DoxyCompactItemize}

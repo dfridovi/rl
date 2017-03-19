@@ -103,6 +103,12 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:afab6800d178b15040d0ebbc31baf4c14"><td class="memItemLeft" align="right" valign="top"><a id="afab6800d178b15040d0ebbc31baf4c14"></a>
 static void&#160;</td><td class="memItemRight" valign="bottom"><b>SetLimits</b> (double min_torque, double max_torque)</td></tr>
 <tr class="separator:afab6800d178b15040d0ebbc31baf4c14"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae0ac0a859d0426c95dfb015cafcd09d0"><td class="memItemLeft" align="right" valign="top"><a id="ae0ac0a859d0426c95dfb015cafcd09d0"></a>
+static void&#160;</td><td class="memItemRight" valign="bottom"><b>SetNumValues</b> (size_t num_values)</td></tr>
+<tr class="separator:ae0ac0a859d0426c95dfb015cafcd09d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1e2f849177051a16ed5de3da2abfe8b2"><td class="memItemLeft" align="right" valign="top"><a id="a1e2f849177051a16ed5de3da2abfe8b2"></a>
+static void&#160;</td><td class="memItemRight" valign="bottom"><b>DiscreteValues</b> (std::vector&lt; <a class="el" href="structrl_1_1_inverted_pendulum_action.html">InvertedPendulumAction</a> &gt; &amp;actions)</td></tr>
+<tr class="separator:a1e2f849177051a16ed5de3da2abfe8b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa180acad4dc081aed0a5639141f4cda6"><td class="memItemLeft" align="right" valign="top"><a id="aa180acad4dc081aed0a5639141f4cda6"></a>
 static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>FeatureDimension</b> ()</td></tr>
 <tr class="separator:aa180acad4dc081aed0a5639141f4cda6"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -127,10 +133,19 @@ static double&#160;</td><td class="memItemRight" valign="bottom"><b>min_torque_<
 <tr class="memitem:a6e16eacb6385fa7cbed55574aa289d25"><td class="memItemLeft" align="right" valign="top"><a id="a6e16eacb6385fa7cbed55574aa289d25"></a>
 static double&#160;</td><td class="memItemRight" valign="bottom"><b>max_torque_</b> = 1.0</td></tr>
 <tr class="separator:a6e16eacb6385fa7cbed55574aa289d25"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6ecf98651ffe081568448271dbfea5f0"><td class="memItemLeft" align="right" valign="top"><a id="a6ecf98651ffe081568448271dbfea5f0"></a>
+static size_t&#160;</td><td class="memItemRight" valign="bottom"><b>num_values_</b> = 10</td></tr>
+<tr class="separator:a6ecf98651ffe081568448271dbfea5f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a452e62a495021bd309ed00da4a73b212"><td class="memItemLeft" align="right" valign="top"><a id="a452e62a495021bd309ed00da4a73b212"></a>
+static std::random_device&#160;</td><td class="memItemRight" valign="bottom"><b>rd_</b></td></tr>
+<tr class="separator:a452e62a495021bd309ed00da4a73b212"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a14025e055bf7cdae2ca98b5cfbd4e0a0"><td class="memItemLeft" align="right" valign="top"><a id="a14025e055bf7cdae2ca98b5cfbd4e0a0"></a>
+static std::default_random_engine&#160;</td><td class="memItemRight" valign="bottom"><b>rng_</b></td></tr>
+<tr class="separator:a14025e055bf7cdae2ca98b5cfbd4e0a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock">
-<p>Definition at line <a class="el" href="inverted__pendulum__action_8hpp_source.html#l00055">55</a> of file <a class="el" href="inverted__pendulum__action_8hpp_source.html">inverted_pendulum_action.hpp</a>.</p>
+<p>Definition at line <a class="el" href="inverted__pendulum__action_8hpp_source.html#l00056">56</a> of file <a class="el" href="inverted__pendulum__action_8hpp_source.html">inverted_pendulum_action.hpp</a>.</p>
 </div><hr/>The documentation for this struct was generated from the following files:<ul>
 <li>/Users/davidfridovichkeil/Documents/Developer/rl/include/environment/<a class="el" href="inverted__pendulum__action_8hpp_source.html">inverted_pendulum_action.hpp</a></li>
 <li>/Users/davidfridovichkeil/Documents/Developer/rl/src/environment/<a class="el" href="inverted__pendulum__action_8cpp_source.html">inverted_pendulum_action.cpp</a></li>

@@ -29,6 +29,12 @@ bool {\bfseries operator!=} (const \hyperlink{structrl_1_1_inverted_pendulum_act
 \hypertarget{structrl_1_1_inverted_pendulum_action_afab6800d178b15040d0ebbc31baf4c14}{}\label{structrl_1_1_inverted_pendulum_action_afab6800d178b15040d0ebbc31baf4c14} 
 static void {\bfseries Set\+Limits} (double min\+\_\+torque, double max\+\_\+torque)
 \item 
+\hypertarget{structrl_1_1_inverted_pendulum_action_ae0ac0a859d0426c95dfb015cafcd09d0}{}\label{structrl_1_1_inverted_pendulum_action_ae0ac0a859d0426c95dfb015cafcd09d0} 
+static void {\bfseries Set\+Num\+Values} (size\+\_\+t num\+\_\+values)
+\item 
+\hypertarget{structrl_1_1_inverted_pendulum_action_a1e2f849177051a16ed5de3da2abfe8b2}{}\label{structrl_1_1_inverted_pendulum_action_a1e2f849177051a16ed5de3da2abfe8b2} 
+static void {\bfseries Discrete\+Values} (std\+::vector$<$ \hyperlink{structrl_1_1_inverted_pendulum_action}{Inverted\+Pendulum\+Action} $>$ \&actions)
+\item 
 \hypertarget{structrl_1_1_inverted_pendulum_action_aa180acad4dc081aed0a5639141f4cda6}{}\label{structrl_1_1_inverted_pendulum_action_aa180acad4dc081aed0a5639141f4cda6} 
 static constexpr size\+\_\+t {\bfseries Feature\+Dimension} ()
 \item 
@@ -52,13 +58,22 @@ static double {\bfseries min\+\_\+torque\+\_\+} = -\/1.\+0
 \item 
 \hypertarget{structrl_1_1_inverted_pendulum_action_a6e16eacb6385fa7cbed55574aa289d25}{}\label{structrl_1_1_inverted_pendulum_action_a6e16eacb6385fa7cbed55574aa289d25} 
 static double {\bfseries max\+\_\+torque\+\_\+} = 1.\+0
+\item 
+\hypertarget{structrl_1_1_inverted_pendulum_action_a6ecf98651ffe081568448271dbfea5f0}{}\label{structrl_1_1_inverted_pendulum_action_a6ecf98651ffe081568448271dbfea5f0} 
+static size\+\_\+t {\bfseries num\+\_\+values\+\_\+} = 10
+\item 
+\hypertarget{structrl_1_1_inverted_pendulum_action_a452e62a495021bd309ed00da4a73b212}{}\label{structrl_1_1_inverted_pendulum_action_a452e62a495021bd309ed00da4a73b212} 
+static std\+::random\+\_\+device {\bfseries rd\+\_\+}
+\item 
+\hypertarget{structrl_1_1_inverted_pendulum_action_a14025e055bf7cdae2ca98b5cfbd4e0a0}{}\label{structrl_1_1_inverted_pendulum_action_a14025e055bf7cdae2ca98b5cfbd4e0a0} 
+static std\+::default\+\_\+random\+\_\+engine {\bfseries rng\+\_\+}
 \end{DoxyCompactItemize}
 
 
 \subsection{Detailed Description}
 
 
-Definition at line 55 of file inverted\+\_\+pendulum\+\_\+action.\+hpp.
+Definition at line 56 of file inverted\+\_\+pendulum\+\_\+action.\+hpp.
 
 
 

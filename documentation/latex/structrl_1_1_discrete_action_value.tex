@@ -1,0 +1,62 @@
+\hypertarget{structrl_1_1_discrete_action_value}{}\section{rl\+:\+:Discrete\+Action\+Value$<$ State\+Type, Action\+Type $>$ Struct Template Reference}
+\label{structrl_1_1_discrete_action_value}\index{rl\+::\+Discrete\+Action\+Value$<$ State\+Type, Action\+Type $>$@{rl\+::\+Discrete\+Action\+Value$<$ State\+Type, Action\+Type $>$}}
+Inheritance diagram for rl\+:\+:Discrete\+Action\+Value$<$ State\+Type, Action\+Type $>$\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{structrl_1_1_discrete_action_value}
+\end{center}
+\end{figure}
+\subsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{structrl_1_1_discrete_action_value_aff687faeb6bc97d3dcc4fc603af7fa39}{}\label{structrl_1_1_discrete_action_value_aff687faeb6bc97d3dcc4fc603af7fa39} 
+typedef std\+::shared\+\_\+ptr$<$ \hyperlink{structrl_1_1_discrete_action_value}{Discrete\+Action\+Value} $>$ {\bfseries Ptr}
+\item 
+\hypertarget{structrl_1_1_discrete_action_value_a550469f7ce0f9c2fbf06117a16f4c0f8}{}\label{structrl_1_1_discrete_action_value_a550469f7ce0f9c2fbf06117a16f4c0f8} 
+typedef std\+::shared\+\_\+ptr$<$ const \hyperlink{structrl_1_1_discrete_action_value}{Discrete\+Action\+Value} $>$ {\bfseries Const\+Ptr}
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{structrl_1_1_discrete_action_value_a017adbda6b0ca391888bd77630e53d69}{}\label{structrl_1_1_discrete_action_value_a017adbda6b0ca391888bd77630e53d69} 
+Ptr {\bfseries Copy} () const
+\item 
+\hypertarget{structrl_1_1_discrete_action_value_a86394535a77c0746f835e978e830ec3b}{}\label{structrl_1_1_discrete_action_value_a86394535a77c0746f835e978e830ec3b} 
+double {\bfseries Get} (const State\+Type \&state, const Action\+Type \&action) const
+\item 
+\hypertarget{structrl_1_1_discrete_action_value_ab46b4cbc1ecd2b6554235c76c77af28c}{}\label{structrl_1_1_discrete_action_value_ab46b4cbc1ecd2b6554235c76c77af28c} 
+void {\bfseries Set} (const State\+Type \&state, const Action\+Type \&action, double value)
+\item 
+\hypertarget{structrl_1_1_discrete_action_value_a37baa9d4ee68d56e6524d7507195077f}{}\label{structrl_1_1_discrete_action_value_a37baa9d4ee68d56e6524d7507195077f} 
+double \& {\bfseries Reference} (const State\+Type \&state, const Action\+Type \&action)
+\item 
+\hypertarget{structrl_1_1_discrete_action_value_a53bfe6dd502eefdb6fee9ac2ae7e7474}{}\label{structrl_1_1_discrete_action_value_a53bfe6dd502eefdb6fee9ac2ae7e7474} 
+void {\bfseries Initialize} (const \hyperlink{classrl_1_1_discrete_environment}{Discrete\+Environment}$<$ State\+Type, Action\+Type $>$ \&environment)
+\end{DoxyCompactItemize}
+\subsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{structrl_1_1_discrete_action_value_a44da86912d0d446a0194b6694ca186df}{}\label{structrl_1_1_discrete_action_value_a44da86912d0d446a0194b6694ca186df} 
+static Ptr {\bfseries Create} ()
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{structrl_1_1_discrete_action_value_ad837fb542655db5d35c6593b890a09ac}{}\label{structrl_1_1_discrete_action_value_ad837fb542655db5d35c6593b890a09ac} 
+std\+::unordered\+\_\+map$<$ State\+Type, std\+::unordered\+\_\+map$<$ Action\+Type, double, typename Action\+Type\+::\+Hash $>$, typename State\+Type\+::\+Hash $>$ {\bfseries value\+\_\+}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+\subsubsection*{template$<$typename State\+Type, typename Action\+Type$>$\newline
+struct rl\+::\+Discrete\+Action\+Value$<$ State\+Type, Action\+Type $>$}
+
+
+
+Definition at line 59 of file discrete\+\_\+action\+\_\+value\+\_\+functor.\+hpp.
+
+
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+/\+Users/davidfridovichkeil/\+Documents/\+Developer/rl/include/value/discrete\+\_\+action\+\_\+value\+\_\+functor.\+hpp\end{DoxyCompactItemize}

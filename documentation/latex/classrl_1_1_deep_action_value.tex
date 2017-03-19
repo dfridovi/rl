@@ -1,0 +1,45 @@
+\hypertarget{classrl_1_1_deep_action_value}{}\section{rl\+:\+:Deep\+Action\+Value$<$ State\+Type, Action\+Type $>$ Class Template Reference}
+\label{classrl_1_1_deep_action_value}\index{rl\+::\+Deep\+Action\+Value$<$ State\+Type, Action\+Type $>$@{rl\+::\+Deep\+Action\+Value$<$ State\+Type, Action\+Type $>$}}
+Inheritance diagram for rl\+:\+:Deep\+Action\+Value$<$ State\+Type, Action\+Type $>$\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=3.000000cm]{classrl_1_1_deep_action_value}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{classrl_1_1_deep_action_value_a30161f628fdfdaf3dfaf14603689d222}{}\label{classrl_1_1_deep_action_value_a30161f628fdfdaf3dfaf14603689d222} 
+\hyperlink{classrl_1_1_continuous_action_value}{Continuous\+Action\+Value}$<$ State\+Type, Action\+Type $>$\+::Ptr {\bfseries Copy} () const
+\item 
+\hypertarget{classrl_1_1_deep_action_value_a05cfe98dbeddf44118db5ed65c3506c7}{}\label{classrl_1_1_deep_action_value_a05cfe98dbeddf44118db5ed65c3506c7} 
+double {\bfseries Get} (const State\+Type \&state, const Action\+Type \&action) const
+\item 
+\hypertarget{classrl_1_1_deep_action_value_ae0c6467c0891f2af9b1f66da7f68da46}{}\label{classrl_1_1_deep_action_value_ae0c6467c0891f2af9b1f66da7f68da46} 
+double {\bfseries Update} (const std\+::vector$<$ State\+Type $>$ \&state, const std\+::vector$<$ Action\+Type $>$ \&action, const std\+::vector$<$ double $>$ \&target, double step\+\_\+size)
+\item 
+\hypertarget{classrl_1_1_deep_action_value_aa5c7da7a957b8d3cecb4dd5dacb38cfe}{}\label{classrl_1_1_deep_action_value_aa5c7da7a957b8d3cecb4dd5dacb38cfe} 
+bool {\bfseries Optimal\+Action} (const State\+Type \&state, Action\+Type \&action) const
+\end{DoxyCompactItemize}
+\subsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{classrl_1_1_deep_action_value_a28d5810e8871bde597b70fcb5a066ab0}{}\label{classrl_1_1_deep_action_value_a28d5810e8871bde597b70fcb5a066ab0} 
+static \hyperlink{classrl_1_1_continuous_action_value}{Continuous\+Action\+Value}$<$ State\+Type, Action\+Type $>$\+::Ptr {\bfseries Create} (const std\+::vector$<$ Layer\+Params $>$ \&layers, const Loss\+Functor\+::\+Const\+Ptr \&loss, double momentum, double weight\+\_\+decay)
+\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+\subsection{Detailed Description}
+\subsubsection*{template$<$typename State\+Type, typename Action\+Type$>$\newline
+class rl\+::\+Deep\+Action\+Value$<$ State\+Type, Action\+Type $>$}
+
+
+
+Definition at line 63 of file deep\+\_\+action\+\_\+value\+\_\+functor.\+hpp.
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+/\+Users/davidfridovichkeil/\+Documents/\+Developer/rl/include/value/deep\+\_\+action\+\_\+value\+\_\+functor.\+hpp\end{DoxyCompactItemize}

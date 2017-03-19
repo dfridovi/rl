@@ -76,12 +76,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:aa0502bdff3bbe4896d52b50e6fb682f3"><td class="memItemLeft" align="right" valign="top"><a id="aa0502bdff3bbe4896d52b50e6fb682f3"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>SetRandomly</b> (const <a class="el" href="classrl_1_1_discrete_environment.html">DiscreteEnvironment</a>&lt; StateType, ActionType &gt; &amp;environment)</td></tr>
 <tr class="separator:aa0502bdff3bbe4896d52b50e6fb682f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9391924c1b0ad563aff49dedc80af744"><td class="memItemLeft" align="right" valign="top"><a id="a9391924c1b0ad563aff49dedc80af744"></a>
-size_t&#160;</td><td class="memItemRight" valign="bottom"><b>SetGreedily</b> (const <a class="el" href="structrl_1_1_discrete_state_value_functor.html">DiscreteStateValueFunctor</a>&lt; StateType &gt; &amp;V, const <a class="el" href="classrl_1_1_discrete_environment.html">DiscreteEnvironment</a>&lt; StateType, ActionType &gt; &amp;environment, double discount_factor)</td></tr>
-<tr class="separator:a9391924c1b0ad563aff49dedc80af744"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a378029387659936c201d6e7e50d10201"><td class="memItemLeft" align="right" valign="top"><a id="a378029387659936c201d6e7e50d10201"></a>
-size_t&#160;</td><td class="memItemRight" valign="bottom"><b>SetGreedily</b> (const <a class="el" href="structrl_1_1_discrete_action_value_functor.html">DiscreteActionValueFunctor</a>&lt; StateType, ActionType &gt; &amp;Q)</td></tr>
-<tr class="separator:a378029387659936c201d6e7e50d10201"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae1f5768f1189f650a37a280441a5a5f6"><td class="memItemLeft" align="right" valign="top"><a id="ae1f5768f1189f650a37a280441a5a5f6"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>SetGreedily</b> (const typename <a class="el" href="structrl_1_1_discrete_state_value.html">DiscreteStateValue</a>&lt; StateType &gt;::ConstPtr &amp;V, const <a class="el" href="classrl_1_1_discrete_environment.html">DiscreteEnvironment</a>&lt; StateType, ActionType &gt; &amp;environment, double discount_factor)</td></tr>
+<tr class="separator:ae1f5768f1189f650a37a280441a5a5f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5361f9e8902b11c044953a44c39e0dbb"><td class="memItemLeft" align="right" valign="top"><a id="a5361f9e8902b11c044953a44c39e0dbb"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>SetGreedily</b> (const typename <a class="el" href="structrl_1_1_discrete_action_value.html">DiscreteActionValue</a>&lt; StateType, ActionType &gt;::ConstPtr &amp;Q)</td></tr>
+<tr class="separator:a5361f9e8902b11c044953a44c39e0dbb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa464571566c0a6f97bb7e415fb78a491"><td class="memItemLeft" align="right" valign="top"><a id="aa464571566c0a6f97bb7e415fb78a491"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>Act</b> (const StateType &amp;state, ActionType &amp;action) const</td></tr>
 <tr class="separator:aa464571566c0a6f97bb7e415fb78a491"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -91,7 +91,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>Act</b> (const StateT
 class rl::DiscreteDeterministicPolicy&lt; StateType, ActionType &gt;</h3>
 
 
-<p>Definition at line <a class="el" href="discrete__deterministic__policy_8hpp_source.html#l00059">59</a> of file <a class="el" href="discrete__deterministic__policy_8hpp_source.html">discrete_deterministic_policy.hpp</a>.</p>
+<p>Definition at line <a class="el" href="discrete__deterministic__policy_8hpp_source.html#l00060">60</a> of file <a class="el" href="discrete__deterministic__policy_8hpp_source.html">discrete_deterministic_policy.hpp</a>.</p>
 </div><hr/>The documentation for this class was generated from the following file:<ul>
 <li>/Users/davidfridovichkeil/Documents/Developer/rl/include/policy/<a class="el" href="discrete__deterministic__policy_8hpp_source.html">discrete_deterministic_policy.hpp</a></li>
 </ul>

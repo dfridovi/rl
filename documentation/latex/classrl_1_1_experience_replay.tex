@@ -6,8 +6,8 @@
 \hypertarget{classrl_1_1_experience_replay_af3a24418dda62522856af859215cb1c7}{}\label{classrl_1_1_experience_replay_af3a24418dda62522856af859215cb1c7} 
 void {\bfseries Add} (const State\+Type \&state, const Action\+Type \&action, double reward, const State\+Type \&next\+\_\+state)
 \item 
-\hypertarget{classrl_1_1_experience_replay_a051700be7bdd8ec4199436d2aeda8bee}{}\label{classrl_1_1_experience_replay_a051700be7bdd8ec4199436d2aeda8bee} 
-bool {\bfseries Sample} (State\+Type \&state, Action\+Type \&action, double \&reward, State\+Type \&next\+\_\+state)
+\hypertarget{classrl_1_1_experience_replay_a64fb838c9ecb78b5d07af4b03c654e57}{}\label{classrl_1_1_experience_replay_a64fb838c9ecb78b5d07af4b03c654e57} 
+bool {\bfseries Sample} (size\+\_\+t batch\+\_\+size, std\+::vector$<$ State\+Type $>$ \&states, std\+::vector$<$ Action\+Type $>$ \&actions, std\+::vector$<$ double $>$ \&rewards, std\+::vector$<$ State\+Type $>$ \&next\+\_\+states)
 \end{DoxyCompactItemize}
 
 
@@ -17,7 +17,7 @@ class rl\+::\+Experience\+Replay$<$ State\+Type, Action\+Type $>$}
 
 
 
-Definition at line 53 of file experience\+\_\+replay.\+hpp.
+Definition at line 55 of file experience\+\_\+replay.\+hpp.
 
 
 
